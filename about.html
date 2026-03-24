@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About — GoNoGo United Kingdom</title>
+<meta name="description" content="GoNoGo is an independent brand rating platform using a transparent 100-point scoring framework to help consumers make informed decisions.">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div id="nav"></div>
+  <section class="section">
+    <div class="container" style="max-width:800px">
+      <h1 class="section-title" style="text-align:left">About GoNoGo</h1>
+
+      <div class="legal-content">
+        <h2>Our Mission</h2>
+        <p>GoNoGo exists to bring transparency and objectivity to brand ratings. We believe consumers deserve honest, data-driven comparisons that aren't influenced by advertising, sponsorship, or hidden agendas.</p>
+
+        <h2>How We Rate</h2>
+        <p>Every brand is evaluated on our proprietary 100-point scoring framework across six weighted categories:</p>
+        <ul>
+          <li><strong>Compliance & Regulation</strong> — licensing, regulatory standing, legal compliance</li>
+          <li><strong>Customer Satisfaction</strong> — real user feedback from app stores, review platforms, social media</li>
+          <li><strong>Product Value</strong> — pricing fairness, features, transparency, value for money</li>
+          <li><strong>Innovation</strong> — technology, digital experience, forward-thinking approach</li>
+          <li><strong>Customer Support</strong> — response times, resolution quality, channel availability</li>
+          <li><strong>Accessibility & Security</strong> — platform accessibility, data security, inclusive design</li>
+        </ul>
+        <p>Brands scoring 80+ receive a <strong style="color:var(--green)">GO</strong> rating. Between 60-79 is <strong style="color:var(--orange)">GO WITH CAUTION</strong>. Below 60 is <strong style="color:#e74c3c">NOGO</strong>.</p>
+
+        <h2>Independence</h2>
+        <p>Our ratings are independent. We don't accept payment from brands to alter scores. Our revenue comes from affiliate partnerships and business intelligence services — never from biased ratings.</p>
+
+        <h2>Your Voice Matters</h2>
+        <p>Every brand page lets you cast a Go or No Go vote and share your experience. Your reviews help other consumers and contribute to a more transparent marketplace.</p>
+
+        <h2>GoNoGo Worldwide</h2>
+        <p>GoNoGo currently operates in the <a href="https://www.gonogo.co.uk" style="color:var(--green)">United Kingdom</a> and <a href="https://www.gonogo.co.za" style="color:var(--green)">South Africa</a>, with plans to expand to more markets.</p>
+
+        <h2>Contact</h2>
+        <p>Email: <a href="mailto:mike@gonogo.co.uk" style="color:var(--green)">mike@gonogo.co.uk</a></p>
+        <p>GoNoGo Ratings and Reviews Ltd.</p>
+      </div>
+    </div>
+  </section>
+  <div id="footer"></div>
+  <script src="data/helpers.js"></script>
+  <script src="components.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = Components.renderPublicNav('about');
+    document.getElementById('footer').innerHTML = Components.renderFooter();
+  </script>
+  <style>
+    .legal-content h2 { font-size: var(--text-lg); font-weight: 700; margin: var(--space-6) 0 var(--space-3); color: var(--text-primary); }
+    .legal-content p { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-3); }
+    .legal-content ul { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; padding-left: var(--space-6); margin-bottom: var(--space-3); }
+    .legal-content li { margin-bottom: var(--space-1); }
+  </style>
+</body>
+</html>
