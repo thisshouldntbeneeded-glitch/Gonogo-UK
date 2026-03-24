@@ -104,7 +104,7 @@ var GoNoGoAPI = (function () {
   var _categoryCache = null;
   function loadCategoryCache() {
     if (_categoryCache) return Promise.resolve(_categoryCache);
-    return supabaseRequest('categories?region=eq.' + SITE_REGION + '&select=*&order=name.asc').then(function (rows) {
+    return supabaseRequest('categories?select=*&order=name.asc').then(function (rows) {
       _categoryCache = {};
       rows.forEach(function (c) {
         _categoryCache[c.slug] = { name: c.name, icon: c.icon, scoring_categories: c.scoring_categories };
@@ -131,7 +131,7 @@ var GoNoGoAPI = (function () {
         if (hasSB) {
           // Get categories with brand counts from Supabase
           return Promise.all([
-            supabaseRequest('categories?region=eq.' + SITE_REGION + '&select=*&order=name.asc'),
+            supabaseRequest('categories?select=*&order=name.asc'),
             supabaseRequest('brands?region=eq.' + SITE_REGION + '&select=slug,category_slug')
           ]).then(function (results) {
             var cats = results[0], brands = results[1];
@@ -238,7 +238,7 @@ var GoNoGoAPI = (function () {
         if (hasSB) {
           return Promise.all([
             supabaseRequest('brands?region=eq.' + SITE_REGION + '&select=gonogo_score,verdict,category_slug'),
-            supabaseRequest('categories?region=eq.' + SITE_REGION + '&select=slug')
+            supabaseRequest('categories?select=slug')
           ]).then(function (results) {
             var brands = results[0], cats = results[1];
             var total = 0, scoreSum = 0, go = 0, caution = 0, nogo = 0;

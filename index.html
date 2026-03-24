@@ -171,6 +171,7 @@
     (async function() {
       // Industry grid — styled cards with colors and descriptions
       var categories = await GoNoGoAPI.getCategoriesWithBrands();
+      categories = categories.filter(function(cat) { return cat.hasBrands; });
       var industryGrid = document.getElementById('industry-grid');
       industryGrid.innerHTML = categories.map(function(cat) {
         var desc = categoryDescriptions[cat.id] || cat.brandCount + ' brands reviewed';
