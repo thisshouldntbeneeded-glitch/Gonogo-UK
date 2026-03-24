@@ -91,6 +91,9 @@ const Components = {
         <a href="index.html" class="logo">
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
+        <div style="background:#1e3a5f;color:#60a5fa;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
+          <i class="fa-solid fa-globe"></i> United Kingdom
+        </div>
         <nav class="admin-sidebar-nav">
           ${links.map(l => `
             <a href="${l.href}" class="admin-sidebar-link ${activePage === l.id ? 'active' : ''}">
