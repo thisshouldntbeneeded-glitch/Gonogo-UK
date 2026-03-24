@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoNoGo UK — Brand Management</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebar-container"></div>
+    <main class="admin-main" id="admin-content" style="display:none;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title">Brand Management</h1>
+          <p class="text-sm text-secondary">Manage all rated brands across UK industries</p>
+        </div>
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;">
+          <button class="btn btn-ghost btn-sm" onclick="document.getElementById('csv-file').click()">
+            <i class="fa-solid fa-file-csv"></i> Import CSV
+          </button>
+          <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="importCSV(event)">
+          <button class="btn btn-secondary btn-sm" onclick="exportBrands()">
+            <i class="fa-solid fa-download"></i> Export CSV
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="openCategoryModal()">
+            <i class="fa-solid fa-folder-plus"></i> Add Category
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="openAddModal()">
+            <i class="fa-solid fa-plus"></i> Add Brand
+          </button>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <div class="table-toolbar">
+          <div class="table-toolbar-left">
+            <div class="search-input" style="max-width:280px;">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="search-input" placeholder="Search brands..." oninput="filterBrands()">
+            </div>
+            <select id="industry-filter" style="width:auto;max-width:180px;" onchange="filterBrands()">
+              <option value="">All Industries</option>
+            </select>
+            <select id="verdict-filter" style="width:auto;max-width:150px;" onchange="filterBrands()">
+              <option value="">All Verdicts</option>
+              <option value="GO">GO</option>
+              <option value="GO WITH CAUTION">Go with Caution</option>
+              <option value="NOGO">NOGO</option>
+            </select>
+          </div>
+          <span class="text-xs text-muted" id="brand-count"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="brands-table">
+            <thead>
+              <tr>
+                <th onclick="sortTable('name')">Brand <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th onclick="sortTable('categoryName')">Industry <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th onclick="sortTable('overallScore')">Score <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th>Verdict</th>
+                <th>App Ratings</th>
+                <th onclick="sortTable('lastUpdated')">Updated <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="brands-tbody">
+              <tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">Loading brands...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="padding:var(--space-6) 0;text-align:center;">
+        <p class="text-xs text-muted">
+          &copy; 2026 GoNoGo United Kingdom |
+          <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted);">Created with Perplexity Computer</a>
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" id="brand-modal">
+    <div class="modal" style="max-width:800px;max-height:90vh;overflow-y:auto;">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modal-title">Add Brand</h2>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="brand-form" onsubmit="saveBrand(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Brand Name</label>
+            <input type="text" id="f-name" required placeholder="e.g. Discovery Bank">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Industry</label>
+            <select id="f-industry" required></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Website URL</label>
+            <input type="url" id="f-website" placeholder="https://example.co.za">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Logo URL</label>
+            <input type="url" id="f-logo" placeholder="https://logo.clearbit.com/example.co.za">
+          </div>
+        </div>
+
+        <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-chart-simple"></i> Category Scores</h4>
+        <p class="text-xs text-muted" style="margin-bottom:var(--space-3);">Enter raw score, max, and a one-line description for each category.</p>
+        <div id="score-fields"></div>
+
+        <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-mobile-screen"></i> App Ratings</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Google Play Rating</label>
+            <input type="number" id="f-googleplay" step="0.1" min="0" max="5" placeholder="4.2">
+          </div>
+          <div class="form-group">
+            <label class="form-label">iOS App Store Rating</label>
+            <input type="number" id="f-ios" step="0.1" min="0" max="5" placeholder="4.5">
+          </div>
+        </div>
+
+        <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-file-lines"></i> Brand Content</h4>
+        <div class="form-group">
+          <label class="form-label">Brand Overview</label>
+          <textarea id="f-overview" rows="3" placeholder="2-3 sentence brand description"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Rating Summary</label>
+          <textarea id="f-rating-summary" rows="3" placeholder="Explain the rating rationale"></textarea>
+        </div>
+
+        <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-tags"></i> Features, Strengths &amp; Concerns</h4>
+        <div class="form-group">
+          <label class="form-label">Key Features <span class="text-xs text-muted">(comma-separated)</span></label>
+          <input type="text" id="f-features" placeholder="e.g. no monthly fees, GoalSave 10%+, PayShap, Visa debit">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Strengths <span class="text-xs text-muted">(comma-separated)</span></label>
+            <textarea id="f-strengths" rows="2" placeholder="e.g. low fees, innovation, compliance"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Concerns <span class="text-xs text-muted">(comma-separated)</span></label>
+            <textarea id="f-concerns" rows="2" placeholder="e.g. fraud vulnerabilities, support response"></textarea>
+          </div>
+        </div>
+
+        <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-coins"></i> Pricing</h4>
+        <div class="form-group">
+          <label class="form-label">Pricing Info</label>
+          <textarea id="f-pricing" rows="2" placeholder="e.g. No monthly fee; ATM R10, card replace R100, intl 2% FX"></textarea>
+        </div>
+
+        <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-comments"></i> Social Sentiment</h4>
+        <div class="form-group">
+          <label class="form-label">Sentiment Summary</label>
+          <input type="text" id="f-sentiment-summary" placeholder="e.g. Praise for UI/fees; complaints about fraud/support">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Positive Themes <span class="text-xs text-muted">(comma-separated)</span></label>
+            <input type="text" id="f-sentiment-positive" placeholder="e.g. easy app, no fees, high interest">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Common Concerns <span class="text-xs text-muted">(comma-separated)</span></label>
+            <input type="text" id="f-sentiment-concerns" placeholder="e.g. fraud, account holds, slow support">
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-4);">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-btn"><i class="fa-solid fa-check"></i> Save Brand</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Category Modal -->
+  <div class="modal-overlay" id="category-modal">
+    <div class="modal" style="max-width:500px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Category</h2>
+        <button class="modal-close" onclick="closeCategoryModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="category-form" onsubmit="saveCategory(event)">
+        <div class="form-group">
+          <label class="form-label">Category Name</label>
+          <input type="text" id="fc-name" required placeholder="e.g. Telecommunications">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon (Font Awesome class)</label>
+          <input type="text" id="fc-icon" required placeholder="fa-tower-cell" value="fa-tag">
+          <p class="text-xs text-muted" style="margin-top:var(--space-1)">Browse icons at <a href="https://fontawesome.com/search?o=r&m=free&s=solid" target="_blank" style="color:var(--green)">fontawesome.com</a></p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon Preview</label>
+          <div style="font-size:24px;color:var(--green);padding:var(--space-2)" id="fc-icon-preview"><i class="fa-solid fa-tag"></i></div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-4);">
+          <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="save-cat-btn"><i class="fa-solid fa-check"></i> Save Category</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- CSV Import Modal -->
+  <div class="modal-overlay" id="csv-modal">
+    <div class="modal" style="max-width:600px;">
+      <div class="modal-header">
+        <h2 class="modal-title">CSV Import</h2>
+        <button class="modal-close" onclick="closeCSVModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div id="csv-status" style="margin-bottom:var(--space-4)"></div>
+      <div id="csv-log" style="background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);max-height:300px;overflow-y:auto;font-family:monospace;font-size:12px;line-height:1.6;"></div>
+      <div style="margin-top:var(--space-4);text-align:right;">
+        <button class="btn btn-primary btn-sm" onclick="closeCSVModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data/data_partA.js"></script>
+  <script src="data/data_partB.js"></script>
+  <script src="data/data_partC.js"></script>
+  <script src="data/data_partD.js"></script>
+  <script src="data/data_partE.js"></script>
+  <script src="data/data_partF.js"></script>
+  <script src="data/data.js"></script>
+  <script src="data/helpers.js"></script>
+  <script src="components.js"></script>
+  <script src="api.js"></script>
+
+  <script>
+    document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('brands');
+
+    if (Components.checkAdminAuth()) {
+      initAdminPage();
+    }
+
+    var currentSort = { key: 'overallScore', dir: 'desc' };
+    var allBrandsData = [];
+    var editingBrandId = null;
+    var editingBrandData = null; // preserve existing data during edit
+
+    async function initAdminPage() {
+      document.getElementById('admin-content').style.display = '';
+      allBrandsData = await GoNoGoAPI.getAllBrands();
+      var cats = await GoNoGoAPI.getCategories();
+
+      var industryFilter = document.getElementById('industry-filter');
+      var fIndustry = document.getElementById('f-industry');
+      cats.forEach(function(cat) {
+        industryFilter.innerHTML += '<option value="' + cat.id + '">' + cat.name + '</option>';
+        fIndustry.innerHTML += '<option value="' + cat.id + '">' + cat.name + '</option>';
+      });
+
+      // Populate score fields in modal
+      var scoreFields = document.getElementById('score-fields');
+      var defaultCats = ['Compliance', 'Customer Satisfaction', 'Product Value', 'Innovation', 'Customer Support', 'Accessibility & Security'];
+      defaultCats.forEach(function(catName) {
+        var fieldId = 'f-' + catName.toLowerCase().replace(/[^a-z]+/g, '-');
+        scoreFields.innerHTML +=
+          '<div style="background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-2)">' +
+            '<label class="form-label" style="margin-bottom:var(--space-2)">' + catName + '</label>' +
+            '<div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-2)">' +
+              '<input type="number" id="' + fieldId + '-score" min="0" max="35" placeholder="Score" style="flex:1">' +
+              '<input type="number" id="' + fieldId + '-max" min="0" max="35" placeholder="Max" style="flex:1">' +
+            '</div>' +
+            '<input type="text" id="' + fieldId + '-desc" placeholder="One-line description" style="font-size:12px">' +
+          '</div>';
+      });
+
+      filterBrands();
+    }
+
+    function filterBrands() {
+      var search = document.getElementById('search-input').value.toLowerCase();
+      var industry = document.getElementById('industry-filter').value;
+      var verdict = document.getElementById('verdict-filter').value;
+
+      var filtered = allBrandsData.filter(function(b) {
+        var matchSearch = !search || b.name.toLowerCase().indexOf(search) !== -1 || b.categoryName.toLowerCase().indexOf(search) !== -1;
+        var matchIndustry = !industry || b.categorySlug === industry;
+        var matchVerdict = !verdict || b.verdict === verdict;
+        return matchSearch && matchIndustry && matchVerdict;
+      });
+
+      filtered = Components.sortData(filtered, currentSort.key, currentSort.dir);
+      renderTable(filtered);
+    }
+
+    function sortTable(key) {
+      if (currentSort.key === key) {
+        currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.key = key;
+        currentSort.dir = key === 'name' ? 'asc' : 'desc';
+      }
+      filterBrands();
+    }
+
+    function renderTable(data) {
+      document.getElementById('brand-count').textContent = data.length + ' brands';
+      var tbody = document.getElementById('brands-tbody');
+
+      tbody.innerHTML = data.map(function(b) {
+        var logoHtml = Components.renderLogo(b, 'brand-logo');
+        return '<tr>' +
+          '<td>' +
+            '<div class="brand-cell">' +
+              logoHtml +
+              '<div>' +
+                '<div class="font-semibold text-sm">' + b.name + '</div>' +
+                (b.website ? '<a href="' + b.website + '" target="_blank" rel="noopener" class="text-xs text-muted">' + b.website.replace('https://', '').replace('http://', '') + '</a>' : '') +
+              '</div>' +
+            '</div>' +
+          '</td>' +
+          '<td><span class="text-sm">' + b.categoryName + '</span></td>' +
+          '<td>' + Components.renderScoreBadge(b.overallScore) + '</td>' +
+          '<td>' + Components.renderVerdictBadge(b.verdict) + '</td>' +
+          '<td>' +
+            '<div style="display:flex;flex-direction:column;gap:2px;font-size:var(--text-xs)">' +
+              '<span><i class="fa-brands fa-google-play" style="width:14px;opacity:0.5"></i> ' + b.appRatings.googlePlay + '</span>' +
+              '<span><i class="fa-brands fa-apple" style="width:14px;opacity:0.5"></i> ' + b.appRatings.ios + '</span>' +
+            '</div>' +
+          '</td>' +
+          '<td><span class="text-xs text-muted">' + Components.formatRelativeDate(b.lastUpdated) + '</span></td>' +
+          '<td>' +
+            '<div style="display:flex;gap:var(--space-1);">' +
+              '<a href="brand.html?id=' + b.id + '" class="btn btn-ghost btn-sm" title="View"><i class="fa-solid fa-eye"></i></a>' +
+              '<button class="btn btn-ghost btn-sm" title="Edit" onclick="editBrand(\'' + b.id + '\')"><i class="fa-solid fa-pen"></i></button>' +
+            '</div>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function openAddModal() {
+      editingBrandId = null;
+      editingBrandData = null;
+      document.getElementById('modal-title').textContent = 'Add Brand';
+      document.getElementById('brand-form').reset();
+      document.getElementById('brand-modal').classList.add('open');
+    }
+
+    function editBrand(id) {
+      var b = null;
+      for (var i = 0; i < allBrandsData.length; i++) {
+        if (allBrandsData[i].id === id) { b = allBrandsData[i]; break; }
+      }
+      if (!b) return;
+      editingBrandId = id;
+      editingBrandData = b; // store full brand data for preserving fields
+      document.getElementById('modal-title').textContent = 'Edit: ' + b.name;
+      document.getElementById('f-name').value = b.name;
+      document.getElementById('f-industry').value = b.categorySlug;
+      document.getElementById('f-website').value = b.website || '';
+      document.getElementById('f-logo').value = b.logo || '';
+      document.getElementById('f-googleplay').value = b.appRatings.googlePlayScore || '';
+      document.getElementById('f-ios').value = b.appRatings.iosScore || '';
+      document.getElementById('f-overview').value = b.overview || '';
+      document.getElementById('f-rating-summary').value = b.ratingSummary || '';
+      document.getElementById('f-features').value = (b.keyFeatures || []).join(', ');
+      document.getElementById('f-strengths').value = (b.strengths || []).join(', ');
+      document.getElementById('f-concerns').value = (b.concerns || []).join(', ');
+      document.getElementById('f-pricing').value = (b.pricing || []).map(function(p) { return p.cost || p.name || ''; }).join('; ');
+      var ss = b.socialSentiment || {};
+      document.getElementById('f-sentiment-summary').value = ss.summary || '';
+      document.getElementById('f-sentiment-positive').value = (ss.positive_themes || []).join(', ');
+      document.getElementById('f-sentiment-concerns').value = (ss.common_concerns || []).join(', ');
+
+      // Fill in category scores + descriptions
+      Object.entries(b.categoryScores).forEach(function(entry) {
+        var name = entry[0], data = entry[1];
+        var fieldId = 'f-' + name.toLowerCase().replace(/[^a-z]+/g, '-');
+        var scoreEl = document.getElementById(fieldId + '-score');
+        var maxEl = document.getElementById(fieldId + '-max');
+        var descEl = document.getElementById(fieldId + '-desc');
+        if (scoreEl) scoreEl.value = data.score;
+        if (maxEl) maxEl.value = data.max;
+        if (descEl) descEl.value = data.description || '';
+      });
+
+      document.getElementById('brand-modal').classList.add('open');
+    }
+
+    function closeModal() {
+      document.getElementById('brand-modal').classList.remove('open');
+    }
+
+    async function saveBrand(e) {
+      e.preventDefault();
+      var saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+      // Collect scores
+      var scoreCategories = ['Compliance', 'Customer Satisfaction', 'Product Value', 'Innovation', 'Customer Support', 'Accessibility & Security'];
+      var scores = {};
+      scoreCategories.forEach(function(catName) {
+        var fieldId = 'f-' + catName.toLowerCase().replace(/[^a-z]+/g, '-');
+        var scoreEl = document.getElementById(fieldId + '-score');
+        var maxEl = document.getElementById(fieldId + '-max');
+        var descEl = document.getElementById(fieldId + '-desc');
+        if (scoreEl && maxEl && scoreEl.value && maxEl.value) {
+          scores[catName] = {
+            score: parseFloat(scoreEl.value),
+            max: parseFloat(maxEl.value),
+            description: descEl ? descEl.value.trim() : ''
+          };
+        }
+      });
+
+      var gpVal = document.getElementById('f-googleplay').value;
+      var iosVal = document.getElementById('f-ios').value;
+
+      // When editing, preserve descriptions from existing framework_breakdown
+      if (editingBrandData && editingBrandData.categoryScores) {
+        Object.keys(scores).forEach(function(catName) {
+          var existing = editingBrandData.categoryScores[catName];
+          if (existing && existing.description && !scores[catName].description) {
+            scores[catName].description = existing.description;
+          }
+        });
+      }
+
+      // Parse comma-separated fields
+      function csvToArr(id) {
+        var val = document.getElementById(id).value.trim();
+        return val ? val.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
+      }
+
+      var pricingText = document.getElementById('f-pricing').value.trim();
+      var pricingArr = pricingText ? [{ name: 'Pricing', cost: pricingText, features: '' }] : [];
+
+      var brandData = {
+        name: document.getElementById('f-name').value.trim(),
+        categorySlug: document.getElementById('f-industry').value,
+        website: document.getElementById('f-website').value.trim(),
+        logo: document.getElementById('f-logo').value.trim(),
+        scores: scores,
+        googlePlayRating: gpVal ? gpVal + '/5' : 'N/A',
+        iosRating: iosVal ? iosVal + '/5' : 'N/A',
+        overview: document.getElementById('f-overview').value.trim(),
+        ratingSummary: document.getElementById('f-rating-summary').value.trim(),
+        keyFeatures: csvToArr('f-features'),
+        strengths: csvToArr('f-strengths'),
+        concerns: csvToArr('f-concerns'),
+        pricing: pricingArr,
+        socialSentiment: {
+          summary: document.getElementById('f-sentiment-summary').value.trim(),
+          positive_themes: csvToArr('f-sentiment-positive'),
+          common_concerns: csvToArr('f-sentiment-concerns')
+        }
+      };
+
+      try {
+        if (editingBrandId) brandData.id = editingBrandId;
+        var result = await GoNoGoAPI.saveBrand(brandData);
+        editingBrandData = null;
+        Components.showToast('Brand saved — ' + result.verdict + ' (' + result.gonogo_score + '/100)');
+        closeModal();
+
+        // Refresh the brand list
+        allBrandsData = await GoNoGoAPI.getAllBrands();
+        filterBrands();
+      } catch (err) {
+        Components.showToast('Error saving brand: ' + err.message, 'error');
+      }
+
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Brand';
+    }
+
+    function exportBrands() {
+      var data = allBrandsData.map(function(b) {
+        var cs = b.categoryScores || {};
+        var ss = b.socialSentiment || {};
+        var row = {
+          BrandName: b.name,
+          CategoryName: b.categoryName,
+          CategorySlug: b.categorySlug,
+          CategoryIcon: b.categoryIcon || '',
+          WebsiteURL: b.website || '',
+          LogoURL: b.logo || '',
+          GoNoGoScore: b.overallScore,
+          Verdict: b.verdict,
+          Overview: b.overview || '',
+          RatingSummary: b.ratingSummary || '',
+          GooglePlay_Rating: b.appRatings.googlePlay || '',
+          iOS_Rating: b.appRatings.ios || '',
+          KeyFeatures: (b.keyFeatures || []).join(', '),
+          KeyStrengths: (b.strengths || []).join(', '),
+          KeyConcerns: (b.concerns || []).join(', '),
+          Pricing: (b.pricing || []).map(function(p) { return p.cost || ''; }).join('; '),
+          SocialSentiment_Summary: ss.summary || '',
+          SocialSentiment_Positive: (ss.positive_themes || []).join(', '),
+          SocialSentiment_Concerns: (ss.common_concerns || []).join(', ')
+        };
+        // Add score columns for each category
+        var cats = ['Compliance', 'Customer Satisfaction', 'Product Value', 'Innovation', 'Customer Support', 'Accessibility & Security'];
+        cats.forEach(function(cat) {
+          var key = cat.replace(/ /g, '').replace(/&/g, '');
+          var d = cs[cat] || {};
+          row[key + '_Score'] = d.score || '';
+          row[key + '_Max'] = d.max || '';
+          row[key + '_Description'] = d.description || '';
+        });
+        row.LastUpdated = b.lastUpdated || '';
+        return row;
+      });
+      Components.exportCSV(data, 'gonogo-uk-brands.csv');
+      Components.showToast('CSV exported — all fields included');
+    }
+
+    document.getElementById('brand-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    document.getElementById('category-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeCategoryModal();
+    });
+    document.getElementById('csv-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeCSVModal();
+    });
+
+    // Icon preview live update
+    document.getElementById('fc-icon').addEventListener('input', function() {
+      document.getElementById('fc-icon-preview').innerHTML = '<i class="fa-solid ' + this.value + '"></i>';
+    });
+
+    // ============================================================
+    // CATEGORY MANAGEMENT
+    // ============================================================
+    function openCategoryModal() {
+      document.getElementById('category-form').reset();
+      document.getElementById('fc-icon').value = 'fa-tag';
+      document.getElementById('fc-icon-preview').innerHTML = '<i class="fa-solid fa-tag"></i>';
+      document.getElementById('category-modal').classList.add('open');
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('category-modal').classList.remove('open');
+    }
+
+    async function saveCategory(e) {
+      e.preventDefault();
+      var btn = document.getElementById('save-cat-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+      var name = document.getElementById('fc-name').value.trim();
+      var icon = document.getElementById('fc-icon').value.trim();
+      var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+      try {
+        await GoNoGoAPI.saveCategory({
+          slug: slug,
+          name: name,
+          icon: icon,
+          scoringCategories: [
+            { name: 'Compliance', max: 20 },
+            { name: 'Customer Satisfaction', max: 25 },
+            { name: 'Product Value', max: 35 },
+            { name: 'Innovation', max: 10 },
+            { name: 'Customer Support', max: 15 },
+            { name: 'Accessibility & Security', max: 10 }
+          ]
+        });
+        Components.showToast('Category "' + name + '" created');
+        closeCategoryModal();
+
+        // Refresh industry filter and form dropdown
+        var cats = await GoNoGoAPI.getCategories();
+        var industryFilter = document.getElementById('industry-filter');
+        var fIndustry = document.getElementById('f-industry');
+        industryFilter.innerHTML = '<option value="">All Industries</option>';
+        fIndustry.innerHTML = '';
+        cats.forEach(function(cat) {
+          industryFilter.innerHTML += '<option value="' + cat.id + '">' + cat.name + '</option>';
+          fIndustry.innerHTML += '<option value="' + cat.id + '">' + cat.name + '</option>';
+        });
+      } catch (err) {
+        Components.showToast('Error: ' + err.message, 'error');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Save Category';
+    }
+
+    // ============================================================
+    // CSV IMPORT
+    // ============================================================
+    function closeCSVModal() {
+      document.getElementById('csv-modal').classList.remove('open');
+    }
+
+    function csvLog(msg, type) {
+      var log = document.getElementById('csv-log');
+      var color = type === 'success' ? 'var(--green-text)' : type === 'error' ? 'var(--red-text)' : 'var(--text-secondary)';
+      log.innerHTML += '<div style="color:' + color + '">' + msg + '</div>';
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function importCSV(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+      event.target.value = ''; // reset for re-upload
+
+      document.getElementById('csv-log').innerHTML = '';
+      document.getElementById('csv-status').innerHTML = '<span class="text-sm"><i class="fa-solid fa-spinner fa-spin"></i> Processing ' + file.name + '...</span>';
+      document.getElementById('csv-modal').classList.add('open');
+
+      var text = await file.text();
+      var lines = text.split('\n').filter(function(l) { return l.trim(); });
+      if (lines.length < 2) {
+        csvLog('Error: CSV must have a header row and at least one data row', 'error');
+        document.getElementById('csv-status').innerHTML = '<span class="text-sm" style="color:var(--red-text)">Import failed</span>';
+        return;
+      }
+
+      // Parse header
+      var headers = parseCSVLine(lines[0]).map(function(h) { return h.trim().toLowerCase(); });
+      csvLog('Found ' + (lines.length - 1) + ' rows, ' + headers.length + ' columns', 'info');
+      csvLog('Columns: ' + headers.join(', '), 'info');
+
+      // Required columns
+      var nameCol = findCol(headers, ['brandname', 'brand_name', 'brand', 'name']);
+      var catCol = findCol(headers, ['categoryslug', 'category_slug', 'category', 'categoryname', 'industry']);
+      if (nameCol === -1) {
+        csvLog('Error: No brand name column found. Expected: BrandName, Brand, or Name', 'error');
+        document.getElementById('csv-status').innerHTML = '<span class="text-sm" style="color:var(--red-text)">Import failed</span>';
+        return;
+      }
+
+      // Map columns
+      var colMap = {
+        name: nameCol,
+        category: catCol,
+        website: findCol(headers, ['websiteurl', 'website_url', 'website']),
+        logo: findCol(headers, ['logourl', 'logo_url', 'logo']),
+        score: findCol(headers, ['gonogoscore', 'gonogo_score', 'score', 'overallscore']),
+        verdict: findCol(headers, ['verdict']),
+        overview: findCol(headers, ['overview', 'brand_overview', 'description']),
+        ratingSummary: findCol(headers, ['ratingsummary', 'rating_summary', 'rating_overview']),
+        googlePlay: findCol(headers, ['googleplay_rating', 'google_play', 'googleplay', 'gp_rating']),
+        ios: findCol(headers, ['ios_rating', 'ios', 'appstore_rating']),
+        compliance_score: findCol(headers, ['compliance_score']),
+        compliance_max: findCol(headers, ['compliance_max']),
+        compliance_desc: findCol(headers, ['compliance_description']),
+        satisfaction_score: findCol(headers, ['customersatisfaction_score']),
+        satisfaction_max: findCol(headers, ['customersatisfaction_max']),
+        satisfaction_desc: findCol(headers, ['customersatisfaction_description']),
+        value_score: findCol(headers, ['productvalue_score']),
+        value_max: findCol(headers, ['productvalue_max']),
+        value_desc: findCol(headers, ['productvalue_description']),
+        innovation_score: findCol(headers, ['innovation_score']),
+        innovation_max: findCol(headers, ['innovation_max']),
+        innovation_desc: findCol(headers, ['innovation_description']),
+        support_score: findCol(headers, ['customersupport_score']),
+        support_max: findCol(headers, ['customersupport_max']),
+        support_desc: findCol(headers, ['customersupport_description']),
+        security_score: findCol(headers, ['accessibilitysecurity_score']),
+        security_max: findCol(headers, ['accessibilitysecurity_max']),
+        security_desc: findCol(headers, ['accessibilitysecurity_description']),
+        keyFeatures: findCol(headers, ['keyfeatures', 'key_features']),
+        keyStrengths: findCol(headers, ['keystrengths', 'key_strengths']),
+        keyConcerns: findCol(headers, ['keyconcerns', 'key_concerns']),
+        pricing: findCol(headers, ['pricing']),
+        sentimentSummary: findCol(headers, ['socialsentiment_summary', 'sentiment_summary']),
+        sentimentPositive: findCol(headers, ['socialsentiment_positive', 'sentiment_positive']),
+        sentimentConcerns: findCol(headers, ['socialsentiment_concerns', 'sentiment_concerns']),
+        categoryIcon: findCol(headers, ['categoryicon', 'category_icon', 'icon']),
+      };
+
+      // Process rows
+      var created = 0, updated = 0, errors = 0, catsCreated = 0;
+      var seenCategories = {};
+
+      for (var i = 1; i < lines.length; i++) {
+        var cols = parseCSVLine(lines[i]);
+        var brandName = cols[colMap.name] ? cols[colMap.name].trim() : '';
+        if (!brandName) continue;
+
+        var catSlug = '';
+        if (colMap.category !== -1 && cols[colMap.category]) {
+          var catRaw = cols[colMap.category].trim();
+          catSlug = catRaw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+          // Auto-create category if new
+          if (!seenCategories[catSlug]) {
+            seenCategories[catSlug] = true;
+            var catIcon = (colMap.categoryIcon !== -1 && cols[colMap.categoryIcon]) ? cols[colMap.categoryIcon].trim() : 'fa-tag';
+            try {
+              await GoNoGoAPI.saveCategory({
+                slug: catSlug,
+                name: catRaw,
+                icon: catIcon,
+                scoringCategories: [
+                  { name: 'Compliance', max: 20 },
+                  { name: 'Customer Satisfaction', max: 25 },
+                  { name: 'Product Value', max: 35 },
+                  { name: 'Innovation', max: 10 },
+                  { name: 'Customer Support', max: 15 },
+                  { name: 'Accessibility & Security', max: 10 }
+                ]
+              });
+              catsCreated++;
+            } catch(e) { /* category may already exist */ }
+          }
+        }
+
+        // Build scores
+        var scores = {};
+        function addScore(label, sIdx, mIdx, dIdx) {
+          if (sIdx !== -1 && cols[sIdx]) {
+            scores[label] = {
+              score: parseFloat(cols[sIdx]) || 0,
+              max: mIdx !== -1 && cols[mIdx] ? parseFloat(cols[mIdx]) || 0 : 0,
+              description: dIdx !== -1 && cols[dIdx] ? cols[dIdx].trim() : ''
+            };
+          }
+        }
+        addScore('Compliance', colMap.compliance_score, colMap.compliance_max, colMap.compliance_desc);
+        addScore('Customer Satisfaction', colMap.satisfaction_score, colMap.satisfaction_max, colMap.satisfaction_desc);
+        addScore('Product Value', colMap.value_score, colMap.value_max, colMap.value_desc);
+        addScore('Innovation', colMap.innovation_score, colMap.innovation_max, colMap.innovation_desc);
+        addScore('Customer Support', colMap.support_score, colMap.support_max, colMap.support_desc);
+        addScore('Accessibility & Security', colMap.security_score, colMap.security_max, colMap.security_desc);
+
+        var brandData = {
+          name: brandName,
+          categorySlug: catSlug,
+          scores: scores
+        };
+        if (colMap.website !== -1 && cols[colMap.website]) brandData.website = cols[colMap.website].trim();
+        if (colMap.logo !== -1 && cols[colMap.logo]) brandData.logo = cols[colMap.logo].trim();
+        if (colMap.overview !== -1 && cols[colMap.overview]) brandData.overview = cols[colMap.overview].trim();
+        if (colMap.ratingSummary !== -1 && cols[colMap.ratingSummary]) brandData.ratingSummary = cols[colMap.ratingSummary].trim();
+        if (colMap.googlePlay !== -1 && cols[colMap.googlePlay]) brandData.googlePlayRating = cols[colMap.googlePlay].trim();
+        if (colMap.ios !== -1 && cols[colMap.ios]) brandData.iosRating = cols[colMap.ios].trim();
+        if (colMap.keyFeatures !== -1 && cols[colMap.keyFeatures]) brandData.keyFeatures = cols[colMap.keyFeatures].split(',').map(function(s){return s.trim();}).filter(Boolean);
+        if (colMap.keyStrengths !== -1 && cols[colMap.keyStrengths]) brandData.strengths = cols[colMap.keyStrengths].split(',').map(function(s){return s.trim();}).filter(Boolean);
+        if (colMap.keyConcerns !== -1 && cols[colMap.keyConcerns]) brandData.concerns = cols[colMap.keyConcerns].split(',').map(function(s){return s.trim();}).filter(Boolean);
+        if (colMap.pricing !== -1 && cols[colMap.pricing]) brandData.pricing = [{ name: 'Pricing', cost: cols[colMap.pricing].trim(), features: '' }];
+        var hasSentiment = false;
+        var sentObj = {};
+        if (colMap.sentimentSummary !== -1 && cols[colMap.sentimentSummary]) { sentObj.summary = cols[colMap.sentimentSummary].trim(); hasSentiment = true; }
+        if (colMap.sentimentPositive !== -1 && cols[colMap.sentimentPositive]) { sentObj.positive_themes = cols[colMap.sentimentPositive].split(',').map(function(s){return s.trim();}).filter(Boolean); hasSentiment = true; }
+        if (colMap.sentimentConcerns !== -1 && cols[colMap.sentimentConcerns]) { sentObj.common_concerns = cols[colMap.sentimentConcerns].split(',').map(function(s){return s.trim();}).filter(Boolean); hasSentiment = true; }
+        if (hasSentiment) brandData.socialSentiment = sentObj;
+
+        try {
+          await GoNoGoAPI.saveBrand(brandData);
+          csvLog('Row ' + i + ': ' + brandName + ' — saved', 'success');
+          created++;
+        } catch (err) {
+          csvLog('Row ' + i + ': ' + brandName + ' — ERROR: ' + err.message, 'error');
+          errors++;
+        }
+      }
+
+      csvLog('', '');
+      csvLog('Import complete: ' + created + ' brands saved, ' + errors + ' errors' + (catsCreated > 0 ? ', ' + catsCreated + ' categories created' : ''), created > 0 ? 'success' : 'error');
+      document.getElementById('csv-status').innerHTML = '<span class="text-sm" style="color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> Import complete</span>';
+
+      // Refresh data
+      allBrandsData = await GoNoGoAPI.getAllBrands();
+      var cats = await GoNoGoAPI.getCategories();
+      var industryFilter = document.getElementById('industry-filter');
+      var fIndustry = document.getElementById('f-industry');
+      industryFilter.innerHTML = '<option value="">All Industries</option>';
+      fIndustry.innerHTML = '';
+      cats.forEach(function(cat) {
+        industryFilter.innerHTML += '<option value="' + cat.id + '">' + cat.name + '</option>';
+        fIndustry.innerHTML += '<option value="' + cat.id + '">' + cat.name + '</option>';
+      });
+      filterBrands();
+    }
+
+    function findCol(headers, names) {
+      for (var i = 0; i < names.length; i++) {
+        var idx = headers.indexOf(names[i]);
+        if (idx !== -1) return idx;
+      }
+      return -1;
+    }
+
+    function parseCSVLine(line) {
+      var result = [];
+      var current = '';
+      var inQuotes = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && i + 1 < line.length && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current);
+      return result;
+    }
+  </script>
+</body>
+</html>

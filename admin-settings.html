@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoNoGo UK — Settings</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="admin-content" style="display:none">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title">Settings</h1>
+        <p class="text-sm text-secondary">Manage your account and admin team</p>
+      </div>
+    </div>
+
+    <!-- Change Password -->
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-key" style="color:var(--green);margin-right:var(--space-2)"></i> Change Password
+      </h3>
+      <form id="password-form" onsubmit="changePassword(event)" style="max-width:400px">
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input type="password" id="current-pw" required placeholder="Enter current password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" id="new-pw" required placeholder="Enter new password" minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <input type="password" id="confirm-pw" required placeholder="Repeat new password" minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" id="pw-btn">
+          <i class="fa-solid fa-check"></i> Update Password
+        </button>
+      </form>
+    </div>
+
+    <!-- Admin Users -->
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4)">
+        <h3 class="text-sm font-semibold">
+          <i class="fa-solid fa-users" style="color:var(--green);margin-right:var(--space-2)"></i> Admin Team
+        </h3>
+        <button class="btn btn-primary btn-sm" onclick="showAddUser()">
+          <i class="fa-solid fa-user-plus"></i> Add Member
+        </button>
+      </div>
+      <div id="users-list" style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <div class="text-sm text-muted" style="text-align:center;padding:var(--space-6)">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Add User Form (hidden by default) -->
+    <div class="card" id="add-user-card" style="display:none;margin-bottom:var(--space-6);padding:var(--space-6);border-color:var(--green-dim)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-user-plus" style="color:var(--green);margin-right:var(--space-2)"></i> Add Admin Member
+      </h3>
+      <form id="add-user-form" onsubmit="addUser(event)" style="max-width:500px">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="new-user-email" required placeholder="team@gonogo.co.uk">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Display Name</label>
+            <input type="text" id="new-user-name" placeholder="e.g. Jane Smith">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="new-user-pw" required placeholder="Set password" minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="new-user-role">
+              <option value="admin">Admin</option>
+              <option value="editor">Editor</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--space-2)">
+          <button type="submit" class="btn btn-primary btn-sm" id="add-user-btn">
+            <i class="fa-solid fa-check"></i> Add Member
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddUser()">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Current Session Info -->
+    <div class="card" style="padding:var(--space-6)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-circle-info" style="color:var(--green);margin-right:var(--space-2)"></i> Session Info
+      </h3>
+      <div id="session-info" class="text-sm text-secondary"></div>
+    </div>
+
+    <div style="padding:var(--space-6) 0;text-align:center">
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom</p>
+    </div>
+  </main>
+</div>
+<script src="data/data_partA.js"></script>
+<script src="data/data_partB.js"></script>
+<script src="data/data_partC.js"></script>
+<script src="data/data_partD.js"></script>
+<script src="data/data_partE.js"></script>
+<script src="data/data_partF.js"></script>
+<script src="data/data.js"></script>
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
+
+<script>
+  document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('settings');
+  if (Components.checkAdminAuth()) initAdminPage();
+
+  async function initAdminPage() {
+    document.getElementById('admin-content').style.display = '';
+    var user = Components.getAdminUser();
+    document.getElementById('session-info').innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:var(--space-2)">' +
+        '<div><strong>Signed in as:</strong> ' + (user.display_name || user.email) + '</div>' +
+        '<div><strong>Email:</strong> ' + user.email + '</div>' +
+        '<div><strong>Role:</strong> ' + (user.role || 'admin') + '</div>' +
+      '</div>';
+    loadUsers();
+  }
+
+  async function loadUsers() {
+    try {
+      var users = await GoNoGoAPI.adminGetUsers();
+      var currentUser = Components.getAdminUser();
+      var container = document.getElementById('users-list');
+
+      if (!users.length) {
+        container.innerHTML = '<div class="text-sm text-muted" style="text-align:center;padding:var(--space-4)">No admin users found. Add your first admin above.</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(function(u) {
+        var isSelf = u.id === currentUser.id;
+        var roleBadge = u.role === 'admin'
+          ? '<span class="freshness-badge freshness-fresh">Admin</span>'
+          : u.role === 'editor'
+            ? '<span class="freshness-badge freshness-stale">Editor</span>'
+            : '<span class="freshness-badge freshness-outdated">Viewer</span>';
+        var actions = isSelf
+          ? '<span class="text-xs text-muted">(You)</span>'
+          : '<button class="btn btn-ghost btn-sm" style="color:var(--red-text)" onclick="removeUser(\'' + u.id + '\',\'' + u.email.replace(/'/g, "\\'") + '\')"><i class="fa-solid fa-trash"></i></button>';
+        return '<div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);background:var(--surface-secondary);border-radius:var(--radius-md);border:1px solid var(--border-dim)">' +
+          '<div style="width:36px;height:36px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center">' +
+            '<i class="fa-solid fa-user" style="color:var(--green-text);font-size:14px"></i>' +
+          '</div>' +
+          '<div style="flex:1">' +
+            '<div class="text-sm font-semibold">' + (u.display_name || u.email) + '</div>' +
+            '<div class="text-xs text-muted">' + u.email + '</div>' +
+          '</div>' +
+          roleBadge +
+          '<div class="text-xs text-muted">' + Components.formatRelativeDate(u.created_at) + '</div>' +
+          actions +
+        '</div>';
+      }).join('');
+    } catch(e) {
+      document.getElementById('users-list').innerHTML = '<div class="text-sm text-muted" style="text-align:center;padding:var(--space-4)">Could not load admin users. Make sure the admin_users table exists in Supabase.</div>';
+    }
+  }
+
+  async function changePassword(e) {
+    e.preventDefault();
+    var btn = document.getElementById('pw-btn');
+    var currentPw = document.getElementById('current-pw').value;
+    var newPw = document.getElementById('new-pw').value;
+    var confirmPw = document.getElementById('confirm-pw').value;
+
+    if (newPw !== confirmPw) {
+      Components.showToast('New passwords do not match', 'error');
+      return;
+    }
+    if (newPw.length < 6) {
+      Components.showToast('Password must be at least 6 characters', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+
+    try {
+      var user = Components.getAdminUser();
+      await GoNoGoAPI.adminChangePassword(user.id, currentPw, newPw);
+      Components.showToast('Password updated successfully');
+      document.getElementById('password-form').reset();
+    } catch(err) {
+      Components.showToast(err.message || 'Failed to update password', 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Update Password';
+  }
+
+  function showAddUser() {
+    document.getElementById('add-user-card').style.display = '';
+    document.getElementById('new-user-email').focus();
+  }
+
+  function hideAddUser() {
+    document.getElementById('add-user-card').style.display = 'none';
+    document.getElementById('add-user-form').reset();
+  }
+
+  async function addUser(e) {
+    e.preventDefault();
+    var btn = document.getElementById('add-user-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+
+    try {
+      var email = document.getElementById('new-user-email').value;
+      var name = document.getElementById('new-user-name').value;
+      var pw = document.getElementById('new-user-pw').value;
+      var role = document.getElementById('new-user-role').value;
+
+      await GoNoGoAPI.adminAddUser(email, pw, name, role);
+      Components.showToast('Admin member added: ' + email);
+      hideAddUser();
+      loadUsers();
+    } catch(err) {
+      Components.showToast('Error: ' + err.message, 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Add Member';
+  }
+
+  async function removeUser(userId, email) {
+    if (!confirm('Remove ' + email + ' from the admin team?')) return;
+    try {
+      await GoNoGoAPI.adminRemoveUser(userId);
+      Components.showToast('Removed ' + email);
+      loadUsers();
+    } catch(err) {
+      Components.showToast('Error: ' + err.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>

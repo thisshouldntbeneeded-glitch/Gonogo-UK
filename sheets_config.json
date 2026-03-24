@@ -1,0 +1,14 @@
+{
+  "sa_mastersheet": {
+    "id": "1V6uzslhnwEu4BYShWZi4ZS58xy9A8yeL-N6uIWEgHdw",
+    "worksheetId": 0,
+    "description": "Brand structure, scoring methodology, all brand data",
+    "columns": ["ID","CategoryName","CategorySlug","CategoryIcon","BrandName","WebsiteURL","LogoURL","Compliance_Score","Compliance_Max","Compliance_Description","CustomerSatisfaction_Score","CustomerSatisfaction_Max","CustomerSatisfaction_Description","ProductValue_Score","ProductValue_Max","ProductValue_Description","Innovation_Score","Innovation_Max","Innovation_Description","CustomerSupport_Score","CustomerSupport_Max","CustomerSupport_Description","AccessibilitySecurity_Score","AccessibilitySecurity_Max","AccessibilitySecurity_Description","RawTotal","RawMax","GoNoGoScore","Verdict","KeyFeatures","Pricing","GooglePlay_Rating","iOS_Rating","KeyStrengths","KeyConcerns","SocialSentiment_Summary","SocialSentiment_Positive","SocialSentiment_Concerns","LastUpdated"]
+  },
+  "sa_reviews": {
+    "id": "1qeKcYVWMKZiVKQvgQiOMYFLQia2yjzuR03BjQ5sM9BY",
+    "worksheetId": 0,
+    "description": "User reviews and scores — audit trail",
+    "columns": ["ReviewID","Category","BrandName","ReviewerName","Compliance","CustomerSatisfaction","ProductValue","Innovation","CustomerSupport","AccessibilitySecurity","AverageScore","ReviewText","Date","Status","ModeratedBy","ModeratedAt"]
+  }
+}

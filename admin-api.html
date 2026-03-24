@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoNoGo UK — API Portal</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  .api-endpoint {
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+    margin-bottom: var(--space-4);
+  }
+  .api-endpoint:hover { border-color: var(--green-dim); }
+  .api-method {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: monospace;
+    margin-right: var(--space-2);
+  }
+  .method-get { background: var(--green-bg); color: var(--green-text); }
+  .method-post { background: var(--orange-bg); color: var(--orange-text); }
+  .api-path {
+    font-family: monospace;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+  }
+  .api-desc { font-size: var(--text-xs); color: var(--text-muted); margin-top: var(--space-2); }
+  .api-code {
+    background: #0d0d0d;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #a0a0a0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .api-code .key { color: #ff9800; }
+  .api-code .str { color: #11a551; }
+  .api-code .comment { color: #666; }
+  .api-try-btn { margin-top: var(--space-3); }
+  .api-response {
+    background: #0d0d0d;
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #a0a0a0;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    margin-top: var(--space-3);
+  }
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="admin-content" style="display:none">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title">API Portal</h1>
+        <p class="text-sm text-secondary">Access GoNoGo data programmatically via the Supabase REST API</p>
+      </div>
+    </div>
+
+    <!-- Connection Info -->
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6);border-color:var(--green-dim)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-plug" style="color:var(--green);margin-right:var(--space-2)"></i> Connection Details
+      </h3>
+      <div class="kpi-grid" style="margin-bottom:var(--space-4)">
+        <div class="kpi-card">
+          <div class="kpi-label">Status</div>
+          <div class="kpi-value" style="color:var(--green-text);font-size:var(--text-lg)" id="api-status">
+            <i class="fa-solid fa-spinner fa-spin"></i> Checking...
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Total Brands</div>
+          <div class="kpi-value" id="api-brands">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Industries</div>
+          <div class="kpi-value" id="api-industries">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Reviews</div>
+          <div class="kpi-value" id="api-reviews">—</div>
+        </div>
+      </div>
+      <div class="api-code"><span class="comment">// Base URL</span>
+<span class="key">SUPABASE_URL</span> = <span class="str">"https://kkpbzttwljxvyjbvggqr.supabase.co"</span>
+
+<span class="comment">// Public (anon) key — safe for client-side use</span>
+<span class="key">ANON_KEY</span>     = <span class="str">"sb_publishable_y5JnEvpF37HMKB2rcWbrog_6Oe0KYJW"</span></div>
+    </div>
+
+    <!-- Endpoints -->
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-5)">
+        <i class="fa-solid fa-code" style="color:var(--green);margin-right:var(--space-2)"></i> Available Endpoints
+      </h3>
+
+      <div class="api-endpoint">
+        <div>
+          <span class="api-method method-get">GET</span>
+          <span class="api-path">/rest/v1/reviews</span>
+        </div>
+        <div class="api-desc">Fetch all user reviews. Supports Supabase query filters (eq, like, order, limit).</div>
+        <button class="btn btn-ghost btn-sm api-try-btn" onclick="tryEndpoint('reviews?order=created_at.desc&limit=5', this)">
+          <i class="fa-solid fa-play"></i> Try It
+        </button>
+        <div class="api-response"></div>
+      </div>
+
+      <div class="api-endpoint">
+        <div>
+          <span class="api-method method-get">GET</span>
+          <span class="api-path">/rest/v1/reviews?brand_name=eq.{brand}&status=eq.approved</span>
+        </div>
+        <div class="api-desc">Fetch approved reviews for a specific brand.</div>
+        <button class="btn btn-ghost btn-sm api-try-btn" onclick="tryEndpoint('reviews?status=eq.approved&limit=5', this)">
+          <i class="fa-solid fa-play"></i> Try It
+        </button>
+        <div class="api-response"></div>
+      </div>
+
+      <div class="api-endpoint">
+        <div>
+          <span class="api-method method-post">POST</span>
+          <span class="api-path">/rest/v1/reviews</span>
+        </div>
+        <div class="api-desc">Submit a new review. Required fields: brand_name, reviewer_name, review_text. Status defaults to "pending".</div>
+        <div class="api-code" style="margin-top:var(--space-3)"><span class="comment">// Example body</span>
+{
+  <span class="key">"brand_name"</span>: <span class="str">"Discovery Bank"</span>,
+  <span class="key">"reviewer_name"</span>: <span class="str">"Jane"</span>,
+  <span class="key">"review_text"</span>: <span class="str">"Great app experience!"</span>,
+  <span class="key">"category_slug"</span>: <span class="str">"banking"</span>,
+  <span class="key">"status"</span>: <span class="str">"pending"</span>
+}</div>
+      </div>
+
+      <div class="api-endpoint">
+        <div>
+          <span class="api-method method-get">GET</span>
+          <span class="api-path">JavaScript: GoNoGoAPI.getAllBrands()</span>
+        </div>
+        <div class="api-desc">Brand data is served statically from JS files. Use the GoNoGoAPI wrapper to access brands, categories, and scores.</div>
+        <button class="btn btn-ghost btn-sm api-try-btn" onclick="tryBrands(this)">
+          <i class="fa-solid fa-play"></i> Try It
+        </button>
+        <div class="api-response"></div>
+      </div>
+    </div>
+
+    <!-- Usage Example -->
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-terminal" style="color:var(--green);margin-right:var(--space-2)"></i> Quick Start
+      </h3>
+      <div class="api-code"><span class="comment">// Fetch approved reviews via REST</span>
+<span class="key">const</span> res = <span class="key">await</span> fetch(
+  <span class="str">'https://kkpbzttwljxvyjbvggqr.supabase.co/rest/v1/reviews?status=eq.approved'</span>,
+  {
+    headers: {
+      <span class="str">'apikey'</span>: ANON_KEY,
+      <span class="str">'Authorization'</span>: <span class="str">'Bearer '</span> + ANON_KEY
+    }
+  }
+);
+<span class="key">const</span> reviews = <span class="key">await</span> res.json();
+console.log(reviews);</div>
+    </div>
+
+    <div style="padding:var(--space-6) 0;text-align:center">
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom</p>
+    </div>
+  </main>
+</div>
+<script src="data/data_partA.js"></script>
+<script src="data/data_partB.js"></script>
+<script src="data/data_partC.js"></script>
+<script src="data/data_partD.js"></script>
+<script src="data/data_partE.js"></script>
+<script src="data/data_partF.js"></script>
+<script src="data/data.js"></script>
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
+
+<script>
+  document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('api');
+  if (Components.checkAdminAuth()) initAdminPage();
+
+  async function initAdminPage() {
+    document.getElementById('admin-content').style.display = '';
+
+    // Check API status
+    try {
+      var brands = await GoNoGoAPI.getAllBrands();
+      var cats = await GoNoGoAPI.getCategories();
+      var reviews = await GoNoGoAPI.getAllReviews();
+
+      document.getElementById('api-status').innerHTML = '<i class="fa-solid fa-circle-check"></i> Connected';
+      document.getElementById('api-brands').textContent = brands.length;
+      document.getElementById('api-industries').textContent = cats.length;
+      document.getElementById('api-reviews').textContent = reviews.length;
+    } catch(e) {
+      document.getElementById('api-status').innerHTML = '<span style="color:var(--red-text)"><i class="fa-solid fa-circle-xmark"></i> Error</span>';
+    }
+  }
+
+  async function tryEndpoint(path, btn) {
+    var responseDiv = btn.parentElement.querySelector('.api-response');
+    responseDiv.style.display = 'block';
+    responseDiv.textContent = 'Loading...';
+
+    try {
+      var url = 'https://kkpbzttwljxvyjbvggqr.supabase.co/rest/v1/' + path;
+      var resp = await fetch(url, {
+        headers: {
+          'apikey': 'sb_publishable_y5JnEvpF37HMKB2rcWbrog_6Oe0KYJW',
+          'Authorization': 'Bearer sb_publishable_y5JnEvpF37HMKB2rcWbrog_6Oe0KYJW'
+        }
+      });
+      var data = await resp.json();
+      responseDiv.textContent = JSON.stringify(data, null, 2);
+    } catch(e) {
+      responseDiv.textContent = 'Error: ' + e.message;
+    }
+  }
+
+  async function tryBrands(btn) {
+    var responseDiv = btn.parentElement.querySelector('.api-response');
+    responseDiv.style.display = 'block';
+    responseDiv.textContent = 'Loading...';
+
+    try {
+      var brands = await GoNoGoAPI.getAllBrands();
+      var sample = brands.slice(0, 3).map(function(b) {
+        return { id: b.id, name: b.name, score: b.overallScore, verdict: b.verdict, category: b.categoryName };
+      });
+      responseDiv.textContent = JSON.stringify(sample, null, 2) + '\n\n// ... ' + (brands.length - 3) + ' more brands';
+    } catch(e) {
+      responseDiv.textContent = 'Error: ' + e.message;
+    }
+  }
+</script>
+</body>
+</html>

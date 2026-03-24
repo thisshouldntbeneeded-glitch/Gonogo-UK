@@ -1,0 +1,11 @@
+api_server.py
+gonogo_sa.db
+gonogo_sa.db-wal
+gonogo_sa.db-shm
+server.log
+*.pyc
+__pycache__
+requirements.txt
+eslint.config.mjs
+node_modules
+skills

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta name="author" content="Perplexity Computer">
+<meta property="og:see_also" content="https://www.perplexity.ai/computer">
+<link rel="author" href="https://www.perplexity.ai/computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoNoGo UK — Research Status</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  .research-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+  .research-modal-overlay.active {
+    display: flex;
+  }
+  .research-modal {
+    background: var(--surface-primary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-8);
+    max-width: 560px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .research-log {
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-top: var(--space-4);
+    max-height: 300px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  .research-log .log-entry {
+    padding: 2px 0;
+    color: var(--text-secondary);
+  }
+  .research-log .log-entry.success {
+    color: var(--green-text);
+  }
+  .research-log .log-entry.error {
+    color: var(--red-text);
+  }
+  .research-log .log-entry.info {
+    color: var(--blue-text, var(--text-primary));
+  }
+  .research-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border-primary);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: rspin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes rspin {
+    to { transform: rotate(360deg); }
+  }
+  .batch-progress {
+    margin-top: var(--space-4);
+    height: 6px;
+    background: var(--surface-secondary);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .batch-progress-bar {
+    height: 100%;
+    background: var(--green);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    width: 0%;
+  }
+  .research-result-card {
+    background: var(--surface-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    margin-top: var(--space-3);
+  }
+  .result-field {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border-dim);
+  }
+  .result-field:last-child {
+    border-bottom: none;
+  }
+  .result-label {
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+  .result-value {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .btn-researching {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+</style>
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebar-container"></div>
+    <main class="admin-main" id="admin-content" style="display:none;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title">Research Status</h1>
+          <p class="text-sm text-secondary">Track data freshness and trigger automated research</p>
+        </div>
+        <div style="display:flex;gap:var(--space-2);">
+          <button class="btn btn-secondary btn-sm" id="btn-batch-stale" onclick="triggerBatchResearch('stale')">
+            <i class="fa-solid fa-clock"></i> Refresh Stale
+          </button>
+          <button class="btn btn-primary btn-sm" id="btn-batch-all" onclick="triggerBatchResearch('outdated')">
+            <i class="fa-solid fa-robot"></i> Auto-Research Outdated
+          </button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="kpi-grid" style="margin-bottom:var(--space-6);" id="research-kpis"></div>
+
+      <!-- Alerts -->
+      <div id="alerts" style="margin-bottom:var(--space-6);"></div>
+
+      <!-- Research Table -->
+      <div class="table-wrapper">
+        <div class="table-toolbar">
+          <div class="table-toolbar-left">
+            <select id="freshness-filter" style="width:auto;max-width:180px;" onchange="filterResearch()">
+              <option value="">All Status</option>
+              <option value="fresh">Fresh</option>
+              <option value="stale">Stale</option>
+              <option value="outdated">Outdated</option>
+            </select>
+            <select id="research-industry-filter" style="width:auto;max-width:180px;" onchange="filterResearch()">
+              <option value="">All Industries</option>
+            </select>
+            <select id="verdict-filter" style="width:auto;max-width:150px;" onchange="filterResearch()">
+              <option value="">All Verdicts</option>
+              <option value="GO">GO</option>
+              <option value="GO WITH CAUTION">Go with Caution</option>
+              <option value="NOGO">NOGO</option>
+            </select>
+          </div>
+          <span class="text-xs text-muted" id="research-count"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table" id="research-table">
+            <thead>
+              <tr>
+                <th onclick="sortResearch('name')">Brand <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th onclick="sortResearch('categoryName')">Industry <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th onclick="sortResearch('overallScore')">Score <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th>Verdict</th>
+                <th onclick="sortResearch('lastUpdated')">Last Researched <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th>Data Freshness</th>
+                <th onclick="sortResearch('daysSince')">Days Since <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="research-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Research Info -->
+      <div class="card" style="margin-top:var(--space-8);border-color:var(--border-primary);padding:var(--space-6);">
+        <div style="display:flex;align-items:flex-start;gap:var(--space-4);">
+          <i class="fa-solid fa-circle-info" style="font-size:var(--text-lg);color:var(--green);margin-top:2px;"></i>
+          <div>
+            <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-2);">About Data Freshness</h3>
+            <div class="text-xs text-secondary" style="line-height:1.8;">
+              <p style="margin-bottom:var(--space-2);">This page tracks when each brand's data was last reviewed:</p>
+              <ul style="padding-left:var(--space-5);margin-bottom:var(--space-2);">
+                <li><strong>Fresh</strong> (green) — data reviewed within 14 days</li>
+                <li><strong>Stale</strong> (orange) — data is 15-30 days old, should be checked</li>
+                <li><strong>Outdated</strong> (red) — data is over 30 days old, needs attention</li>
+              </ul>
+              <p>Click <strong>Mark Fresh</strong> on a brand after you've manually verified its data is current. Use <strong>Refresh Stale</strong> or <strong>Auto-Refresh Outdated</strong> to batch-mark brands as reviewed.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:var(--space-6) 0;text-align:center;">
+        <p class="text-xs text-muted">
+          &copy; 2026 GoNoGo United Kingdom |
+          <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted);">Created with Perplexity Computer</a>
+        </p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Research Modal -->
+  <div class="research-modal-overlay" id="research-modal">
+    <div class="research-modal">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+        <h3 class="text-lg font-semibold" id="modal-title">Researching Brand</h3>
+        <button class="btn btn-ghost btn-sm" onclick="closeResearchModal()" id="modal-close-btn" style="display:none;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div id="modal-status" class="text-sm text-secondary" style="margin-bottom:var(--space-3);">
+        <span class="research-spinner"></span> Collecting data from public sources...
+      </div>
+      <div class="batch-progress" id="modal-progress" style="display:none;">
+        <div class="batch-progress-bar" id="modal-progress-bar"></div>
+      </div>
+      <div class="research-log" id="modal-log"></div>
+      <div id="modal-results" style="display:none;"></div>
+      <div id="modal-actions" style="margin-top:var(--space-4);display:none;text-align:right;">
+        <button class="btn btn-primary btn-sm" onclick="closeResearchModal()">Done</button>
+      </div>
+    </div>
+  </div>
+  <script src="data/data_partA.js"></script>
+  <script src="data/data_partB.js"></script>
+  <script src="data/data_partC.js"></script>
+  <script src="data/data_partD.js"></script>
+  <script src="data/data_partE.js"></script>
+  <script src="data/data_partF.js"></script>
+  <script src="data/data.js"></script>
+  <script src="data/helpers.js"></script>
+  <script src="components.js"></script>
+  <script src="api.js"></script>
+
+  <script>
+    document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('research');
+
+    if (Components.checkAdminAuth()) {
+      initAdminPage();
+    }
+
+    var researchData = [];
+    var currentSort = { key: 'daysSince', dir: 'desc' };
+    var activeResearch = {};
+
+    async function initAdminPage() {
+      document.getElementById('admin-content').style.display = '';
+
+      var allBrands = await GoNoGoAPI.getAllBrands();
+      var now = new Date();
+
+      var dateOverrides = getResearchOverrides();
+      researchData = allBrands.map(function(b) {
+        var updated = dateOverrides[b.id] || b.lastUpdated;
+        var lastDate = new Date(updated);
+        var daysSince = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+        var freshness = 'fresh';
+        if (daysSince > 30) freshness = 'outdated';
+        else if (daysSince > 14) freshness = 'stale';
+
+        return {
+          id: b.id,
+          name: b.name,
+          logo: b.logo,
+          website: b.website,
+          categorySlug: b.categorySlug,
+          categoryName: b.categoryName,
+          overallScore: b.overallScore,
+          verdict: b.verdict,
+          lastUpdated: updated,
+          daysSince: daysSince,
+          freshness: freshness
+        };
+      });
+
+      // Populate industry filter
+      var indFilter = document.getElementById('research-industry-filter');
+      var cats = await GoNoGoAPI.getCategories();
+      cats.forEach(function(cat) {
+        indFilter.innerHTML += '<option value="' + cat.id + '">' + cat.name + '</option>';
+      });
+
+      // KPIs
+      renderKPIs();
+      filterResearch();
+    }
+
+    function renderKPIs() {
+      var fresh = researchData.filter(function(r) { return r.freshness === 'fresh'; }).length;
+      var stale = researchData.filter(function(r) { return r.freshness === 'stale'; }).length;
+      var outdated = researchData.filter(function(r) { return r.freshness === 'outdated'; }).length;
+      var avgDays = Math.round(researchData.reduce(function(a, r) { return a + r.daysSince; }, 0) / researchData.length);
+
+      document.getElementById('research-kpis').innerHTML =
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Fresh Data</div>' +
+          '<div class="kpi-value" style="color:var(--green-text);">' + fresh + '</div>' +
+          '<div class="kpi-delta text-green">Updated within 14 days</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Stale Data</div>' +
+          '<div class="kpi-value" style="color:var(--orange-text);">' + stale + '</div>' +
+          '<div class="kpi-delta" style="color:var(--orange-text);">15-30 days old</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Outdated</div>' +
+          '<div class="kpi-value" style="color:var(--red-text);">' + outdated + '</div>' +
+          '<div class="kpi-delta" style="color:var(--red-text);">Over 30 days old</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Avg Age</div>' +
+          '<div class="kpi-value">' + avgDays + '<span class="text-sm text-muted"> days</span></div>' +
+        '</div>';
+
+      // Alerts
+      var needsResearch = researchData.filter(function(r) { return r.freshness !== 'fresh'; });
+      if (needsResearch.length > 0) {
+        var brandList = needsResearch.slice(0, 10).map(function(r) { return r.name; }).join(', ');
+        var extra = needsResearch.length > 10 ? ' and ' + (needsResearch.length - 10) + ' more' : '';
+        document.getElementById('alerts').innerHTML =
+          '<div class="card" style="border-color:var(--orange-dim);background:var(--orange-bg);">' +
+            '<div style="display:flex;align-items:center;gap:var(--space-3);">' +
+              '<i class="fa-solid fa-triangle-exclamation" style="color:var(--orange-text);font-size:var(--text-lg);"></i>' +
+              '<div>' +
+                '<div class="text-sm font-semibold" style="color:var(--orange-text);">Research Needed</div>' +
+                '<div class="text-xs" style="color:var(--orange-text);opacity:0.8;">' +
+                  needsResearch.length + ' brand' + (needsResearch.length > 1 ? 's need' : ' needs') + ' data refresh: ' +
+                  brandList + extra +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+      } else {
+        document.getElementById('alerts').innerHTML = '';
+      }
+    }
+
+    function sortResearch(key) {
+      if (currentSort.key === key) {
+        currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.key = key;
+        currentSort.dir = key === 'name' ? 'asc' : 'desc';
+      }
+      filterResearch();
+    }
+
+    function filterResearch() {
+      var freshness = document.getElementById('freshness-filter').value;
+      var industry = document.getElementById('research-industry-filter').value;
+      var verdict = document.getElementById('verdict-filter').value;
+
+      var filtered = researchData.filter(function(r) {
+        var matchFreshness = !freshness || r.freshness === freshness;
+        var matchIndustry = !industry || r.categorySlug === industry;
+        var matchVerdict = !verdict || r.verdict === verdict;
+        return matchFreshness && matchIndustry && matchVerdict;
+      });
+
+      // Apply sort
+      filtered = Components.sortData(filtered, currentSort.key, currentSort.dir);
+
+      document.getElementById('research-count').textContent = filtered.length + ' brands';
+      renderResearchTable(filtered);
+    }
+
+    function renderResearchTable(data) {
+      var tbody = document.getElementById('research-tbody');
+      tbody.innerHTML = data.map(function(r) {
+        var logoHtml = Components.renderLogo(r, 'brand-logo');
+        var freshnessIcon = r.freshness === 'fresh' ? 'fa-circle-check' : r.freshness === 'stale' ? 'fa-clock' : 'fa-triangle-exclamation';
+        var daysColor = r.daysSince > 30 ? 'color:var(--red-text)' : r.daysSince > 14 ? 'color:var(--orange-text)' : 'color:var(--green-text)';
+        var isResearching = activeResearch[r.id];
+        var btnClass = isResearching ? 'btn-researching' : (r.freshness !== 'fresh' ? 'btn-primary' : 'btn-ghost');
+        var btnIcon = isResearching ? '<span class="research-spinner"></span>' : '<i class="fa-solid fa-rotate"></i> ';
+        var btnText = isResearching ? 'Updating...' : (r.freshness !== 'fresh' ? 'Mark Fresh' : 'Re-check');
+        var escapedName = r.name.replace(/'/g, "\\'");
+
+        return '<tr id="row-' + r.id + '">' +
+          '<td>' +
+            '<div class="brand-cell">' +
+              logoHtml +
+              '<span class="font-semibold text-sm">' + r.name + '</span>' +
+            '</div>' +
+          '</td>' +
+          '<td class="text-sm">' + r.categoryName + '</td>' +
+          '<td>' + Components.renderScoreBadge(r.overallScore) + '</td>' +
+          '<td>' + Components.renderVerdictBadge(r.verdict) + '</td>' +
+          '<td class="text-sm text-muted">' + Components.formatDate(r.lastUpdated) + '</td>' +
+          '<td>' +
+            '<span class="freshness-badge freshness-' + r.freshness + '">' +
+              '<i class="fa-solid ' + freshnessIcon + '" style="font-size:10px;"></i> ' +
+              r.freshness.charAt(0).toUpperCase() + r.freshness.slice(1) +
+            '</span>' +
+          '</td>' +
+          '<td><span class="text-sm tabular-nums" style="' + daysColor + '">' + r.daysSince + ' days</span></td>' +
+          '<td>' +
+            '<button class="btn btn-sm ' + btnClass + '" id="btn-' + r.id + '" onclick="triggerResearch(\'' + r.id + '\', \'' + escapedName + '\')">' +
+              btnIcon + btnText +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    // ============================================================
+    // RESEARCH ACTIONS (client-side freshness tracking)
+    // ============================================================
+
+    function getResearchOverrides() {
+      return GoNoGoStorage.get('researchDates') || {};
+    }
+    function saveResearchOverride(brandId) {
+      var overrides = getResearchOverrides();
+      overrides[brandId] = new Date().toISOString().split('T')[0];
+      GoNoGoStorage.set('researchDates', overrides);
+    }
+
+    async function triggerResearch(brandId, brandName) {
+      if (activeResearch[brandId]) return;
+      activeResearch[brandId] = true;
+
+      var btn = document.getElementById('btn-' + brandId);
+      if (btn) {
+        btn.className = 'btn btn-sm btn-researching';
+        btn.innerHTML = '<span class="research-spinner"></span> Researching...';
+      }
+
+      // Find category info
+      var rd = researchData.find(function(r) { return r.id === brandId; });
+      var catSlug = rd ? rd.categorySlug : '';
+
+      showResearchModal(brandName);
+      addLog('Starting AI research for ' + brandName + '...', 'info');
+      addLog('Querying public sources for latest data...', 'info');
+
+      try {
+        var response = await fetch('/api/research', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ brandName: brandName, categorySlug: catSlug, brandSlug: brandId })
+        });
+
+        var result = await response.json();
+
+        if (!response.ok || !result.ok) {
+          addLog('Error: ' + (result.error || 'Research failed'), 'error');
+          if (result.details) addLog('Details: ' + result.details, 'error');
+          activeResearch[brandId] = false;
+          completeModal();
+          return;
+        }
+
+        if (result.mode === 'mark-fresh') {
+          addLog(result.message, 'info');
+          addLog('Brand marked as fresh', 'success');
+        } else {
+          // AI research completed
+          var r = result.research;
+          addLog('Research complete — new score: ' + r.gonogo_score + '/100 (' + r.verdict + ')', 'success');
+          if (r.overview) addLog('Overview: ' + r.overview, 'info');
+          if (r.key_strengths) addLog('Strengths: ' + r.key_strengths.join(', '), 'success');
+          if (r.key_concerns) addLog('Concerns: ' + r.key_concerns.join(', '), 'error');
+        }
+
+        // Update local data
+        if (rd) {
+          rd.lastUpdated = new Date().toISOString().split('T')[0];
+          rd.daysSince = 0;
+          rd.freshness = 'fresh';
+          if (result.research) {
+            rd.overallScore = result.research.gonogo_score;
+            rd.verdict = result.research.verdict;
+          }
+        }
+
+        saveResearchOverride(brandId);
+        renderKPIs();
+        filterResearch();
+        Components.showToast(brandName + ' research complete', 'success');
+
+      } catch (err) {
+        addLog('Network error: ' + err.message, 'error');
+      }
+
+      activeResearch[brandId] = false;
+      completeModal();
+    }
+
+    async function triggerBatchResearch(freshness) {
+      var label = freshness === 'stale' ? 'stale (15-30 days)' : 'outdated (30+ days)';
+      var targets = researchData.filter(function(r) {
+        if (freshness === 'stale') return r.freshness === 'stale' || r.freshness === 'outdated';
+        return r.freshness === 'outdated';
+      });
+
+      if (targets.length === 0) {
+        Components.showToast('No ' + label + ' brands to refresh', 'info');
+        return;
+      }
+
+      var batch = targets.slice(0, 5); // 5 at a time to avoid API limits
+      showResearchModal('Batch Research — ' + label);
+      addLog('Researching ' + batch.length + ' brands (of ' + targets.length + ' total)...', 'info');
+      document.getElementById('modal-progress').style.display = 'block';
+
+      for (var i = 0; i < batch.length; i++) {
+        var b = batch[i];
+        addLog('Researching ' + b.name + '...', 'info');
+
+        try {
+          var response = await fetch('/api/research', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ brandName: b.name, categorySlug: b.categorySlug, brandSlug: b.id })
+          });
+          var result = await response.json();
+
+          if (result.ok) {
+            saveResearchOverride(b.id);
+            b.lastUpdated = new Date().toISOString().split('T')[0];
+            b.daysSince = 0;
+            b.freshness = 'fresh';
+            if (result.research) {
+              b.overallScore = result.research.gonogo_score;
+              b.verdict = result.research.verdict;
+              addLog('  ' + b.name + ': ' + result.research.gonogo_score + '/100 (' + result.research.verdict + ')', 'success');
+            } else {
+              addLog('  ' + b.name + ': marked fresh', 'success');
+            }
+          } else {
+            addLog('  ' + b.name + ': error — ' + (result.error || 'unknown'), 'error');
+          }
+        } catch (err) {
+          addLog('  ' + b.name + ': network error', 'error');
+        }
+
+        document.getElementById('modal-progress-bar').style.width = Math.round(((i + 1) / batch.length) * 100) + '%';
+      }
+
+      addLog('', '');
+      addLog('Batch complete: ' + batch.length + ' brands researched', 'success');
+      if (targets.length > 5) {
+        addLog((targets.length - 5) + ' remaining — run again to continue', 'info');
+      }
+
+      renderKPIs();
+      filterResearch();
+      Components.showToast('Batch research complete: ' + batch.length + ' brands', 'success');
+      completeModal();
+    }
+
+    // ============================================================
+    // MODAL HELPERS
+    // ============================================================
+
+    function showResearchModal(title) {
+      document.getElementById('modal-title').textContent = title;
+      document.getElementById('modal-status').innerHTML = '<span class="research-spinner"></span> Collecting data from public sources...';
+      document.getElementById('modal-log').innerHTML = '';
+      document.getElementById('modal-results').style.display = 'none';
+      document.getElementById('modal-results').innerHTML = '';
+      document.getElementById('modal-actions').style.display = 'none';
+      document.getElementById('modal-close-btn').style.display = 'none';
+      document.getElementById('modal-progress').style.display = 'none';
+      document.getElementById('modal-progress-bar').style.width = '0%';
+      document.getElementById('research-modal').classList.add('active');
+    }
+
+    function closeResearchModal() {
+      document.getElementById('research-modal').classList.remove('active');
+    }
+
+    function completeModal() {
+      document.getElementById('modal-status').innerHTML = '<i class="fa-solid fa-circle-check" style="color:var(--green);"></i> Research complete';
+      document.getElementById('modal-close-btn').style.display = '';
+      document.getElementById('modal-actions').style.display = '';
+    }
+
+    function addLog(message, type) {
+      var log = document.getElementById('modal-log');
+      var entry = document.createElement('div');
+      entry.className = 'log-entry' + (type ? ' ' + type : '');
+      var timestamp = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      entry.textContent = (message ? '[' + timestamp + '] ' + message : '');
+      log.appendChild(entry);
+      log.scrollTop = log.scrollHeight;
+    }
+
+
+  </script>
+</body>
+</html>

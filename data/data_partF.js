@@ -1,0 +1,1 @@
+var BRAND_DATA_PARTF = [];

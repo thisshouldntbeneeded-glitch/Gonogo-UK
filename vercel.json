@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "buildCommand": "",
+  "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/category", "destination": "/category.html" },
+    { "source": "/brand", "destination": "/brand.html" },
+    { "source": "/compare", "destination": "/compare.html" },
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/admin-brands", "destination": "/admin-brands.html" },
+    { "source": "/admin-comments", "destination": "/admin-comments.html" },
+    { "source": "/admin-research", "destination": "/admin-research.html" }
+  ],
+  "headers": [
+    {
+      "source": "/data/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=3600" }
+      ]
+    },
+    {
+      "source": "/(.*).js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=1800" }
+      ]
+    }
+  ]
+}
