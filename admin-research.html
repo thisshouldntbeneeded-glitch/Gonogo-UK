@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-GB">
+<html lang="en-ZA">
 <head>
 <!--
    ______                            __
@@ -17,7 +17,7 @@
 <link rel="author" href="https://www.perplexity.ai/computer">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoNoGo UK — Research Status</title>
+<title>GoNoGo SA — Research Status</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -136,11 +136,14 @@
           <h1 class="admin-title">Research Status</h1>
           <p class="text-sm text-secondary">Track data freshness and trigger automated research</p>
         </div>
-        <div style="display:flex;gap:var(--space-2);">
-          <button class="btn btn-secondary btn-sm" id="btn-batch-stale" onclick="triggerBatchResearch('stale')">
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" id="btn-research-selected" onclick="researchSelected()" style="display:none">
+            <i class="fa-solid fa-robot"></i> Research Selected (<span id="selected-count">0</span>)
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="triggerBatchResearch('stale')">
             <i class="fa-solid fa-clock"></i> Refresh Stale
           </button>
-          <button class="btn btn-primary btn-sm" id="btn-batch-all" onclick="triggerBatchResearch('outdated')">
+          <button class="btn btn-secondary btn-sm" onclick="triggerBatchResearch('outdated')">
             <i class="fa-solid fa-robot"></i> Auto-Research Outdated
           </button>
         </div>
@@ -178,6 +181,7 @@
           <table class="data-table" id="research-table">
             <thead>
               <tr>
+                <th style="width:32px"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" style="cursor:pointer"></th>
                 <th onclick="sortResearch('name')">Brand <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th onclick="sortResearch('categoryName')">Industry <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th onclick="sortResearch('overallScore')">Score <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
@@ -214,7 +218,7 @@
 
       <div style="padding:var(--space-6) 0;text-align:center;">
         <p class="text-xs text-muted">
-          &copy; 2026 GoNoGo United Kingdom
+          &copy; 2026 GoNoGo South Africa
         </p>
       </div>
     </main>
@@ -398,6 +402,7 @@
         var escapedName = r.name.replace(/'/g, "\\'");
 
         return '<tr id="row-' + r.id + '">' +
+          '<td><input type="checkbox" class="brand-select" data-id="' + r.id + '" data-name="' + escapedName + '" onchange="updateSelectedCount()" style="cursor:pointer"></td>' +
           '<td>' +
             '<div class="brand-cell">' +
               logoHtml +
@@ -602,12 +607,86 @@
       var log = document.getElementById('modal-log');
       var entry = document.createElement('div');
       entry.className = 'log-entry' + (type ? ' ' + type : '');
-      var timestamp = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var timestamp = new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       entry.textContent = (message ? '[' + timestamp + '] ' + message : '');
       log.appendChild(entry);
       log.scrollTop = log.scrollHeight;
     }
 
+    // ============================================================
+    // SELECTION
+    // ============================================================
+    function toggleSelectAll(checked) {
+      document.querySelectorAll('.brand-select').forEach(function(cb) { cb.checked = checked; });
+      updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+      var selected = document.querySelectorAll('.brand-select:checked').length;
+      document.getElementById('selected-count').textContent = selected;
+      document.getElementById('btn-research-selected').style.display = selected > 0 ? '' : 'none';
+    }
+
+    async function researchSelected() {
+      var checkboxes = document.querySelectorAll('.brand-select:checked');
+      if (checkboxes.length === 0) return;
+
+      var targets = [];
+      checkboxes.forEach(function(cb) {
+        targets.push({ id: cb.dataset.id, name: cb.dataset.name });
+      });
+
+      showResearchModal('Researching ' + targets.length + ' selected brand' + (targets.length > 1 ? 's' : ''));
+      addLog('Starting research on ' + targets.length + ' brands...', 'info');
+      document.getElementById('modal-progress').style.display = 'block';
+
+      for (var i = 0; i < targets.length; i++) {
+        var t = targets[i];
+        var rd = researchData.find(function(r) { return r.id === t.id; });
+        addLog('Researching ' + t.name + '...', 'info');
+
+        try {
+          var response = await fetch('/api/research', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ brandName: t.name, categorySlug: rd ? rd.categorySlug : '', brandSlug: t.id })
+          });
+          var result = await response.json();
+
+          if (result.ok) {
+            saveResearchOverride(t.id);
+            if (rd) {
+              rd.lastUpdated = new Date().toISOString().split('T')[0];
+              rd.daysSince = 0;
+              rd.freshness = 'fresh';
+              if (result.research) {
+                rd.overallScore = result.research.gonogo_score;
+                rd.verdict = result.research.verdict;
+                addLog('  ' + t.name + ': ' + result.research.gonogo_score + '/100 (' + result.research.verdict + ')', 'success');
+              } else {
+                addLog('  ' + t.name + ': marked fresh', 'success');
+              }
+            }
+          } else {
+            addLog('  ' + t.name + ': error — ' + (result.error || 'unknown'), 'error');
+          }
+        } catch (err) {
+          addLog('  ' + t.name + ': network error', 'error');
+        }
+
+        document.getElementById('modal-progress-bar').style.width = Math.round(((i + 1) / targets.length) * 100) + '%';
+      }
+
+      addLog('', '');
+      addLog('Done: ' + targets.length + ' brands researched', 'success');
+      renderKPIs();
+      filterResearch();
+      // Uncheck all
+      document.querySelectorAll('.brand-select').forEach(function(cb) { cb.checked = false; });
+      document.getElementById('select-all').checked = false;
+      updateSelectedCount();
+      completeModal();
+    }
 
   </script>
 </body>
