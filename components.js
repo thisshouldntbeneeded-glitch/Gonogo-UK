@@ -40,8 +40,8 @@ const Components = {
     const links = [
       { href: 'index.html', label: 'Home', icon: 'fa-house', id: 'home' },
       { href: 'category.html?cat=banking', label: 'Banking', icon: 'fa-building-columns', id: 'banking' },
-      { href: 'category.html?cat=medical-aid', label: 'Medical Aid', icon: 'fa-heart-pulse', id: 'medical-aid' },
-      { href: 'category.html?cat=insurance', label: 'Insurance', icon: 'fa-umbrella', id: 'insurance' },
+      { href: 'category.html?cat=insurance', label: 'Insurance', icon: 'fa-shield-halved', id: 'insurance' },
+      { href: 'category.html?cat=broadband-fiber', label: 'Broadband', icon: 'fa-wifi', id: 'broadband-fiber' },
       { href: 'compare.html', label: 'Compare', icon: 'fa-code-compare', id: 'compare' },
       // Admin link hidden from public nav — access via /admin.html directly
     ];
@@ -137,13 +137,13 @@ const Components = {
             <div class="footer-links">
               <a href="index.html">Home</a>
               <a href="category.html?cat=banking">Banking</a>
-              <a href="category.html?cat=medical-aid">Medical Aid</a>
               <a href="category.html?cat=insurance">Insurance</a>
+              <a href="category.html?cat=broadband-fiber">Broadband</a>
               <a href="compare.html">Compare</a>
+              <a href="https://www.gonogo.co.za" target="_blank">GoNoGo SA</a>
             </div>
             <div class="footer-attribution">
-              &copy; 2026 GoNoGo United Kingdom. All rights reserved.<br>
-              <a href="https://www.perplexity.ai/computer" target="_blank" rel="noopener noreferrer" style="color:var(--text-muted);font-size:var(--text-xs)">Created with Perplexity Computer</a>
+              &copy; 2026 GoNoGo United Kingdom. All rights reserved.
             </div>
           </div>
         </div>
