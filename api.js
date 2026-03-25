@@ -1,4 +1,4 @@
-// GoNoGo SA — API Client (Supabase Edition v2)
+// GoNoGo UK — API Client (Supabase Edition v2)
 // Brands + Categories = Supabase tables (with static JS fallback)
 // Reviews = Supabase 'reviews' table
 // Admin Users = Supabase 'admin_users' table (with local fallback)
@@ -318,7 +318,7 @@ var GoNoGoAPI = (function () {
               id: r.id, category: r.category_slug, brandname: r.brand_name,
               reviewername: r.reviewer_name, reviewtext: r.review_text,
               verdict: r.verdict || '',
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });
@@ -337,7 +337,7 @@ var GoNoGoAPI = (function () {
               reviewername: r.reviewer_name, ReviewerName: r.reviewer_name,
               reviewtext: r.review_text, ReviewText: r.review_text,
               verdict: r.verdict || '',
-              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               created_at: r.created_at, status: r.status, Status: r.status
             };
           });
@@ -503,6 +503,7 @@ var GoNoGoAPI = (function () {
     // CATEGORY MANAGEMENT
     // ==========================================
     saveCategory: function (categoryData) {
+      _categoryCache = null; // bust cache
       return supabaseRequest('categories?slug=eq.' + encodeURIComponent(categoryData.slug), {
         method: 'PATCH',
         body: { name: categoryData.name, icon: categoryData.icon, scoring_categories: categoryData.scoringCategories || [] }
@@ -512,6 +513,34 @@ var GoNoGoAPI = (function () {
           method: 'POST',
           body: { slug: categoryData.slug, name: categoryData.name, icon: categoryData.icon, scoring_categories: categoryData.scoringCategories || [], region: SITE_REGION }
         }).then(function () { return { ok: true }; });
+      });
+    },
+
+    // Update category name/icon (rename). Updates all brands that reference this category.
+    updateCategory: function (slug, newName, newIcon) {
+      _categoryCache = null; // bust cache
+      var body = {};
+      if (newName !== undefined) body.name = newName;
+      if (newIcon !== undefined) body.icon = newIcon;
+      return supabaseRequest('categories?slug=eq.' + encodeURIComponent(slug), {
+        method: 'PATCH',
+        body: body
+      }).then(function (rows) {
+        if (!rows || rows.length === 0) throw new Error('Category not found');
+        return { ok: true };
+      });
+    },
+
+    // Delete a category (only if no brands reference it)
+    deleteCategory: function (slug) {
+      _categoryCache = null; // bust cache
+      // First check if any brands use this category
+      return supabaseRequest('brands?category_slug=eq.' + encodeURIComponent(slug) + '&select=slug&limit=1').then(function (rows) {
+        if (rows && rows.length > 0) {
+          throw new Error('Cannot delete category — it still has brands assigned to it. Remove or reassign all brands first.');
+        }
+        return supabaseRequest('categories?slug=eq.' + encodeURIComponent(slug), { method: 'DELETE' })
+          .then(function () { return { ok: true }; });
       });
     }
   };
