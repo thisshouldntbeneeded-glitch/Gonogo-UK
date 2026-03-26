@@ -159,6 +159,66 @@ const Components = {
       document.documentElement.classList.add('light-mode');
     }
     this.updateThemeIcon();
+    this.initCookieConsent();
+  },
+
+  // ============================================================
+  // COOKIE CONSENT + GOOGLE ANALYTICS
+  // ============================================================
+  _GA_ID: 'G-2C18K0YYXM',
+
+  initCookieConsent() {
+    var consent = localStorage.getItem('gonogo_cookie_consent');
+    if (consent === 'accepted') {
+      this.loadGA();
+      return;
+    }
+    if (consent === 'rejected') return;
+    this.showCookieBanner();
+  },
+
+  showCookieBanner() {
+    if (document.getElementById('cookie-banner')) return;
+    var banner = document.createElement('div');
+    banner.className = 'cookie-banner';
+    banner.id = 'cookie-banner';
+    banner.innerHTML =
+      '<p>We use cookies to analyse site usage and improve your experience. ' +
+      'This includes Google Analytics for anonymous usage statistics. ' +
+      'By clicking \"Accept\", you consent to the use of cookies in accordance with ' +
+      '<a href="privacy.html">our Privacy Policy</a>, the UK GDPR and the Privacy and Electronic Communications Regulations (PECR).</p>' +
+      '<div class="cookie-banner-buttons">' +
+        '<button class="cookie-btn-reject" onclick="Components.cookieReject()">Reject</button>' +
+        '<button class="cookie-btn-accept" onclick="Components.cookieAccept()">Accept</button>' +
+      '</div>';
+    document.body.appendChild(banner);
+  },
+
+  cookieAccept() {
+    localStorage.setItem('gonogo_cookie_consent', 'accepted');
+    var banner = document.getElementById('cookie-banner');
+    if (banner) banner.remove();
+    this.loadGA();
+  },
+
+  cookieReject() {
+    localStorage.setItem('gonogo_cookie_consent', 'rejected');
+    var banner = document.getElementById('cookie-banner');
+    if (banner) banner.remove();
+  },
+
+  loadGA() {
+    if (window._gaLoaded) return;
+    window._gaLoaded = true;
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=' + this._GA_ID;
+    document.head.appendChild(script);
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+    window.gtag = gtag;
+    gtag('js', new Date());
+    gtag('config', Components._GA_ID, { anonymize_ip: true });
   },
 
   toggleTheme() {

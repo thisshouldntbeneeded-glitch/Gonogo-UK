@@ -2106,3 +2106,77 @@ textarea {
   color: var(--green);
 }
 
+
+/* ============================================================
+   COOKIE CONSENT BANNER
+   ============================================================ */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-primary);
+  padding: var(--space-5) var(--space-6);
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  font-family: var(--font-body);
+  animation: slideUp 0.3s ease-out;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.cookie-banner p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 600px;
+  line-height: 1.5;
+}
+.cookie-banner p a {
+  color: var(--green);
+  text-decoration: underline;
+}
+.cookie-banner-buttons {
+  display: flex;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+.cookie-banner-buttons button {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-fast);
+}
+.cookie-btn-accept {
+  background: var(--green);
+  color: #fff;
+}
+.cookie-btn-accept:hover {
+  background: #0d8c44;
+}
+.cookie-btn-reject {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-primary) !important;
+}
+.cookie-btn-reject:hover {
+  background: var(--surface-2);
+  color: var(--text-primary);
+}
+@media (max-width: 640px) {
+  .cookie-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--space-4);
+  }
+}
