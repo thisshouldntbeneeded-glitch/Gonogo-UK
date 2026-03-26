@@ -168,11 +168,7 @@
   stroke: #e0e0e0 !important;
 }
 
-/* Logo invert for light mode — the dark-mode logo is white text on transparent */
-.light-mode .logo img,
-.light-mode .hero img[alt="GoNoGo"] {
-  filter: brightness(0) saturate(100%);
-}
+/* Logo: use dedicated light-mode logo via JS — no CSS filter needed */
 
 /* Brand logos have white background — add subtle border in light mode */
 .light-mode .brand-logo {
@@ -199,6 +195,10 @@
   transition: all var(--transition-fast);
   font-size: 1rem;
   flex-shrink: 0;
+}
+
+.nav-theme-toggle {
+  margin-left: var(--space-2);
 }
 
 .theme-toggle:hover {
