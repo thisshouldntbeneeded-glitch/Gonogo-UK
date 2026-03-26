@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.gonogo.co.uk/api/sitemap
+Disallow: /admin.html
+Disallow: /admin-brands.html
+Disallow: /admin-comments.html
+Disallow: /admin-research.html
+Disallow: /admin-settings.html
+Disallow: /admin-api.html
+Disallow: /brand-dashboard.html
+Disallow: /brand-reviews.html
+Disallow: /brand-insights.html
+
+Sitemap: https://gonogo-uk.vercel.app/sitemap.xml

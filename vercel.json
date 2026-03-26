@@ -2,14 +2,24 @@
   "version": 2,
   "buildCommand": "",
   "outputDirectory": ".",
+  "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     { "source": "/category", "destination": "/category.html" },
     { "source": "/brand", "destination": "/brand.html" },
     { "source": "/compare", "destination": "/compare.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/terms", "destination": "/terms.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/admin-brands", "destination": "/admin-brands.html" },
     { "source": "/admin-comments", "destination": "/admin-comments.html" },
-    { "source": "/admin-research", "destination": "/admin-research.html" }
+    { "source": "/admin-research", "destination": "/admin-research.html" },
+    { "source": "/admin-settings", "destination": "/admin-settings.html" },
+    { "source": "/admin-api", "destination": "/admin-api.html" },
+    { "source": "/brand-dashboard", "destination": "/brand-dashboard.html" },
+    { "source": "/brand-reviews", "destination": "/brand-reviews.html" },
+    { "source": "/brand-insights", "destination": "/brand-insights.html" }
   ],
   "headers": [
     {
@@ -22,6 +32,12 @@
       "source": "/(.*).js",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=1800" }
+      ]
+    },
+    {
+      "source": "/logos/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=86400" }
       ]
     }
   ]
