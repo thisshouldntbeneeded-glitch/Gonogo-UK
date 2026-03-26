@@ -59,11 +59,9 @@ const Components = {
       // Admin link hidden from public nav — access via /admin.html directly
     ];
 
-    var isLight = document.documentElement.classList.contains('light-mode');
+    var themeIcon = document.documentElement.classList.contains('light-mode') ? 'fa-moon' : 'fa-sun';
 
-    var themeIcon = isLight ? 'fa-moon' : 'fa-sun';
-
-    var html = `
+    return `
       <header class="site-header">
         <div class="container">
           <a href="index.html" class="logo">
@@ -94,14 +92,12 @@ const Components = {
             <i class="fa-solid ${l.icon}"></i> ${l.label}
           </a>
         `).join('')}
-        <button class="theme-toggle" onclick="Components.toggleTheme()">
-          <i class="fa-solid fa-sun theme-toggle-icon"></i> <span class="theme-toggle-label">Light Mode</span>
+        <button class="theme-toggle" onclick="Components.toggleTheme()" aria-label="Toggle light/dark mode">
+          <i class="fa-solid ${themeIcon} theme-toggle-icon"></i>
+          <span class="theme-toggle-label">Toggle Theme</span>
         </button>
       </div>
     `;
-    // Auto-init theme after nav is rendered (deferred so DOM is ready)
-    setTimeout(() => this.initTheme(), 0);
-    return html;
   },
 
   renderAdminSidebar(activePage) {
@@ -151,7 +147,7 @@ const Components = {
   },
 
   // ============================================================
-  // THEME TOGGLE (Light / Dark)
+  // THEME (Light / Dark)
   // ============================================================
   initTheme() {
     var saved = localStorage.getItem('gonogo_theme');
@@ -161,20 +157,17 @@ const Components = {
     } else if (!saved && window.matchMedia('(prefers-color-scheme: light)').matches) {
       document.body.classList.add('light-mode');
       document.documentElement.classList.add('light-mode');
-    } else {
-      // Ensure both html and body are in sync (remove if dark)
-      document.body.classList.remove('light-mode');
-      document.documentElement.classList.remove('light-mode');
     }
     this.updateThemeIcon();
   },
 
   toggleTheme() {
-    document.body.classList.toggle('light-mode');
+    var isLight = document.body.classList.toggle('light-mode');
     document.documentElement.classList.toggle('light-mode');
-    var isLight = document.body.classList.contains('light-mode');
     localStorage.setItem('gonogo_theme', isLight ? 'light' : 'dark');
     this.updateThemeIcon();
+    // Re-render any active Chart.js radar charts with correct colours
+    this._updateChartsForTheme();
   },
 
   updateThemeIcon() {
@@ -191,6 +184,48 @@ const Components = {
     var heroLogos = document.querySelectorAll('.hero-logo');
     heroLogos.forEach(function(img) {
       img.src = isLight ? HERO_LOGO_LIGHT : HERO_LOGO_DARK;
+    });
+  },
+
+  _getChartThemeColors() {
+    var isLight = document.body.classList.contains('light-mode');
+    return {
+      tickColor: isLight ? '#888888' : '#666',
+      labelColor: isLight ? '#555555' : '#a0a0a0',
+      gridColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.06)',
+      tooltipBg: isLight ? '#ffffff' : '#1a1a1a',
+      tooltipTitle: isLight ? '#1a1a1a' : '#fff',
+      tooltipBody: isLight ? '#555555' : '#a0a0a0',
+      tooltipBorder: isLight ? '#e0e0e0' : '#2a2a2a',
+      legendColor: isLight ? '#555555' : '#a0a0a0'
+    };
+  },
+
+  _updateChartsForTheme() {
+    var colors = this._getChartThemeColors();
+    if (typeof Chart === 'undefined') return;
+    var instances = Object.values(Chart.instances || {});
+    instances.forEach(function(chart) {
+      if (!chart || chart.config.type !== 'radar') return;
+      var r = chart.options.scales.r;
+      if (r) {
+        r.ticks.color = colors.tickColor;
+        r.pointLabels.color = colors.labelColor;
+        r.grid.color = colors.gridColor;
+        r.angleLines.color = colors.gridColor;
+      }
+      var tooltip = chart.options.plugins.tooltip;
+      if (tooltip) {
+        tooltip.backgroundColor = colors.tooltipBg;
+        tooltip.titleColor = colors.tooltipTitle;
+        tooltip.bodyColor = colors.tooltipBody;
+        tooltip.borderColor = colors.tooltipBorder;
+      }
+      var legend = chart.options.plugins.legend;
+      if (legend && legend.labels) {
+        legend.labels.color = colors.legendColor;
+      }
+      chart.update();
     });
   },
 
@@ -212,7 +247,7 @@ const Components = {
               <a href="about.html">About</a>
               <a href="privacy.html">Privacy Policy</a>
               <a href="terms.html">Terms & Conditions</a>
-              <a href="https://www.gonogo.co.za" target="_blank">GoNoGo SA</a>
+              <a href="https://www.gonogo.co.uk" target="_blank">GoNoGo UK</a>
             </div>
             <div class="footer-attribution">
               &copy; 2026 GoNoGo Ratings and Reviews Ltd. All rights reserved.
@@ -267,7 +302,7 @@ const Components = {
     return `
       <div class="score-circle ${sizeClass}">
         <svg viewBox="${viewBox}">
-          <circle cx="${cx}" cy="${cy}" r="${r}" stroke="${this._isLightMode() ? '#e0e0e0' : '#2a2a2a'}" stroke-width="${size === 'lg' ? 8 : 6}" fill="none" class="score-track"/>
+          <circle cx="${cx}" cy="${cy}" r="${r}" stroke="#2a2a2a" stroke-width="${size === 'lg' ? 8 : 6}" fill="none"/>
           <circle cx="${cx}" cy="${cy}" r="${r}" stroke="${color}" stroke-width="${size === 'lg' ? 8 : 6}" fill="none"
             stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
             stroke-linecap="round" style="transition: stroke-dashoffset 800ms cubic-bezier(0.16,1,0.3,1)"/>
@@ -293,25 +328,6 @@ const Components = {
   // ============================================================
   // RADAR CHART (Chart.js wrapper)
   // ============================================================
-  _isLightMode() {
-    return document.body.classList.contains('light-mode');
-  },
-
-  _chartColors() {
-    var light = this._isLightMode();
-    return {
-      tick: light ? '#888888' : '#666',
-      label: light ? '#555555' : '#a0a0a0',
-      grid: light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)',
-      tooltipBg: light ? '#ffffff' : '#1a1a1a',
-      tooltipTitle: light ? '#1a1a1a' : '#fff',
-      tooltipBody: light ? '#555555' : '#a0a0a0',
-      tooltipBorder: light ? '#e0e0e0' : '#2a2a2a',
-      pointHoverBg: light ? '#ffffff' : '#fff',
-      legendLabel: light ? '#555555' : '#a0a0a0'
-    };
-  },
-
   createRadarChart(canvasId, brand, options = {}) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return null;
@@ -330,7 +346,7 @@ const Components = {
 
     const color = getScoreColor(brand.overallScore);
     const bgColor = color + '20';
-    const cc = this._chartColors();
+    const tc = this._getChartThemeColors();
 
     return new Chart(canvas, {
       type: 'radar',
@@ -344,7 +360,7 @@ const Components = {
           borderWidth: 2,
           pointBackgroundColor: color,
           pointBorderColor: color,
-          pointHoverBackgroundColor: cc.pointHoverBg,
+          pointHoverBackgroundColor: '#fff',
           pointHoverBorderColor: color,
           pointRadius: options.pointRadius !== undefined ? options.pointRadius : 3,
           pointHoverRadius: 5
@@ -360,29 +376,29 @@ const Components = {
             ticks: {
               stepSize: 25,
               display: options.showTicks !== false,
-              color: cc.tick,
+              color: tc.tickColor,
               backdropColor: 'transparent',
               font: { size: 9 }
             },
             pointLabels: {
-              color: cc.label,
+              color: tc.labelColor,
               font: {
                 family: 'Inter, sans-serif',
                 size: options.labelSize || 10,
                 weight: '500'
               }
             },
-            grid: { color: cc.grid },
-            angleLines: { color: cc.grid }
+            grid: { color: tc.gridColor },
+            angleLines: { color: tc.gridColor }
           }
         },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: cc.tooltipBg,
-            titleColor: cc.tooltipTitle,
-            bodyColor: cc.tooltipBody,
-            borderColor: cc.tooltipBorder,
+            backgroundColor: tc.tooltipBg,
+            titleColor: tc.tooltipTitle,
+            bodyColor: tc.tooltipBody,
+            borderColor: tc.tooltipBorder,
             borderWidth: 1,
             cornerRadius: 8,
             padding: 10,
@@ -418,7 +434,7 @@ const Components = {
     const shortLabels = allLabels.map(l => l.length > 18 ? l.substring(0, 16) + '…' : l);
     const color1 = '#11a551';
     const color2 = '#ff9800';
-    const cc = this._chartColors();
+    const tc = this._getChartThemeColors();
 
     return new Chart(canvas, {
       type: 'radar',
@@ -454,19 +470,19 @@ const Components = {
           r: {
             min: 0,
             max: 100,
-            ticks: { stepSize: 25, display: true, color: cc.tick, backdropColor: 'transparent', font: { size: 9 } },
-            pointLabels: { color: cc.label, font: { family: 'Inter, sans-serif', size: 11, weight: '500' } },
-            grid: { color: cc.grid },
-            angleLines: { color: cc.grid }
+            ticks: { stepSize: 25, display: true, color: tc.tickColor, backdropColor: 'transparent', font: { size: 9 } },
+            pointLabels: { color: tc.labelColor, font: { family: 'Inter, sans-serif', size: 11, weight: '500' } },
+            grid: { color: tc.gridColor },
+            angleLines: { color: tc.gridColor }
           }
         },
         plugins: {
           legend: {
             display: true,
             position: 'bottom',
-            labels: { color: cc.legendLabel, font: { family: 'Inter', size: 12 }, usePointStyle: true, pointStyle: 'circle', padding: 20 }
+            labels: { color: tc.legendColor, font: { family: 'Inter', size: 12 }, usePointStyle: true, pointStyle: 'circle', padding: 20 }
           },
-          tooltip: { backgroundColor: cc.tooltipBg, titleColor: cc.tooltipTitle, bodyColor: cc.tooltipBody, borderColor: cc.tooltipBorder, borderWidth: 1, cornerRadius: 8, padding: 10 }
+          tooltip: { backgroundColor: tc.tooltipBg, titleColor: tc.tooltipTitle, bodyColor: tc.tooltipBody, borderColor: tc.tooltipBorder, borderWidth: 1, cornerRadius: 8, padding: 10 }
         },
         animation: { duration: 800, easing: 'easeOutQuart' }
       }
@@ -590,14 +606,18 @@ const Components = {
     try {
       var stored = GoNoGoStorage.get('adminUser');
       if (stored) {
-        // Check session expiry — 24 hours
-        var loginTime = GoNoGoStorage.get('loginTime');
-        if (loginTime && (Date.now() - loginTime > 24 * 60 * 60 * 1000)) {
-          // Session expired — force re-login
-          this._adminUser = null;
-          GoNoGoStorage.remove('adminUser');
-          GoNoGoStorage.remove('loginTime');
-          return null;
+        // Check session expiry (24 hours)
+        var loginTime = GoNoGoStorage.get('adminLoginTime');
+        if (loginTime) {
+          var elapsed = Date.now() - loginTime;
+          var twentyFourHours = 24 * 60 * 60 * 1000;
+          if (elapsed > twentyFourHours) {
+            // Session expired — force re-login
+            this._adminUser = null;
+            GoNoGoStorage.remove('adminUser');
+            GoNoGoStorage.remove('adminLoginTime');
+            return null;
+          }
         }
         this._adminUser = stored;
       }
@@ -665,7 +685,7 @@ const Components = {
       if (user) {
         Components._adminUser = user;
         GoNoGoStorage.set('adminUser', user);
-        GoNoGoStorage.set('loginTime', Date.now());
+        GoNoGoStorage.set('adminLoginTime', Date.now());
         document.getElementById('password-overlay').remove();
         if (typeof initAdminPage === 'function') initAdminPage();
       } else {
@@ -686,7 +706,7 @@ const Components = {
   adminLogout() {
     this._adminUser = null;
     GoNoGoStorage.remove('adminUser');
-    GoNoGoStorage.remove('loginTime');
+    GoNoGoStorage.remove('adminLoginTime');
     window.location.href = 'index.html';
   },
 
@@ -815,11 +835,17 @@ const Components = {
     try {
       var user = await GoNoGoAPI.brandLogin(email, password);
       if (user) {
-        Components._brandUser = user;
-        GoNoGoStorage.set('brandUser', user);
-        GoNoGoStorage.set('brandLoginTime', Date.now());
-        document.getElementById('brand-login-overlay').remove();
-        if (typeof initBrandPage === 'function') initBrandPage();
+        if (user.role === 'admin' && user.brand_slug === '__admin__') {
+          // Admin user — show brand picker
+          Components._pendingAdminUser = user;
+          Components.showAdminBrandPicker();
+        } else {
+          Components._brandUser = user;
+          GoNoGoStorage.set('brandUser', user);
+          GoNoGoStorage.set('brandLoginTime', Date.now());
+          document.getElementById('brand-login-overlay').remove();
+          if (typeof initBrandPage === 'function') initBrandPage();
+        }
       } else {
         error.textContent = 'Incorrect credentials. Try again.';
         error.style.display = 'block';
@@ -833,6 +859,55 @@ const Components = {
 
     btn.disabled = false;
     btn.innerHTML = '<i class="fa-solid fa-lock"></i> Sign In';
+  },
+
+  async showAdminBrandPicker() {
+    var brands = await GoNoGoAPI.getAllBrandSlugs();
+    var overlay = document.getElementById('brand-login-overlay');
+    overlay.querySelector('.password-box').innerHTML = `
+      <div class="logo" style="justify-content:center">
+        <img src="${LOGO_URL}" alt="GoNoGo" style="height:32px;width:auto;">
+      </div>
+      <h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-2)">Admin Access</h3>
+      <p style="color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:var(--space-5)">Select a brand to view their portal</p>
+      <div class="form-group">
+        <label class="form-label">Brand</label>
+        <input type="text" id="brand-picker-search" placeholder="Search brands..." oninput="Components.filterBrandPicker()" style="margin-bottom:var(--space-2);">
+        <div id="brand-picker-list" style="max-height:300px;overflow-y:auto;border:1px solid var(--border-primary);border-radius:var(--radius-md);">
+        </div>
+      </div>
+    `;
+    var listHtml = '';
+    brands.forEach(function(b) {
+      var verdictColor = b.verdict === 'GO' ? 'var(--green)' : b.verdict === 'NOGO' ? 'var(--red)' : 'var(--orange)';
+      listHtml += '<div class="brand-picker-item" data-slug="' + b.slug + '" data-name="' + Components.escapeHTML(b.name) + '" ' +
+        'onclick="Components.selectAdminBrand(\'' + b.slug + '\', \'' + Components.escapeHTML(b.name).replace(/'/g, "\\'") + '\')" ' +
+        'style="padding:10px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-subtle);font-size:var(--text-sm);transition:background 0.15s;"' +
+        ' onmouseover="this.style.background=\'var(--surface-2)\'" onmouseout="this.style.background=\'\'">'+
+        '<span style="font-weight:500;">' + Components.escapeHTML(b.name) + '</span>' +
+        '<span style="font-size:var(--text-xs);font-weight:700;color:' + verdictColor + ';">' + b.gonogo_score + '/100</span>' +
+      '</div>';
+    });
+    document.getElementById('brand-picker-list').innerHTML = listHtml;
+  },
+
+  filterBrandPicker() {
+    var search = (document.getElementById('brand-picker-search').value || '').toLowerCase();
+    var items = document.querySelectorAll('.brand-picker-item');
+    items.forEach(function(item) {
+      var name = (item.getAttribute('data-name') || '').toLowerCase();
+      item.style.display = name.indexOf(search) !== -1 ? '' : 'none';
+    });
+  },
+
+  selectAdminBrand(slug, name) {
+    var admin = Components._pendingAdminUser;
+    var user = { id: admin.id, email: admin.email, display_name: admin.display_name + ' (viewing ' + name + ')', role: 'admin', brand_slug: slug, region: admin.region };
+    Components._brandUser = user;
+    GoNoGoStorage.set('brandUser', user);
+    GoNoGoStorage.set('brandLoginTime', Date.now());
+    document.getElementById('brand-login-overlay').remove();
+    if (typeof initBrandPage === 'function') initBrandPage();
   },
 
   brandLogout() {
@@ -857,7 +932,7 @@ const Components = {
     return `
       <aside class="admin-sidebar" id="admin-sidebar">
         <a href="brand-dashboard.html" class="logo">
-          <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;border-radius:4px;">
+          <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1e3a5f;color:#60a5fa;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
           <i class="fa-solid fa-globe"></i> United Kingdom

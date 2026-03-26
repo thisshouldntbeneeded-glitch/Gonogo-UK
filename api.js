@@ -1,7 +1,7 @@
-// GoNoGo UK — API Client (Supabase Edition v2)
+// GoNoGo SA — API Client (Supabase Edition v2)
 // Brands + Categories = Supabase tables (with static JS fallback)
 // Reviews = Supabase 'reviews' table
-// Admin Users = Supabase 'admin_users' table (via RPC — no local fallback)
+// Admin Users = Supabase 'admin_users' table (via secure RPC)
 
 var GoNoGoAPI = (function () {
   'use strict';
@@ -318,7 +318,7 @@ var GoNoGoAPI = (function () {
               id: r.id, category: r.category_slug, brandname: r.brand_name,
               reviewername: r.reviewer_name, reviewtext: r.review_text,
               verdict: r.verdict || '',
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });
@@ -337,7 +337,7 @@ var GoNoGoAPI = (function () {
               reviewername: r.reviewer_name, ReviewerName: r.reviewer_name,
               reviewtext: r.review_text, ReviewText: r.review_text,
               verdict: r.verdict || '',
-              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               created_at: r.created_at, status: r.status, Status: r.status
             };
           });
@@ -353,7 +353,7 @@ var GoNoGoAPI = (function () {
     },
 
     // ==========================================
-    // ADMIN AUTH — Supabase with local fallback
+    // ADMIN AUTH — Supabase (secure RPC)
     // ==========================================
     _hashPassword: function (password) {
       var encoder = new TextEncoder();
@@ -367,12 +367,15 @@ var GoNoGoAPI = (function () {
       return this._hashPassword(password).then(function (hash) {
         return supabaseRequest('rpc/admin_login', {
           method: 'POST',
-          body: { p_email: email, p_hash: hash }
+          body: { p_email: email.toLowerCase().trim(), p_hash: hash }
         }).then(function (rows) {
           if (rows && rows.length > 0) return rows[0];
+          // RPC may return a single object instead of array
+          if (rows && rows.id) return rows;
           return null;
-        }).catch(function () {
-          // If admin_login RPC or admin_users table doesn't exist, fail securely
+        }).catch(function (err) {
+          // No fallback — admin_users table must be available
+          console.error('Admin login failed:', err);
           return null;
         });
       });
@@ -381,7 +384,7 @@ var GoNoGoAPI = (function () {
     adminChangePassword: function (userId, oldPassword, newPassword) {
       var self = this;
       return Promise.all([this._hashPassword(oldPassword), this._hashPassword(newPassword)]).then(function (hashes) {
-        if (userId === 'local-admin') throw new Error('Run supabase-setup.sql first to enable password changes');
+        if (!userId) throw new Error('Invalid user session');
         return supabaseRequest('admin_users?id=eq.' + encodeURIComponent(userId) + '&password_hash=eq.' + encodeURIComponent(hashes[0]) + '&select=id')
           .then(function (rows) {
             if (!rows || rows.length === 0) throw new Error('Current password is incorrect');
@@ -542,22 +545,63 @@ var GoNoGoAPI = (function () {
     },
 
     // ==========================================
-    // BRAND PORTAL AUTH — brand_login RPC
+    // BRAND PORTAL AUTH — tries brand_login first, then admin_login as fallback
     // ==========================================
     brandLogin: function (email, password) {
+      var self = this;
       return this._hashPassword(password).then(function (hash) {
+        // Try brand login first
         return supabaseRequest('rpc/brand_login', {
           method: 'POST',
           body: { p_email: email.toLowerCase().trim(), p_hash: hash }
         }).then(function (rows) {
           if (rows && rows.length > 0) return rows[0];
           if (rows && rows.id) return rows;
-          return null;
+          // No brand user found — try admin login as fallback
+          return supabaseRequest('rpc/admin_login', {
+            method: 'POST',
+            body: { p_email: email.toLowerCase().trim(), p_hash: hash }
+          }).then(function (adminRows) {
+            if (adminRows && adminRows.length > 0) {
+              var admin = adminRows[0];
+              return { id: admin.id, email: admin.email, display_name: admin.display_name, role: 'admin', brand_slug: '__admin__', region: SITE_REGION };
+            }
+            if (adminRows && adminRows.id) {
+              return { id: adminRows.id, email: adminRows.email, display_name: adminRows.display_name, role: 'admin', brand_slug: '__admin__', region: SITE_REGION };
+            }
+            return null;
+          }).catch(function () { return null; });
         }).catch(function (err) {
-          console.error('Brand login failed:', err);
-          return null;
+          // brand_login RPC might not exist yet — try admin
+          return supabaseRequest('rpc/admin_login', {
+            method: 'POST',
+            body: { p_email: email.toLowerCase().trim(), p_hash: hash }
+          }).then(function (adminRows) {
+            if (adminRows && adminRows.length > 0) {
+              var admin = adminRows[0];
+              return { id: admin.id, email: admin.email, display_name: admin.display_name, role: 'admin', brand_slug: '__admin__', region: SITE_REGION };
+            }
+            return null;
+          }).catch(function () { return null; });
         });
       });
+    },
+
+    // Get all brands (for admin brand picker)
+    getAllBrandSlugs: function () {
+      return supabaseRequest('brands?region=eq.' + SITE_REGION + '&select=slug,name,gonogo_score,verdict&order=name.asc')
+        .then(function (rows) { return rows || []; })
+        .catch(function () { return []; });
+    },
+
+    // Brand user management (admin only)
+    addBrandUser: function (email, password, displayName, brandSlug, region) {
+      return this._hashPassword(password).then(function (hash) {
+        return supabaseRequest('brand_users', {
+          method: 'POST',
+          body: { email: email.toLowerCase().trim(), password_hash: hash, display_name: displayName || '', brand_slug: brandSlug, region: region || SITE_REGION, role: 'brand_viewer' }
+        });
+      }).then(function (rows) { return { ok: true, user: rows && rows[0] ? rows[0] : null }; });
     },
 
     getBrandUser: function () {
@@ -610,7 +654,7 @@ var GoNoGoAPI = (function () {
               review_text: r.review_text,
               verdict: r.verdict || '',
               created_at: r.created_at,
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });
