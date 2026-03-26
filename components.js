@@ -5,6 +5,19 @@ const LOGO_URL = 'https://images.squarespace-cdn.com/content/6814797d734d653e602
 
 const Components = {
   // ============================================================
+  // HTML ESCAPING (XSS prevention)
+  // ============================================================
+  escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  },
+
+  // ============================================================
   // LOGO HELPER
   // ============================================================
   getBrandInitials(name) {
@@ -494,7 +507,18 @@ const Components = {
     if (this._adminUser) return this._adminUser;
     try {
       var stored = GoNoGoStorage.get('adminUser');
-      if (stored) this._adminUser = stored;
+      if (stored) {
+        // Check session expiry — 24 hours
+        var loginTime = GoNoGoStorage.get('loginTime');
+        if (loginTime && (Date.now() - loginTime > 24 * 60 * 60 * 1000)) {
+          // Session expired — force re-login
+          this._adminUser = null;
+          GoNoGoStorage.remove('adminUser');
+          GoNoGoStorage.remove('loginTime');
+          return null;
+        }
+        this._adminUser = stored;
+      }
     } catch(e) {}
     return this._adminUser;
   },
@@ -559,6 +583,7 @@ const Components = {
       if (user) {
         Components._adminUser = user;
         GoNoGoStorage.set('adminUser', user);
+        GoNoGoStorage.set('loginTime', Date.now());
         document.getElementById('password-overlay').remove();
         if (typeof initAdminPage === 'function') initAdminPage();
       } else {
@@ -579,6 +604,7 @@ const Components = {
   adminLogout() {
     this._adminUser = null;
     GoNoGoStorage.remove('adminUser');
+    GoNoGoStorage.remove('loginTime');
     window.location.href = 'index.html';
   },
 
