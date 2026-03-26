@@ -44,7 +44,7 @@ const Components = {
       // Admin link hidden from public nav — access via /admin.html directly
     ];
 
-    return `
+    var html = `
       <header class="site-header">
         <div class="container">
           <a href="index.html" class="logo">
@@ -59,6 +59,9 @@ const Components = {
               `).join('')}
             </ul>
           </nav>
+          <button class="theme-toggle" onclick="Components.toggleTheme()" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">
+            <i class="fa-solid fa-sun theme-toggle-icon"></i>
+          </button>
           <button class="hamburger" onclick="Components.toggleMobileNav()" aria-label="Menu">
             <i class="fa-solid fa-bars" id="hamburger-icon"></i>
           </button>
@@ -70,8 +73,14 @@ const Components = {
             <i class="fa-solid ${l.icon}"></i> ${l.label}
           </a>
         `).join('')}
+        <button class="theme-toggle" onclick="Components.toggleTheme()">
+          <i class="fa-solid fa-sun theme-toggle-icon"></i> <span class="theme-toggle-label">Light Mode</span>
+        </button>
       </div>
     `;
+    // Auto-init theme after nav is rendered (deferred so DOM is ready)
+    setTimeout(() => this.initTheme(), 0);
+    return html;
   },
 
   renderAdminSidebar(activePage) {
@@ -118,6 +127,45 @@ const Components = {
     const icon = document.getElementById('hamburger-icon');
     const isOpen = nav.classList.toggle('open');
     icon.className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
+  },
+
+  // ============================================================
+  // THEME TOGGLE (Light / Dark)
+  // ============================================================
+  initTheme() {
+    var saved = localStorage.getItem('gonogo_theme');
+    if (saved === 'light') {
+      document.body.classList.add('light-mode');
+      document.documentElement.classList.add('light-mode');
+    } else if (!saved && window.matchMedia('(prefers-color-scheme: light)').matches) {
+      document.body.classList.add('light-mode');
+      document.documentElement.classList.add('light-mode');
+    } else {
+      // Ensure both html and body are in sync (remove if dark)
+      document.body.classList.remove('light-mode');
+      document.documentElement.classList.remove('light-mode');
+    }
+    this.updateThemeIcon();
+  },
+
+  toggleTheme() {
+    document.body.classList.toggle('light-mode');
+    document.documentElement.classList.toggle('light-mode');
+    var isLight = document.body.classList.contains('light-mode');
+    localStorage.setItem('gonogo_theme', isLight ? 'light' : 'dark');
+    this.updateThemeIcon();
+  },
+
+  updateThemeIcon() {
+    var isLight = document.body.classList.contains('light-mode');
+    var icons = document.querySelectorAll('.theme-toggle-icon');
+    icons.forEach(function(icon) {
+      icon.className = 'fa-solid ' + (isLight ? 'fa-moon' : 'fa-sun') + ' theme-toggle-icon';
+    });
+    var labels = document.querySelectorAll('.theme-toggle-label');
+    labels.forEach(function(label) {
+      label.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+    });
   },
 
   toggleAdminSidebar() {
@@ -193,7 +241,7 @@ const Components = {
     return `
       <div class="score-circle ${sizeClass}">
         <svg viewBox="${viewBox}">
-          <circle cx="${cx}" cy="${cy}" r="${r}" stroke="#2a2a2a" stroke-width="${size === 'lg' ? 8 : 6}" fill="none"/>
+          <circle cx="${cx}" cy="${cy}" r="${r}" stroke="${this._isLightMode() ? '#e0e0e0' : '#2a2a2a'}" stroke-width="${size === 'lg' ? 8 : 6}" fill="none" class="score-track"/>
           <circle cx="${cx}" cy="${cy}" r="${r}" stroke="${color}" stroke-width="${size === 'lg' ? 8 : 6}" fill="none"
             stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"
             stroke-linecap="round" style="transition: stroke-dashoffset 800ms cubic-bezier(0.16,1,0.3,1)"/>
@@ -219,6 +267,25 @@ const Components = {
   // ============================================================
   // RADAR CHART (Chart.js wrapper)
   // ============================================================
+  _isLightMode() {
+    return document.body.classList.contains('light-mode');
+  },
+
+  _chartColors() {
+    var light = this._isLightMode();
+    return {
+      tick: light ? '#888888' : '#666',
+      label: light ? '#555555' : '#a0a0a0',
+      grid: light ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)',
+      tooltipBg: light ? '#ffffff' : '#1a1a1a',
+      tooltipTitle: light ? '#1a1a1a' : '#fff',
+      tooltipBody: light ? '#555555' : '#a0a0a0',
+      tooltipBorder: light ? '#e0e0e0' : '#2a2a2a',
+      pointHoverBg: light ? '#ffffff' : '#fff',
+      legendLabel: light ? '#555555' : '#a0a0a0'
+    };
+  },
+
   createRadarChart(canvasId, brand, options = {}) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return null;
@@ -237,6 +304,7 @@ const Components = {
 
     const color = getScoreColor(brand.overallScore);
     const bgColor = color + '20';
+    const cc = this._chartColors();
 
     return new Chart(canvas, {
       type: 'radar',
@@ -250,7 +318,7 @@ const Components = {
           borderWidth: 2,
           pointBackgroundColor: color,
           pointBorderColor: color,
-          pointHoverBackgroundColor: '#fff',
+          pointHoverBackgroundColor: cc.pointHoverBg,
           pointHoverBorderColor: color,
           pointRadius: options.pointRadius !== undefined ? options.pointRadius : 3,
           pointHoverRadius: 5
@@ -266,29 +334,29 @@ const Components = {
             ticks: {
               stepSize: 25,
               display: options.showTicks !== false,
-              color: '#666',
+              color: cc.tick,
               backdropColor: 'transparent',
               font: { size: 9 }
             },
             pointLabels: {
-              color: '#a0a0a0',
+              color: cc.label,
               font: {
                 family: 'Inter, sans-serif',
                 size: options.labelSize || 10,
                 weight: '500'
               }
             },
-            grid: { color: 'rgba(255,255,255,0.06)' },
-            angleLines: { color: 'rgba(255,255,255,0.06)' }
+            grid: { color: cc.grid },
+            angleLines: { color: cc.grid }
           }
         },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1a1a1a',
-            titleColor: '#fff',
-            bodyColor: '#a0a0a0',
-            borderColor: '#2a2a2a',
+            backgroundColor: cc.tooltipBg,
+            titleColor: cc.tooltipTitle,
+            bodyColor: cc.tooltipBody,
+            borderColor: cc.tooltipBorder,
             borderWidth: 1,
             cornerRadius: 8,
             padding: 10,
@@ -324,6 +392,7 @@ const Components = {
     const shortLabels = allLabels.map(l => l.length > 18 ? l.substring(0, 16) + '…' : l);
     const color1 = '#11a551';
     const color2 = '#ff9800';
+    const cc = this._chartColors();
 
     return new Chart(canvas, {
       type: 'radar',
@@ -359,19 +428,19 @@ const Components = {
           r: {
             min: 0,
             max: 100,
-            ticks: { stepSize: 25, display: true, color: '#666', backdropColor: 'transparent', font: { size: 9 } },
-            pointLabels: { color: '#a0a0a0', font: { family: 'Inter, sans-serif', size: 11, weight: '500' } },
-            grid: { color: 'rgba(255,255,255,0.06)' },
-            angleLines: { color: 'rgba(255,255,255,0.06)' }
+            ticks: { stepSize: 25, display: true, color: cc.tick, backdropColor: 'transparent', font: { size: 9 } },
+            pointLabels: { color: cc.label, font: { family: 'Inter, sans-serif', size: 11, weight: '500' } },
+            grid: { color: cc.grid },
+            angleLines: { color: cc.grid }
           }
         },
         plugins: {
           legend: {
             display: true,
             position: 'bottom',
-            labels: { color: '#a0a0a0', font: { family: 'Inter', size: 12 }, usePointStyle: true, pointStyle: 'circle', padding: 20 }
+            labels: { color: cc.legendLabel, font: { family: 'Inter', size: 12 }, usePointStyle: true, pointStyle: 'circle', padding: 20 }
           },
-          tooltip: { backgroundColor: '#1a1a1a', titleColor: '#fff', bodyColor: '#a0a0a0', borderColor: '#2a2a2a', borderWidth: 1, cornerRadius: 8, padding: 10 }
+          tooltip: { backgroundColor: cc.tooltipBg, titleColor: cc.tooltipTitle, bodyColor: cc.tooltipBody, borderColor: cc.tooltipBorder, borderWidth: 1, cornerRadius: 8, padding: 10 }
         },
         animation: { duration: 800, easing: 'easeOutQuart' }
       }
