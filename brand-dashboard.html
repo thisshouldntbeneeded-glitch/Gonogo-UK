@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoNoGo SA — Brand Dashboard</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebar-container"></div>
+    <main class="admin-main" id="brand-content" style="display:none;">
+      <!-- Welcome header -->
+      <div class="admin-header" id="brand-header">
+        <div style="display:flex;align-items:center;gap:var(--space-4);">
+          <div id="brand-logo-area"></div>
+          <div>
+            <h1 class="admin-title" id="brand-welcome">Dashboard</h1>
+            <p class="text-sm text-secondary" id="brand-subtitle">Your GoNoGo brand overview</p>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--space-3);">
+          <a href="brand-reviews.html" class="btn btn-sm" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">
+            <i class="fa-solid fa-comments"></i> Reviews
+          </a>
+          <a href="brand-insights.html" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-chart-line"></i> Insights
+          </a>
+        </div>
+      </div>
+
+      <!-- Score + Verdict -->
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--space-6);margin-bottom:var(--space-8);align-items:start;">
+        <div class="card" style="text-align:center;padding:var(--space-8);">
+          <div id="score-circle-area" style="display:flex;justify-content:center;margin-bottom:var(--space-4);"></div>
+          <div id="verdict-badge-area" style="margin-bottom:var(--space-2);"></div>
+          <div class="text-xs text-muted" id="score-label">Overall GoNoGo Score</div>
+        </div>
+        <div>
+          <!-- KPI row -->
+          <div class="kpi-grid" style="margin-bottom:var(--space-6);" id="kpi-grid">
+            <div class="kpi-card"><div class="kpi-label">Loading...</div></div>
+          </div>
+          <!-- Quick links -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
+            <a href="brand-reviews.html" class="card card-hover" style="text-decoration:none;display:flex;align-items:center;gap:var(--space-3);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--blue-dim);display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-comments" style="color:var(--blue);"></i>
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:var(--text-sm);color:var(--text-primary);">View Reviews</div>
+                <div class="text-xs text-muted">Read &amp; reply to customer reviews</div>
+              </div>
+            </a>
+            <a href="brand-insights.html" class="card card-hover" style="text-decoration:none;display:flex;align-items:center;gap:var(--space-3);">
+              <div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--green-bg);display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-chart-line" style="color:var(--green);"></i>
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:var(--text-sm);color:var(--text-primary);">View Insights</div>
+                <div class="text-xs text-muted">Trends &amp; industry comparison</div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Framework Breakdown -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8);">
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+            <i class="fa-solid fa-spider" style="color:var(--green);margin-right:var(--space-2);"></i>
+            Scoring Radar
+          </h3>
+          <div style="height:300px;"><canvas id="radar-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+            <i class="fa-solid fa-list-check" style="color:var(--green);margin-right:var(--space-2);"></i>
+            Framework Breakdown
+          </h3>
+          <div id="framework-table" style="overflow-x:auto;"></div>
+        </div>
+      </div>
+
+      <!-- Strengths & Concerns -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8);">
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);color:var(--green-text);">
+            <i class="fa-solid fa-circle-check" style="margin-right:var(--space-2);"></i>
+            Key Strengths
+          </h3>
+          <ul id="strengths-list" style="list-style:none;display:flex;flex-direction:column;gap:var(--space-2);"></ul>
+        </div>
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);color:var(--orange-text);">
+            <i class="fa-solid fa-triangle-exclamation" style="margin-right:var(--space-2);"></i>
+            Key Concerns
+          </h3>
+          <ul id="concerns-list" style="list-style:none;display:flex;flex-direction:column;gap:var(--space-2);"></ul>
+        </div>
+      </div>
+
+      <div style="padding:var(--space-6) 0;text-align:center;">
+        <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom &mdash; Brand Portal</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="data/data_partA.js"></script>
+  <script src="data/data_partB.js"></script>
+  <script src="data/data_partC.js"></script>
+  <script src="data/data_partD.js"></script>
+  <script src="data/data_partE.js"></script>
+  <script src="data/data_partF.js"></script>
+  <script src="data/data.js"></script>
+  <script src="data/helpers.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="components.js"></script>
+  <script src="api.js"></script>
+
+  <script>
+    Components.initTheme();
+    document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('dashboard');
+
+    if (Components.checkBrandAuth()) {
+      initBrandPage();
+    }
+
+    async function initBrandPage() {
+      var user = Components.getBrandUser();
+      if (!user) return;
+
+      document.getElementById('brand-content').style.display = '';
+
+      // Re-render sidebar with user info now available
+      document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('dashboard');
+
+      var brandSlug = user.brand_slug;
+      var data = await GoNoGoAPI.getBrandData(brandSlug);
+
+      if (!data) {
+        document.getElementById('brand-content').innerHTML =
+          '<div class="card" style="text-align:center;padding:var(--space-10);">' +
+            '<i class="fa-solid fa-circle-exclamation" style="font-size:48px;color:var(--red);margin-bottom:var(--space-4);"></i>' +
+            '<h2 style="font-size:var(--text-lg);margin-bottom:var(--space-2);">Brand Not Found</h2>' +
+            '<p class="text-sm text-muted">No brand data found for slug: ' + Components.escapeHTML(brandSlug) + '</p>' +
+          '</div>';
+        return;
+      }
+
+      var brand = data.normalized;
+      var raw = data.raw;
+
+      // Welcome header
+      var logoHtml = brand.logo
+        ? '<img src="' + brand.logo + '" alt="' + Components.escapeHTML(brand.name) + '" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:contain;background:var(--surface-3);" onerror="this.style.display=\'none\'">'
+        : '';
+      document.getElementById('brand-logo-area').innerHTML = logoHtml;
+      document.getElementById('brand-welcome').textContent = 'Welcome, ' + brand.name;
+      document.getElementById('brand-subtitle').textContent = brand.categoryName + ' — Last updated ' + Components.formatDate(brand.lastUpdated);
+
+      // Score circle + verdict
+      document.getElementById('score-circle-area').innerHTML = Components.renderScoreCircle(brand.overallScore, 'lg');
+      document.getElementById('verdict-badge-area').innerHTML = Components.renderVerdictBadge(brand.verdict);
+
+      // Fetch reviews + category peers for KPIs
+      var reviews = await GoNoGoAPI.getBrandReviews(brand.name);
+      var peers = await GoNoGoAPI.getBrandsInCategory(raw.category_slug);
+
+      // Compute rank
+      var rank = 1;
+      for (var i = 0; i < peers.length; i++) {
+        if (peers[i].slug === brandSlug) { rank = i + 1; break; }
+      }
+
+      // Sentiment
+      var goReviews = reviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'GO'; });
+      var nogoReviews = reviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'NOGO'; });
+      var avgSentiment = reviews.length > 0 ? Math.round((goReviews.length / reviews.length) * 100) : 0;
+
+      // KPIs
+      document.getElementById('kpi-grid').innerHTML =
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Total Reviews</div>' +
+          '<div class="kpi-value">' + reviews.length + '</div>' +
+          '<div class="kpi-delta" style="color:' + (reviews.length > 0 ? 'var(--green-text)' : 'var(--text-muted)') + ';">' + (reviews.length > 0 ? goReviews.length + ' positive' : 'None yet') + '</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Positive Sentiment</div>' +
+          '<div class="kpi-value">' + avgSentiment + '<span class="text-sm text-muted">%</span></div>' +
+          '<div class="kpi-delta text-muted">Based on review verdicts</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Industry Rank</div>' +
+          '<div class="kpi-value">#' + rank + '<span class="text-sm text-muted"> / ' + peers.length + '</span></div>' +
+          '<div class="kpi-delta text-muted">' + Components.escapeHTML(brand.categoryName) + '</div>' +
+        '</div>';
+
+      // Radar chart
+      if (brand.categoryScores && Object.keys(brand.categoryScores).length > 0) {
+        Components.createRadarChart('radar-chart', brand, { labelSize: 11, showTicks: true });
+      } else {
+        document.getElementById('radar-chart').parentElement.innerHTML =
+          '<div style="display:flex;align-items:center;justify-content:center;height:300px;color:var(--text-muted);font-size:var(--text-sm);">No scoring data available</div>';
+      }
+
+      // Framework table
+      var fb = raw.framework_breakdown || [];
+      if (fb.length > 0) {
+        var tableHtml = '<table class="data-table" style="width:100%;"><thead><tr>' +
+          '<th style="text-align:left;">Category</th>' +
+          '<th style="text-align:center;">Score</th>' +
+          '<th style="text-align:left;">Description</th>' +
+          '</tr></thead><tbody>';
+        fb.forEach(function(item) {
+          var parts = item.score.split('/');
+          var pct = Math.round((parseFloat(parts[0]) / parseFloat(parts[1])) * 100);
+          var color = getScoreColor(pct);
+          tableHtml += '<tr>' +
+            '<td style="font-weight:600;font-size:var(--text-sm);">' + Components.escapeHTML(item.category) + '</td>' +
+            '<td style="text-align:center;">' +
+              '<span style="display:inline-block;padding:2px 10px;border-radius:var(--radius-sm);background:' + color + '15;color:' + color + ';font-weight:700;font-size:var(--text-sm);">' + Components.escapeHTML(item.score) + '</span>' +
+            '</td>' +
+            '<td style="font-size:var(--text-xs);color:var(--text-secondary);max-width:300px;">' + Components.escapeHTML(item.description) + '</td>' +
+          '</tr>';
+        });
+        tableHtml += '</tbody></table>';
+        document.getElementById('framework-table').innerHTML = tableHtml;
+      } else {
+        document.getElementById('framework-table').innerHTML =
+          '<div style="padding:var(--space-6);text-align:center;color:var(--text-muted);font-size:var(--text-sm);">No framework breakdown available</div>';
+      }
+
+      // Strengths
+      var strengthsHtml = '';
+      (brand.strengths || []).forEach(function(s) {
+        strengthsHtml += '<li style="display:flex;align-items:flex-start;gap:var(--space-2);font-size:var(--text-sm);color:var(--text-secondary);">' +
+          '<i class="fa-solid fa-check" style="color:var(--green);margin-top:3px;flex-shrink:0;"></i> ' + Components.escapeHTML(s) +
+        '</li>';
+      });
+      document.getElementById('strengths-list').innerHTML = strengthsHtml || '<li class="text-sm text-muted">No strengths listed</li>';
+
+      // Concerns
+      var concernsHtml = '';
+      (brand.concerns || []).forEach(function(c) {
+        concernsHtml += '<li style="display:flex;align-items:flex-start;gap:var(--space-2);font-size:var(--text-sm);color:var(--text-secondary);">' +
+          '<i class="fa-solid fa-exclamation" style="color:var(--orange);margin-top:3px;flex-shrink:0;width:14px;text-align:center;"></i> ' + Components.escapeHTML(c) +
+        '</li>';
+      });
+      document.getElementById('concerns-list').innerHTML = concernsHtml || '<li class="text-sm text-muted">No concerns listed</li>';
+    }
+  </script>
+  <style>
+    @media (max-width: 1024px) {
+      .admin-header { flex-direction: column; align-items: flex-start !important; gap: var(--space-4); }
+    }
+    @media (max-width: 768px) {
+      .admin-main > div:nth-child(2) { grid-template-columns: 1fr !important; }
+      .admin-main > div:nth-child(3) { grid-template-columns: 1fr !important; }
+      .admin-main > div:nth-child(4) { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</body>
+</html>

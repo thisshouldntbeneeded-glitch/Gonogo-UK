@@ -727,5 +727,162 @@ const Components = {
       if (aVal > bVal) return direction === 'asc' ? 1 : -1;
       return 0;
     });
+  },
+
+  // ============================================================
+  // BRAND PORTAL AUTH
+  // ============================================================
+  _brandUser: null,
+
+  getBrandUser() {
+    if (this._brandUser) return this._brandUser;
+    try {
+      var stored = GoNoGoStorage.get('brandUser');
+      if (stored) {
+        var loginTime = GoNoGoStorage.get('brandLoginTime');
+        if (loginTime) {
+          var elapsed = Date.now() - loginTime;
+          if (elapsed > 24 * 60 * 60 * 1000) {
+            this._brandUser = null;
+            GoNoGoStorage.remove('brandUser');
+            GoNoGoStorage.remove('brandLoginTime');
+            return null;
+          }
+        }
+        this._brandUser = stored;
+      }
+    } catch (e) {}
+    return this._brandUser;
+  },
+
+  checkBrandAuth() {
+    var user = this.getBrandUser();
+    if (!user) {
+      this.showBrandLoginPrompt();
+      return false;
+    }
+    return true;
+  },
+
+  showBrandLoginPrompt() {
+    const overlay = document.createElement('div');
+    overlay.className = 'password-overlay';
+    overlay.id = 'brand-login-overlay';
+    overlay.innerHTML = `
+      <div class="password-box">
+        <div class="logo" style="justify-content:center">
+          <img src="${LOGO_URL}" alt="GoNoGo" style="height:32px;width:auto;">
+        </div>
+        <h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-2)">Brand Portal</h3>
+        <p style="color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:var(--space-5)">Sign in to access your brand dashboard</p>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="brand-email" placeholder="brand@example.co.uk" onkeydown="if(event.key==='Enter')document.getElementById('brand-password').focus()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="brand-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')Components.submitBrandLogin()">
+          <div class="password-error" id="brand-login-error">Incorrect credentials. Try again.</div>
+        </div>
+        <button class="btn btn-primary w-full" id="brand-login-btn" onclick="Components.submitBrandLogin()">
+          <i class="fa-solid fa-lock"></i> Sign In
+        </button>
+        <p style="margin-top:var(--space-4);font-size:var(--text-xs);color:var(--text-muted)">Contact GoNoGo to set up brand portal access</p>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(() => document.getElementById('brand-email').focus(), 100);
+  },
+
+  async submitBrandLogin() {
+    const emailInput = document.getElementById('brand-email');
+    const passInput = document.getElementById('brand-password');
+    const error = document.getElementById('brand-login-error');
+    const btn = document.getElementById('brand-login-btn');
+    var email = emailInput.value.trim().toLowerCase();
+    var password = passInput.value;
+
+    if (!email || !password) {
+      error.textContent = 'Please enter both email and password.';
+      error.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
+    error.style.display = 'none';
+
+    try {
+      var user = await GoNoGoAPI.brandLogin(email, password);
+      if (user) {
+        Components._brandUser = user;
+        GoNoGoStorage.set('brandUser', user);
+        GoNoGoStorage.set('brandLoginTime', Date.now());
+        document.getElementById('brand-login-overlay').remove();
+        if (typeof initBrandPage === 'function') initBrandPage();
+      } else {
+        error.textContent = 'Incorrect credentials. Try again.';
+        error.style.display = 'block';
+        passInput.value = '';
+        passInput.focus();
+      }
+    } catch (e) {
+      error.textContent = 'Login error: ' + e.message;
+      error.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-lock"></i> Sign In';
+  },
+
+  brandLogout() {
+    this._brandUser = null;
+    GoNoGoStorage.remove('brandUser');
+    GoNoGoStorage.remove('brandLoginTime');
+    window.location.href = 'brand-dashboard.html';
+  },
+
+  // ============================================================
+  // BRAND PORTAL SIDEBAR
+  // ============================================================
+  renderBrandSidebar(activePage) {
+    const user = this.getBrandUser();
+    const brandName = user ? Components.escapeHTML(user.display_name || user.brand_slug || 'Brand') : 'Brand Portal';
+    const links = [
+      { href: 'brand-dashboard.html', label: 'Dashboard', icon: 'fa-gauge', id: 'dashboard' },
+      { href: 'brand-reviews.html', label: 'Reviews', icon: 'fa-comments', id: 'reviews' },
+      { href: 'brand-insights.html', label: 'Insights', icon: 'fa-chart-line', id: 'insights' }
+    ];
+
+    return `
+      <aside class="admin-sidebar" id="admin-sidebar">
+        <a href="brand-dashboard.html" class="logo">
+          <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;border-radius:4px;">
+        </a>
+        <div style="background:#1e3a5f;color:#60a5fa;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
+          <i class="fa-solid fa-globe"></i> United Kingdom
+        </div>
+        <div style="padding:8px 16px;margin-top:4px;font-size:var(--text-sm);color:var(--text-secondary);font-weight:600;">
+          <i class="fa-solid fa-building" style="color:var(--green);margin-right:6px;"></i> ${brandName}
+        </div>
+        <nav class="admin-sidebar-nav">
+          ${links.map(l => `
+            <a href="${l.href}" class="admin-sidebar-link ${activePage === l.id ? 'active' : ''}">
+              <i class="fa-solid ${l.icon}"></i> ${l.label}
+            </a>
+          `).join('')}
+          <div style="flex:1"></div>
+          <a href="index.html" class="admin-sidebar-link">
+            <i class="fa-solid fa-arrow-left"></i> Back to Site
+          </a>
+          <a href="#" class="admin-sidebar-link" onclick="Components.brandLogout(); return false;">
+            <i class="fa-solid fa-right-from-bracket"></i> Logout
+          </a>
+        </nav>
+      </aside>
+      <button class="admin-mobile-toggle" onclick="Components.toggleAdminSidebar()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    `;
   }
 };

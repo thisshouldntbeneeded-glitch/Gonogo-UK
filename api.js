@@ -539,6 +539,113 @@ var GoNoGoAPI = (function () {
         return supabaseRequest('categories?slug=eq.' + encodeURIComponent(slug), { method: 'DELETE' })
           .then(function () { return { ok: true }; });
       });
+    },
+
+    // ==========================================
+    // BRAND PORTAL AUTH — brand_login RPC
+    // ==========================================
+    brandLogin: function (email, password) {
+      return this._hashPassword(password).then(function (hash) {
+        return supabaseRequest('rpc/brand_login', {
+          method: 'POST',
+          body: { p_email: email.toLowerCase().trim(), p_hash: hash }
+        }).then(function (rows) {
+          if (rows && rows.length > 0) return rows[0];
+          if (rows && rows.id) return rows;
+          return null;
+        }).catch(function (err) {
+          console.error('Brand login failed:', err);
+          return null;
+        });
+      });
+    },
+
+    getBrandUser: function () {
+      try {
+        var stored = GoNoGoStorage.get('brandUser');
+        if (stored) {
+          var loginTime = GoNoGoStorage.get('brandLoginTime');
+          if (loginTime) {
+            var elapsed = Date.now() - loginTime;
+            if (elapsed > 24 * 60 * 60 * 1000) {
+              GoNoGoStorage.remove('brandUser');
+              GoNoGoStorage.remove('brandLoginTime');
+              return null;
+            }
+          }
+          return stored;
+        }
+      } catch (e) {}
+      return null;
+    },
+
+    // ==========================================
+    // BRAND-SCOPED DATA
+    // ==========================================
+    getBrandData: function (slug) {
+      return Promise.all([
+        supabaseRequest('brands?region=eq.' + SITE_REGION + '&slug=eq.' + encodeURIComponent(slug) + '&select=*&limit=1'),
+        loadCategoryCache()
+      ]).then(function (results) {
+        var rows = results[0], cats = results[1];
+        if (!rows || rows.length === 0) return null;
+        var r = rows[0], c = cats[r.category_slug] || {};
+        return {
+          raw: r,
+          normalized: normalizeSBBrand(r, c.name, c.icon, c.scoring_categories),
+          category: c
+        };
+      });
+    },
+
+    getBrandReviews: function (brandName) {
+      return reviewsRequest('reviews?brand_name=eq.' + encodeURIComponent(brandName) + '&order=created_at.desc')
+        .then(function (data) {
+          return (data || []).map(function (r) {
+            return {
+              id: r.id,
+              category: r.category_slug,
+              brand_name: r.brand_name,
+              reviewer_name: r.reviewer_name,
+              review_text: r.review_text,
+              verdict: r.verdict || '',
+              created_at: r.created_at,
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              status: r.status
+            };
+          });
+        }).catch(function () { return []; });
+    },
+
+    getBrandsInCategory: function (categorySlug) {
+      return supabaseRequest('brands?region=eq.' + SITE_REGION + '&category_slug=eq.' + encodeURIComponent(categorySlug) + '&select=name,slug,gonogo_score,verdict&order=gonogo_score.desc')
+        .then(function (rows) { return rows || []; })
+        .catch(function () { return []; });
+    },
+
+    // ==========================================
+    // REVIEW REPLIES (on brands project)
+    // ==========================================
+    getReviewReplies: function (brandSlug) {
+      return supabaseRequest('review_replies?brand_slug=eq.' + encodeURIComponent(brandSlug) + '&order=created_at.desc')
+        .then(function (rows) { return rows || []; })
+        .catch(function () { return []; });
+    },
+
+    submitReply: function (reviewId, brandSlug, replyText, repliedBy) {
+      return supabaseRequest('review_replies', {
+        method: 'POST',
+        body: {
+          review_id: reviewId,
+          brand_slug: brandSlug,
+          reply_text: replyText,
+          replied_by: repliedBy,
+          created_at: new Date().toISOString()
+        },
+        prefer: 'return=representation'
+      }).then(function (rows) {
+        return { ok: true, reply: rows && rows[0] ? rows[0] : null };
+      });
     }
   };
 })();

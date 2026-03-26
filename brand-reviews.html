@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<!--
+   ______                            __
+  / ____/___  ____ ___  ____  __  __/ /____  _____
+ / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
+/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
+\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
+                    /_/
+        Created with Perplexity Computer
+        https://www.perplexity.ai/computer
+-->
+<meta name="generator" content="Perplexity Computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoNoGo SA — Brand Reviews</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebar-container"></div>
+    <main class="admin-main" id="brand-content" style="display:none;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title"><i class="fa-solid fa-comments" style="color:var(--green);margin-right:var(--space-2);"></i> Reviews</h1>
+          <p class="text-sm text-secondary" id="review-subtitle">Customer reviews for your brand</p>
+        </div>
+        <div style="display:flex;gap:var(--space-3);align-items:center;">
+          <div style="display:flex;gap:var(--space-2);" id="filter-buttons">
+            <button class="btn btn-sm filter-btn active" data-filter="all" onclick="filterReviews('all', this)">All</button>
+            <button class="btn btn-sm filter-btn" data-filter="go" onclick="filterReviews('go', this)" style="background:var(--green-bg);color:var(--green-text);border:1px solid var(--green-dim);">Go</button>
+            <button class="btn btn-sm filter-btn" data-filter="nogo" onclick="filterReviews('nogo', this)" style="background:var(--red-bg);color:var(--red-text);border:1px solid var(--red-dim);">NoGo</button>
+          </div>
+          <select id="sort-select" onchange="sortReviews(this.value)" style="background:var(--surface-3);border:1px solid var(--border-primary);color:var(--text-primary);padding:6px 12px;border-radius:var(--radius-sm);font-size:var(--text-xs);">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Review stats bar -->
+      <div class="kpi-grid" style="margin-bottom:var(--space-6);" id="review-stats">
+        <div class="kpi-card"><div class="kpi-label">Loading...</div></div>
+      </div>
+
+      <!-- Reviews list -->
+      <div id="reviews-list" style="display:flex;flex-direction:column;gap:var(--space-4);">
+        <div class="card" style="text-align:center;padding:var(--space-8);">
+          <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;color:var(--text-muted);"></i>
+          <p class="text-sm text-muted" style="margin-top:var(--space-3);">Loading reviews...</p>
+        </div>
+      </div>
+
+      <div style="padding:var(--space-6) 0;text-align:center;">
+        <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom &mdash; Brand Portal</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Reply modal -->
+  <div class="modal-overlay" id="reply-modal" style="display:none;">
+    <div class="password-box" style="max-width:500px;">
+      <h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);">
+        <i class="fa-solid fa-reply" style="color:var(--green);margin-right:var(--space-2);"></i> Reply to Review
+      </h3>
+      <div id="reply-review-preview" style="background:var(--surface-1);border-radius:var(--radius-md);padding:var(--space-4);margin-bottom:var(--space-4);text-align:left;"></div>
+      <div class="form-group" style="text-align:left;">
+        <label class="form-label">Your Reply</label>
+        <textarea id="reply-text" rows="4" placeholder="Write your reply..." style="width:100%;background:var(--surface-1);border:1px solid var(--border-primary);color:var(--text-primary);padding:var(--space-3);border-radius:var(--radius-md);font-family:var(--font-body);font-size:var(--text-sm);resize:vertical;"></textarea>
+      </div>
+      <div style="display:flex;gap:var(--space-3);justify-content:flex-end;">
+        <button class="btn btn-sm" onclick="closeReplyModal()" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="submit-reply-btn" onclick="submitReply()">
+          <i class="fa-solid fa-paper-plane"></i> Send Reply
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="data/data_partA.js"></script>
+  <script src="data/data_partB.js"></script>
+  <script src="data/data_partC.js"></script>
+  <script src="data/data_partD.js"></script>
+  <script src="data/data_partE.js"></script>
+  <script src="data/data_partF.js"></script>
+  <script src="data/data.js"></script>
+  <script src="data/helpers.js"></script>
+  <script src="components.js"></script>
+  <script src="api.js"></script>
+
+  <script>
+    Components.initTheme();
+    document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('reviews');
+
+    var _allReviews = [];
+    var _allReplies = {};
+    var _currentFilter = 'all';
+    var _currentSort = 'newest';
+    var _currentReviewId = null;
+    var _brandUser = null;
+    var _brandSlug = null;
+
+    if (Components.checkBrandAuth()) {
+      initBrandPage();
+    }
+
+    async function initBrandPage() {
+      _brandUser = Components.getBrandUser();
+      if (!_brandUser) return;
+
+      document.getElementById('brand-content').style.display = '';
+      document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('reviews');
+
+      _brandSlug = _brandUser.brand_slug;
+
+      // Get brand data to find brand name
+      var data = await GoNoGoAPI.getBrandData(_brandSlug);
+      if (!data) {
+        document.getElementById('reviews-list').innerHTML =
+          '<div class="card" style="text-align:center;padding:var(--space-8);"><p class="text-sm text-muted">Brand not found.</p></div>';
+        return;
+      }
+
+      var brandName = data.raw.name;
+      document.getElementById('review-subtitle').textContent = 'Customer reviews for ' + brandName;
+
+      // Fetch reviews and replies in parallel
+      var results = await Promise.all([
+        GoNoGoAPI.getBrandReviews(brandName),
+        GoNoGoAPI.getReviewReplies(_brandSlug)
+      ]);
+
+      _allReviews = results[0];
+
+      // Index replies by review_id
+      _allReplies = {};
+      (results[1] || []).forEach(function(r) {
+        if (!_allReplies[r.review_id]) _allReplies[r.review_id] = [];
+        _allReplies[r.review_id].push(r);
+      });
+
+      // Stats
+      var goCount = _allReviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'GO'; }).length;
+      var nogoCount = _allReviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'NOGO'; }).length;
+      var repliedCount = 0;
+      _allReviews.forEach(function(r) { if (_allReplies[r.id] && _allReplies[r.id].length > 0) repliedCount++; });
+
+      document.getElementById('review-stats').innerHTML =
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Total Reviews</div>' +
+          '<div class="kpi-value">' + _allReviews.length + '</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Go Verdicts</div>' +
+          '<div class="kpi-value" style="color:var(--green-text);">' + goCount + '</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">NoGo Verdicts</div>' +
+          '<div class="kpi-value" style="color:var(--red-text);">' + nogoCount + '</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Replied</div>' +
+          '<div class="kpi-value">' + repliedCount + '<span class="text-sm text-muted"> / ' + _allReviews.length + '</span></div>' +
+        '</div>';
+
+      renderReviews();
+    }
+
+    function renderReviews() {
+      var reviews = _allReviews.slice();
+
+      // Filter
+      if (_currentFilter === 'go') {
+        reviews = reviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'GO'; });
+      } else if (_currentFilter === 'nogo') {
+        reviews = reviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'NOGO'; });
+      }
+
+      // Sort
+      reviews.sort(function(a, b) {
+        var da = new Date(a.created_at || 0), db = new Date(b.created_at || 0);
+        return _currentSort === 'newest' ? db - da : da - db;
+      });
+
+      if (reviews.length === 0) {
+        document.getElementById('reviews-list').innerHTML =
+          '<div class="card" style="text-align:center;padding:var(--space-8);">' +
+            '<i class="fa-solid fa-inbox" style="font-size:32px;color:var(--text-muted);margin-bottom:var(--space-3);"></i>' +
+            '<p class="text-sm text-muted">No reviews found' + (_currentFilter !== 'all' ? ' for this filter' : '') + '.</p>' +
+          '</div>';
+        return;
+      }
+
+      var html = '';
+      reviews.forEach(function(review) {
+        var verdictUpper = (review.verdict || '').toUpperCase();
+        var verdictClass = verdictUpper === 'GO' ? 'badge-go' : verdictUpper === 'NOGO' ? 'badge-nogo' : 'badge-caution';
+        var verdictIcon = verdictUpper === 'GO' ? 'fa-circle-check' : verdictUpper === 'NOGO' ? 'fa-circle-xmark' : 'fa-triangle-exclamation';
+        var statusBadge = review.status === 'approved'
+          ? '<span style="font-size:10px;color:var(--green-text);"><i class="fa-solid fa-check-circle"></i> Approved</span>'
+          : '<span style="font-size:10px;color:var(--orange-text);"><i class="fa-solid fa-clock"></i> ' + Components.escapeHTML(review.status || 'pending') + '</span>';
+
+        html += '<div class="card" style="position:relative;">' +
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:var(--space-3);flex-wrap:wrap;gap:var(--space-2);">' +
+            '<div style="display:flex;align-items:center;gap:var(--space-3);">' +
+              '<div style="width:36px;height:36px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:var(--text-sm);color:var(--text-secondary);">' +
+                Components.escapeHTML((review.reviewer_name || 'A').charAt(0).toUpperCase()) +
+              '</div>' +
+              '<div>' +
+                '<div style="font-weight:600;font-size:var(--text-sm);">' + Components.escapeHTML(review.reviewer_name || 'Anonymous') + '</div>' +
+                '<div class="text-xs text-muted">' + Components.escapeHTML(review.date) + ' &middot; ' + statusBadge + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:var(--space-2);">' +
+              (review.verdict ? '<span class="badge ' + verdictClass + '" style="font-size:11px;"><i class="fa-solid ' + verdictIcon + '"></i> ' + Components.escapeHTML(review.verdict) + '</span>' : '') +
+            '</div>' +
+          '</div>' +
+          '<div style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.6;margin-bottom:var(--space-4);">' + Components.escapeHTML(review.review_text || '') + '</div>';
+
+        // Show existing replies
+        var replies = _allReplies[review.id] || [];
+        if (replies.length > 0) {
+          replies.forEach(function(reply) {
+            html += '<div style="background:var(--green-bg);border:1px solid var(--green-dim);border-radius:var(--radius-md);padding:var(--space-3) var(--space-4);margin-bottom:var(--space-3);margin-left:var(--space-6);">' +
+              '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2);">' +
+                '<i class="fa-solid fa-reply" style="color:var(--green);font-size:11px;"></i>' +
+                '<span style="font-weight:600;font-size:var(--text-xs);color:var(--green-text);">' + Components.escapeHTML(reply.replied_by || 'Brand') + '</span>' +
+                '<span class="text-xs text-muted" style="margin-left:auto;">' + (reply.created_at ? Components.formatRelativeDate(reply.created_at) : '') + '</span>' +
+              '</div>' +
+              '<div style="font-size:var(--text-sm);color:var(--text-secondary);">' + Components.escapeHTML(reply.reply_text || '') + '</div>' +
+            '</div>';
+          });
+        }
+
+        // Reply button
+        html += '<button class="btn btn-sm" onclick="openReplyModal(\'' + review.id + '\', this)" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);font-size:var(--text-xs);">' +
+          '<i class="fa-solid fa-reply"></i> Reply' +
+        '</button>';
+
+        html += '</div>';
+      });
+
+      document.getElementById('reviews-list').innerHTML = html;
+    }
+
+    function filterReviews(filter, btn) {
+      _currentFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(function(b) {
+        b.classList.remove('active');
+        if (b.dataset.filter !== 'all') {
+          // keep original styling
+        } else {
+          b.style.background = '';
+          b.style.color = '';
+        }
+      });
+      btn.classList.add('active');
+      renderReviews();
+    }
+
+    function sortReviews(val) {
+      _currentSort = val;
+      renderReviews();
+    }
+
+    function openReplyModal(reviewId) {
+      _currentReviewId = reviewId;
+      var review = _allReviews.find(function(r) { return r.id === reviewId; });
+      if (!review) return;
+
+      document.getElementById('reply-review-preview').innerHTML =
+        '<div style="font-weight:600;font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-2);">' +
+          Components.escapeHTML(review.reviewer_name || 'Anonymous') + ' &middot; ' + Components.escapeHTML(review.date) +
+        '</div>' +
+        '<div style="font-size:var(--text-sm);color:var(--text-secondary);">' + Components.escapeHTML(review.review_text || '') + '</div>';
+
+      document.getElementById('reply-text').value = '';
+      document.getElementById('reply-modal').style.display = 'flex';
+      setTimeout(function() { document.getElementById('reply-text').focus(); }, 100);
+    }
+
+    function closeReplyModal() {
+      document.getElementById('reply-modal').style.display = 'none';
+      _currentReviewId = null;
+    }
+
+    async function submitReply() {
+      var text = document.getElementById('reply-text').value.trim();
+      if (!text) {
+        Components.showToast('Please enter a reply.', 'error');
+        return;
+      }
+      if (!_currentReviewId) return;
+
+      var btn = document.getElementById('submit-reply-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+
+      try {
+        var result = await GoNoGoAPI.submitReply(
+          _currentReviewId,
+          _brandSlug,
+          text,
+          _brandUser.display_name || _brandUser.email || 'Brand'
+        );
+
+        if (result.ok) {
+          // Add to local cache
+          if (!_allReplies[_currentReviewId]) _allReplies[_currentReviewId] = [];
+          _allReplies[_currentReviewId].push({
+            review_id: _currentReviewId,
+            brand_slug: _brandSlug,
+            reply_text: text,
+            replied_by: _brandUser.display_name || 'Brand',
+            created_at: new Date().toISOString()
+          });
+
+          closeReplyModal();
+          renderReviews();
+          Components.showToast('Reply posted successfully!', 'success');
+        } else {
+          Components.showToast('Failed to post reply.', 'error');
+        }
+      } catch (e) {
+        Components.showToast('Error: ' + e.message, 'error');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Reply';
+    }
+
+    // Close modal on outside click
+    document.getElementById('reply-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeReplyModal();
+    });
+  </script>
+  <style>
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(4px);
+    }
+    .filter-btn {
+      background: var(--surface-3);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-primary);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .filter-btn.active {
+      border-color: var(--green) !important;
+      box-shadow: 0 0 0 1px var(--green-dim);
+    }
+    @media (max-width: 768px) {
+      .admin-header { flex-direction: column; align-items: flex-start !important; gap: var(--space-4); }
+    }
+  </style>
+</body>
+</html>
