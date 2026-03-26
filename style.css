@@ -177,7 +177,55 @@
 
 /* Search results dropdown */
 .light-mode #search-results {
+  background: var(--bg-secondary) !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+}
+
+/* Hero glow */
+.light-mode .hero::before {
+  opacity: 0.25;
+}
+
+/* Card shadows in light mode */
+.light-mode .brand-card,
+.light-mode .card,
+.light-mode .industry-card,
+.light-mode .industry-card-v2,
+.light-mode .category-card,
+.light-mode .rating-card,
+.light-mode .pricing-card,
+.light-mode .comment-card,
+.light-mode .kpi-card {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+/* Mobile nav */
+.light-mode .mobile-nav {
+  background: var(--bg-secondary);
+}
+
+/* Scrollbar */
+.light-mode ::-webkit-scrollbar-thumb {
+  background: #ccc;
+}
+.light-mode ::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Brand selector dropdown */
+.light-mode .brand-selector-dropdown {
+  background: var(--bg-secondary);
+}
+
+/* Modal overlay */
+.light-mode .modal-overlay {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Selection */
+.light-mode ::selection {
+  background: var(--green);
+  color: #fff;
 }
 
 /* Theme toggle button */
@@ -837,6 +885,8 @@ input:focus, select:focus, textarea:focus {
   border-radius: var(--radius-lg);
   padding: var(--space-4);
   transition: border-color var(--transition-fast);
+  overflow: hidden;
+  word-wrap: break-word;
 }
 
 .comment-card:hover {
@@ -848,6 +898,8 @@ input:focus, select:focus, textarea:focus {
   align-items: center;
   justify-content: space-between;
   margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
 .comment-author {
@@ -1111,7 +1163,7 @@ textarea {
   padding: var(--space-24) 0 var(--space-16);
   text-align: center;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .hero::before {
