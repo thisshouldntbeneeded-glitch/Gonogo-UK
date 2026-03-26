@@ -2,6 +2,7 @@
 // Reusable rendering functions for public and admin pages
 
 const LOGO_URL = 'https://images.squarespace-cdn.com/content/6814797d734d653e60269f66/efd76cb6-403f-443c-8319-6461cf330bca/Dark+mode+full+logo+long+no+boarder.png?content-type=image%2Fpng';
+const LOGO_LIGHT_URL = 'logos/gonogo-light-mode.jpg';
 
 const Components = {
   // ============================================================
@@ -57,11 +58,15 @@ const Components = {
       // Admin link hidden from public nav — access via /admin.html directly
     ];
 
+    var isLight = document.documentElement.classList.contains('light-mode');
+    var currentLogo = isLight ? LOGO_LIGHT_URL : LOGO_URL;
+    var themeIcon = isLight ? 'fa-moon' : 'fa-sun';
+
     var html = `
       <header class="site-header">
         <div class="container">
           <a href="index.html" class="logo">
-            <img src="${LOGO_URL}" alt="GoNoGo" style="height:32px;width:auto;">
+            <img src="${currentLogo}" alt="GoNoGo" class="site-logo" style="height:32px;width:auto;">
           </a>
           <nav>
             <ul class="nav-links">
@@ -70,11 +75,13 @@ const Components = {
                   <i class="fa-solid ${l.icon}"></i> ${l.label}
                 </a></li>
               `).join('')}
+              <li>
+                <button class="theme-toggle nav-theme-toggle" onclick="Components.toggleTheme()" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">
+                  <i class="fa-solid ${themeIcon} theme-toggle-icon"></i>
+                </button>
+              </li>
             </ul>
           </nav>
-          <button class="theme-toggle" onclick="Components.toggleTheme()" aria-label="Toggle light/dark mode" title="Toggle light/dark mode">
-            <i class="fa-solid fa-sun theme-toggle-icon"></i>
-          </button>
           <button class="hamburger" onclick="Components.toggleMobileNav()" aria-label="Menu">
             <i class="fa-solid fa-bars" id="hamburger-icon"></i>
           </button>
@@ -178,6 +185,11 @@ const Components = {
     var labels = document.querySelectorAll('.theme-toggle-label');
     labels.forEach(function(label) {
       label.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+    });
+    // Swap site logo
+    var logos = document.querySelectorAll('.site-logo');
+    logos.forEach(function(img) {
+      img.src = isLight ? LOGO_LIGHT_URL : LOGO_URL;
     });
   },
 
