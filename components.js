@@ -1,8 +1,9 @@
 // GoNoGo SA — Shared Components
 // Reusable rendering functions for public and admin pages
 
-const LOGO_URL = 'https://images.squarespace-cdn.com/content/6814797d734d653e60269f66/efd76cb6-403f-443c-8319-6461cf330bca/Dark+mode+full+logo+long+no+boarder.png?content-type=image%2Fpng';
-const LOGO_LIGHT_URL = 'logos/gonogo-light-mode.jpg';
+const LOGO_URL = 'logos/gonogo-square.jpg';
+const HERO_LOGO_DARK = 'logos/gonogo-hero-dark.jpg';
+const HERO_LOGO_LIGHT = 'logos/gonogo-hero-light.jpg';
 
 const Components = {
   // ============================================================
@@ -59,14 +60,14 @@ const Components = {
     ];
 
     var isLight = document.documentElement.classList.contains('light-mode');
-    var currentLogo = isLight ? LOGO_LIGHT_URL : LOGO_URL;
+
     var themeIcon = isLight ? 'fa-moon' : 'fa-sun';
 
     var html = `
       <header class="site-header">
         <div class="container">
           <a href="index.html" class="logo">
-            <img src="${currentLogo}" alt="GoNoGo" class="site-logo" style="height:32px;width:auto;">
+            <img src="${LOGO_URL}" alt="GoNoGo" style="height:32px;width:auto;border-radius:6px;">
           </a>
           <nav>
             <ul class="nav-links">
@@ -186,10 +187,10 @@ const Components = {
     labels.forEach(function(label) {
       label.textContent = isLight ? 'Dark Mode' : 'Light Mode';
     });
-    // Swap site logo
-    var logos = document.querySelectorAll('.site-logo');
-    logos.forEach(function(img) {
-      img.src = isLight ? LOGO_LIGHT_URL : LOGO_URL;
+    // Swap hero logo for theme
+    var heroLogos = document.querySelectorAll('.hero-logo');
+    heroLogos.forEach(function(img) {
+      img.src = isLight ? HERO_LOGO_LIGHT : HERO_LOGO_DARK;
     });
   },
 
