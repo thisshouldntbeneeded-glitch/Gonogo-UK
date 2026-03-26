@@ -554,8 +554,9 @@
       okBtn.style.color = '#fff';
       confirmCallback = callback;
       okBtn.onclick = function() {
+        var cb = confirmCallback;
         closeConfirm();
-        if (confirmCallback) confirmCallback();
+        if (cb) cb();
       };
       document.getElementById('confirm-dialog').classList.add('open');
     }
