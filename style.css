@@ -106,6 +106,125 @@
 }
 
 /* ============================================================
+   LIGHT MODE OVERRIDES (Public pages only)
+   ============================================================ */
+/* Works on both html.light-mode (flash prevention) and body.light-mode (JS toggle) */
+.light-mode {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f0f2f5;
+  --bg-elevated: #f5f5f5;
+  --border-primary: #e0e0e0;
+  --border-subtle: #eeeeee;
+
+  --green: #0d8c44;
+  --green-dim: rgba(13, 140, 68, 0.12);
+  --green-glow: rgba(13, 140, 68, 0.08);
+  --green-text: #0d8c44;
+  --green-bg: rgba(13, 140, 68, 0.08);
+
+  --orange: #e68a00;
+  --orange-dim: rgba(230, 138, 0, 0.12);
+  --orange-text: #cc7a00;
+  --orange-bg: rgba(230, 138, 0, 0.08);
+
+  --red: #d63031;
+  --red-dim: rgba(214, 48, 49, 0.12);
+  --red-text: #c0392b;
+  --red-bg: rgba(214, 48, 49, 0.08);
+
+  --blue: #2563eb;
+  --blue-dim: rgba(37, 99, 235, 0.12);
+
+  --text-primary: #1a1a1a;
+  --text-secondary: #555555;
+  --text-muted: #888888;
+  --text-faint: #bbbbbb;
+
+  --surface-0: var(--bg-primary);
+  --surface-1: var(--bg-secondary);
+  --surface-2: var(--bg-card);
+  --surface-3: var(--bg-elevated);
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --shadow-glow: 0 0 20px rgba(13, 140, 68, 0.06);
+  --shadow-glow-strong: 0 0 30px rgba(13, 140, 68, 0.1);
+}
+
+/* Light-mode overrides for hardcoded dark colours */
+.light-mode .site-header {
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.light-mode .data-table tr:hover td {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.light-mode .score-circle svg .score-track,
+.light-mode .score-circle svg circle:first-child {
+  stroke: #e0e0e0 !important;
+}
+
+/* Logo invert for light mode — the dark-mode logo is white text on transparent */
+.light-mode .logo img,
+.light-mode .hero img[alt="GoNoGo"] {
+  filter: brightness(0) saturate(100%);
+}
+
+/* Brand logos have white background — add subtle border in light mode */
+.light-mode .brand-logo {
+  border: 1px solid var(--border-subtle);
+}
+
+/* Search results dropdown */
+.light-mode #search-results {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+}
+
+/* Theme toggle button */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  color: var(--text-primary);
+  background: var(--surface-2);
+  border-color: var(--border-primary);
+}
+
+/* Mobile nav theme toggle row */
+.mobile-nav .theme-toggle {
+  width: auto;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  gap: var(--space-3);
+  justify-content: flex-start;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.mobile-nav .theme-toggle:hover {
+  color: var(--text-primary);
+  background: var(--surface-2);
+}
+
+/* ============================================================
    BASE RESET & FOUNDATION
    ============================================================ */
 *, *::before, *::after {
