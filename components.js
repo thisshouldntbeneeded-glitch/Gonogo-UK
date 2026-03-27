@@ -186,7 +186,7 @@ const Components = {
       '<p>We use cookies to analyse site usage and improve your experience. ' +
       'This includes Google Analytics for anonymous usage statistics. ' +
       'By clicking \"Accept\", you consent to the use of cookies in accordance with ' +
-      '<a href="privacy.html">our Privacy Policy</a>, the UK GDPR and the Privacy and Electronic Communications Regulations (PECR).</p>' +
+      '<a href="/privacy">our Privacy Policy</a>, the UK GDPR and the Privacy and Electronic Communications Regulations (PECR).</p>' +
       '<div class="cookie-banner-buttons">' +
         '<button class="cookie-btn-reject" onclick="Components.cookieReject()">Reject</button>' +
         '<button class="cookie-btn-accept" onclick="Components.cookieAccept()">Accept</button>' +
