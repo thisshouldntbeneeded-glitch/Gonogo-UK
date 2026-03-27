@@ -13,22 +13,22 @@
 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
-<meta name="keywords" content="brand ratings UK, brand comparison United Kingdom, consumer reviews, GoNoGo, product ratings, company reviews UK, best brands UK">
-<link rel="canonical" href="https://gonogo-uk.vercel.app/">
-<meta property="og:title" content="GoNoGo United Kingdom — Honest Brand Ratings">
-<meta property="og:description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
-<meta property="og:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://gonogo-uk.vercel.app/">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="GoNoGo United Kingdom">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="GoNoGo United Kingdom — Honest Brand Ratings">
-<meta name="twitter:description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
-<meta name="twitter:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
-<meta name="robots" content="index, follow">
+  <meta name="description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
+  <meta name="keywords" content="brand ratings UK, brand comparison United Kingdom, consumer reviews, GoNoGo, product ratings, company reviews UK, best brands UK">
+  <link rel="canonical" href="https://gonogo-uk.vercel.app/">
+  <meta property="og:title" content="GoNoGo United Kingdom — Honest Brand Ratings">
+  <meta property="og:description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
+  <meta property="og:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://gonogo-uk.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoNoGo United Kingdom">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="GoNoGo United Kingdom — Honest Brand Ratings">
+  <meta name="twitter:description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
+  <meta name="twitter:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
+  <meta name="robots" content="index, follow">
   <title>GoNoGo United Kingdom — Honest Brand Ratings & Comparisons</title>
   <script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.classList.add('light-mode');}})();</script>
   <link rel="stylesheet" href="style.css">
@@ -156,6 +156,7 @@
   </section>
 
   <div id="footer"></div>
+
   <script src="data/data_partA.js"></script>
   <script src="data/data_partB.js"></script>
   <script src="data/data_partC.js"></script>
@@ -172,7 +173,6 @@
     document.getElementById('nav').innerHTML = Components.renderPublicNav('home');
     document.getElementById('footer').innerHTML = Components.renderFooter();
 
-    // Category descriptions for richer cards
     var categoryDescriptions = {
       'banking': 'Digital banks, traditional banks, credit cards.',
       'mobile': 'Coverage, data plans, customer service.',
@@ -204,7 +204,6 @@
     };
 
     (async function() {
-      // Industry grid — styled cards with colors and descriptions
       var categories = await GoNoGoAPI.getCategoriesWithBrands();
       categories = categories.filter(function(cat) { return cat.hasBrands; });
       var industryGrid = document.getElementById('industry-grid');
@@ -219,7 +218,6 @@
         '</a>';
       }).join('');
 
-      // Search functionality
       var allSearchBrands = await GoNoGoAPI.getAllBrands();
       window.searchBrands = function(query) {
         var results = document.getElementById('search-results');
@@ -235,7 +233,7 @@
         }
         results.innerHTML = matches.map(function(b) {
           var scoreColor = b.overallScore >= 80 ? 'var(--green-text)' : b.overallScore >= 60 ? 'var(--orange-text)' : 'var(--red-text,#e74c3c)';
-          return '<a href="brand.html?id=' + b.id + '" style="display:flex;align-items:center;gap:10px;padding:8px 14px;text-decoration:none;color:var(--text-primary);transition:background 0.15s;border-bottom:1px solid var(--border-dim)" onmouseover="this.style.background=\'var(--surface-3)\'" onmouseout="this.style.background=\'transparent\'">' +
+          return '<a href="brand.html?id=' + b.id + '" style="display:flex;align-items:center;gap:10px;padding:8px 14px;text-decoration:none;color:var(--text-primary);transition:background 0.15s;border-bottom:1px solid var(--border-dim)" onmouseover="this.style.background=\\'var(--surface-3)\\'" onmouseout="this.style.background=\\'transparent\\'">' +
             Components.renderLogo(b, 'brand-logo') +
             '<div style="flex:1;min-width:0">' +
               '<div style="font-weight:600;font-size:var(--text-sm)">' + b.name + '</div>' +
@@ -250,20 +248,15 @@
         results.style.display = 'block';
       };
 
-      // Top brands
       var topBrands = await GoNoGoAPI.getTopBrands(6);
       var topGrid = document.getElementById('top-brands');
       topGrid.innerHTML = topBrands.map(function(brand, i) { return Components.renderBrandCard(brand, i); }).join('');
 
-            topBrands.forEach(function(brand) {
+      topBrands.forEach(function(brand) {
         Components.createRadarChart('radar-' + brand.id, brand, { showTicks: false, labelSize: 9, pointRadius: 2 });
       });
     })();
-  </script>
 
-  <script src="components.js"></script>
-  <script src="api.js"></script>
-  <script>
     document.addEventListener('DOMContentLoaded', function () {
       Components.init();
     });
