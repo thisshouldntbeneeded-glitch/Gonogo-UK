@@ -145,7 +145,15 @@ const Components = {
     const isOpen = nav.classList.toggle('open');
     icon.className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
   },
-
+  
+  // ============================================================
+  // INIT (public pages)
+  // ============================================================
+  init() {
+    // Initialise theme and cookie consent on public pages
+    this.initTheme();
+  },
+  
   // ============================================================
   // THEME (Light / Dark)
   // ============================================================
