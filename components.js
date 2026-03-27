@@ -168,14 +168,20 @@ const Components = {
   _GA_ID: 'G-2C18K0YYXM',
 
   initCookieConsent() {
-    var consent = localStorage.getItem('gonogo_cookie_consent');
-    if (consent === 'accepted') {
-      this.loadGA();
-      return;
-    }
-    if (consent === 'rejected') return;
-    this.showCookieBanner();
-  },
+  var consent = localStorage.getItem('gonogo_cookie_consent');
+
+  if (consent === 'accepted') {
+    this.loadGA();
+    return;
+  }
+
+  if (consent === 'rejected') {
+    return;
+  }
+
+  // Any other value (including null) – treat as no decision
+  this.showCookieBanner();
+},
 
   showCookieBanner() {
     if (document.getElementById('cookie-banner')) return;
