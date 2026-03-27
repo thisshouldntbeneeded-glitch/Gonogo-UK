@@ -255,20 +255,18 @@
       var topGrid = document.getElementById('top-brands');
       topGrid.innerHTML = topBrands.map(function(brand, i) { return Components.renderBrandCard(brand, i); }).join('');
 
-      topBrands.forEach(function(brand) {
+            topBrands.forEach(function(brand) {
         Components.createRadarChart('radar-' + brand.id, brand, { showTicks: false, labelSize: 9, pointRadius: 2 });
       });
     })();
   </script>
-</body>
-     <script src="components.js"></script>
-  <script src="api.js"></script>
 
+  <script src="components.js"></script>
+  <script src="api.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       Components.init();
     });
   </script>
 </body>
-</html>
 </html>
