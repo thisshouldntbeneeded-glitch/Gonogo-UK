@@ -1,36 +1,33 @@
 <!DOCTYPE html>
 <html lang="en-GB">
 <head>
-<!--
-   ______                            __
-  / ____/___  ____ ___  ____  __  __/ /____  _____
- / /   / __ \/ __ `__ \/ __ \/ / / / __/ _ \/ ___/
-/ /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
-\____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
-                    /_/
-        Created with Perplexity Computer
-        https://www.perplexity.ai/computer
--->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
-<meta name="keywords" content="brand rating, brand review, GoNoGo score, UK brands">
-<link rel="canonical" href="https://gonogo-uk.vercel.app/brand">
-<meta property="og:title" content="Brand Rating — GoNoGo UK">
-<meta property="og:description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
-<meta property="og:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://gonogo-uk.vercel.app/brand">
-<meta property="og:type" content="article">
-<meta property="og:site_name" content="GoNoGo United Kingdom">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Brand Rating — GoNoGo UK">
-<meta name="twitter:description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
-<meta name="twitter:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
-<meta name="robots" content="index, follow">
+  <meta name="description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
+  <meta name="keywords" content="brand rating, brand review, GoNoGo score, UK brands">
+  <link rel="canonical" href="https://gonogo-uk.vercel.app/brand">
+  <meta property="og:title" content="Brand Rating — GoNoGo UK">
+  <meta property="og:description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
+  <meta property="og:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://gonogo-uk.vercel.app/brand">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="GoNoGo United Kingdom">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Brand Rating — GoNoGo UK">
+  <meta name="twitter:description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
+  <meta name="twitter:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
+  <meta name="robots" content="index, follow">
   <title>Brand Rating — GoNoGo United Kingdom</title>
-  <script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.classList.add('light-mode');}})();</script>
+  <script>
+    (function(){
+      var t = localStorage.getItem('gonogo_theme');
+      if (t === 'light' || (!t && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+        document.documentElement.classList.add('light-mode');
+      }
+    })();
+  </script>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -40,6 +37,7 @@
     <div style="text-align:center;padding:var(--space-10);color:var(--text-muted)">Loading brand...</div>
   </div>
   <div id="footer"></div>
+
   <script src="data/data_partA.js"></script>
   <script src="data/data_partB.js"></script>
   <script src="data/data_partC.js"></script>
@@ -51,7 +49,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="components.js"></script>
   <script src="api.js"></script>
-   <script>
+
+  <script>
     document.getElementById('nav').innerHTML = Components.renderPublicNav('');
     document.getElementById('footer').innerHTML = Components.renderFooter();
 
@@ -83,15 +82,23 @@
       document.title = brand.name + ' — GoNoGo United Kingdom';
 
       // Dynamic SEO meta tags
-      var metaDesc = (brand.overview || brand.name + ' rated ' + brand.overallScore + '/100 (' + brand.verdict + ') in ' + brand.categoryName + '.');
+      var metaDesc = (brand.overview || (brand.name + ' rated ' + brand.overallScore + '/100 (' + brand.verdict + ') in ' + brand.categoryName + '.'));
       var metaTag = document.querySelector('meta[name="description"]');
-      if (!metaTag) { metaTag = document.createElement('meta'); metaTag.name = 'description'; document.head.appendChild(metaTag); }
+      if (!metaTag) {
+        metaTag = document.createElement('meta');
+        metaTag.name = 'description';
+        document.head.appendChild(metaTag);
+      }
       metaTag.content = metaDesc.substring(0, 160);
 
       // Open Graph
       function setOG(prop, val) {
         var el = document.querySelector('meta[property="og:' + prop + '"]');
-        if (!el) { el = document.createElement('meta'); el.setAttribute('property', 'og:' + prop); document.head.appendChild(el); }
+        if (!el) {
+          el = document.createElement('meta');
+          el.setAttribute('property', 'og:' + prop);
+          document.head.appendChild(el);
+        }
         el.content = val;
       }
       setOG('title', brand.name + ' — GoNoGo United Kingdom');
@@ -114,9 +121,16 @@
           'bestRating': 100,
           'worstRating': 0
         },
-        'author': { '@type': 'Organization', 'name': 'GoNoGo United Kingdom', 'url': 'https://www.gonogo.co.uk' },
+        'author': {
+          '@type': 'Organization',
+          'name': 'GoNoGo United Kingdom',
+          'url': 'https://www.gonogo.co.uk'
+        },
         'reviewBody': brand.ratingSummary || metaDesc,
-        'publisher': { '@type': 'Organization', 'name': 'GoNoGo United Kingdom' }
+        'publisher': {
+          '@type': 'Organization',
+          'name': 'GoNoGo United Kingdom'
+        }
       };
       var ldScript = document.createElement('script');
       ldScript.type = 'application/ld+json';
@@ -149,16 +163,20 @@
       }).join('');
 
       // Pricing
-      var pricingHTML = brand.pricing.length > 0 ? brand.pricing.map(function(p) {
-        var features = typeof p.features === 'string' && p.features
-          ? p.features.split(',').map(function(f) { return f.trim(); }).filter(Boolean)
-          : (Array.isArray(p.features) ? p.features : []);
-        return '<div class="pricing-card">' +
-          '<div class="pricing-card-name">' + p.name + '</div>' +
-          '<div class="pricing-card-price">' + p.cost + '</div>' +
-          (features.length > 0 ? '<ul class="pricing-card-features">' + features.map(function(f) { return '<li>' + f + '</li>'; }).join('') + '</ul>' : '') +
-        '</div>';
-      }).join('') : '<p style="color:var(--text-muted);font-size:var(--text-sm)">No pricing information available.</p>';
+      var pricingHTML = brand.pricing.length > 0
+        ? brand.pricing.map(function(p) {
+            var features = typeof p.features === 'string' && p.features
+              ? p.features.split(',').map(function(f) { return f.trim(); }).filter(Boolean)
+              : (Array.isArray(p.features) ? p.features : []);
+            return '<div class="pricing-card">' +
+              '<div class="pricing-card-name">' + p.name + '</div>' +
+              '<div class="pricing-card-price">' + p.cost + '</div>' +
+              (features.length > 0
+                ? '<ul class="pricing-card-features">' + features.map(function(f) { return '<li>' + f + '</li>'; }).join('') + '</ul>'
+                : '') +
+            '</div>';
+          }).join('')
+        : '<p style="color:var(--text-muted);font-size:var(--text-sm)">No pricing information available.</p>';
 
       // App ratings
       var gpStars = renderStars(brand.appRatings.googlePlayScore);
@@ -174,7 +192,6 @@
       }).join('');
 
       document.getElementById('page-content').innerHTML =
-        '<!-- Brand Hero -->' +
         '<section class="brand-hero"><div class="container">' +
           '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-4)">' +
             '<a href="category.html?cat=' + brand.categorySlug + '" style="color:var(--text-muted);font-size:var(--text-sm)">' +
@@ -203,7 +220,6 @@
           '</div>' +
         '</div></section>' +
 
-        '<!-- Tabs -->' +
         '<section class="section-sm"><div class="container">' +
           '<div class="tabs" id="tabs">' +
             '<button class="tab active" data-tab="overview" onclick="switchTab(\'overview\')">Overview</button>' +
@@ -212,22 +228,21 @@
             '<button class="tab" data-tab="reviews" onclick="switchTab(\'reviews\')">Reviews</button>' +
           '</div>' +
 
-          '<!-- Overview Tab -->' +
-'<div class="tab-content" id="tab-overview">' +
-  (brand.overview || brand.ratingSummary
-    ? '<div class="card" style="margin-bottom:var(--space-6);padding:var(--space-5)">' +
-        (brand.overview
-          ? '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-3)">Brand Overview</h3>' +
-            '<p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7">' + brand.overview + '</p>'
-          : '') +
-        (brand.ratingSummary
-          ? '<h3 style="font-size:var(--text-lg);font-weight:700;margin:var(--space-4) 0 var(--space-3)"><i class="fa-solid fa-clipboard-check" style="color:var(--green)"></i> Rating Summary</h3>' +
-            '<p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7">' + brand.ratingSummary + '</p>'
-          : '') +
-      '</div>'
-    : '') +
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8)">' +
-    '<div>' +
+          '<div class="tab-content" id="tab-overview">' +
+            (brand.overview || brand.ratingSummary
+              ? '<div class="card" style="margin-bottom:var(--space-6);padding:var(--space-5)">' +
+                  (brand.overview
+                    ? '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-3)">Brand Overview</h3>' +
+                      '<p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7">' + brand.overview + '</p>'
+                    : '') +
+                  (brand.ratingSummary
+                    ? '<h3 style="font-size:var(--text-lg);font-weight:700;margin:var(--space-4) 0 var(--space-3)"><i class="fa-solid fa-clipboard-check" style="color:var(--green)"></i> Rating Summary</h3>' +
+                      '<p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7">' + brand.ratingSummary + '</p>'
+                    : '') +
+                '</div>'
+              : '') +
+            '<div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8)">' +
+              '<div>' +
                 '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">Score Breakdown</h3>' +
                 '<div style="height:280px;position:relative"><canvas id="brand-radar"></canvas></div>' +
               '</div>' +
@@ -255,13 +270,11 @@
             '</div>' +
           '</div>' +
 
-          '<!-- Pricing Tab -->' +
           '<div class="tab-content" id="tab-pricing" style="display:none">' +
             '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">Pricing Plans</h3>' +
             '<div class="pricing-grid">' + pricingHTML + '</div>' +
           '</div>' +
 
-          '<!-- Ratings Tab -->' +
           '<div class="tab-content" id="tab-ratings" style="display:none">' +
             '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">App Ratings</h3>' +
             '<div class="ratings-grid" style="margin-bottom:var(--space-8)">' +
@@ -290,7 +303,6 @@
             '</div>' +
           '</div>' +
 
-          '<!-- Reviews Tab -->' +
           '<div class="tab-content" id="tab-reviews" style="display:none">' +
             '<div id="review-summary" style="margin-bottom:var(--space-4)"></div>' +
             '<div id="review-filters" style="display:none;margin-bottom:var(--space-4);display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center">' +
@@ -323,6 +335,11 @@
                 '<label class="form-label">Why? <span class="text-xs text-muted">(optional but helpful)</span></label>' +
                 '<textarea id="review-text" placeholder="Share your experience with ' + brand.name + '..." rows="3"></textarea>' +
               '</div>' +
+              '<p class="text-sm text-muted" style="margin-bottom:var(--space-3);line-height:1.6;">' +
+                'By submitting a review, you confirm that your name and comment may be published publicly on this website. ' +
+                'Please do not include sensitive, confidential, defamatory, or third-party personal information. ' +
+                'Reviews may be moderated, refused, or removed in line with our <a href="terms.html" style="color:var(--green)">Terms &amp; Conditions</a> and <a href="privacy.html" style="color:var(--green)">Privacy Policy</a>.' +
+              '</p>' +
               '<button class="btn btn-primary" onclick="submitReview()" id="submit-review-btn" disabled style="opacity:0.5">' +
                 '<i class="fa-solid fa-paper-plane"></i> Submit Review' +
               '</button>' +
@@ -440,8 +457,11 @@
 
         list.innerHTML = visible.map(function(r) {
           var verdictHtml = '';
-          if (r.verdict === 'GO') verdictHtml = '<span style="color:var(--green-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-check"></i> Go</span>';
-          else if (r.verdict === 'NOGO') verdictHtml = '<span style="color:var(--red-text,#e74c3c);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-xmark"></i> No Go</span>';
+          if (r.verdict === 'GO') {
+            verdictHtml = '<span style="color:var(--green-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-check"></i> Go</span>';
+          } else if (r.verdict === 'NOGO') {
+            verdictHtml = '<span style="color:var(--red-text,#e74c3c);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-xmark"></i> No Go</span>';
+          }
 
           return '<div class="comment-card">' +
             '<div class="comment-header">' +
@@ -455,8 +475,9 @@
           '</div>';
         }).join('');
 
-        document.getElementById('review-pagination').innerHTML = remaining > 0 ?
-          '<button class="btn btn-secondary btn-sm" onclick="loadMoreReviews()">Show more (' + remaining + ' remaining)</button>' : '';
+        document.getElementById('review-pagination').innerHTML = remaining > 0
+          ? '<button class="btn btn-secondary btn-sm" onclick="loadMoreReviews()">Show more (' + remaining + ' remaining)</button>'
+          : '';
       }
 
       window.submitReview = async function() {
@@ -513,6 +534,7 @@
       return html;
     }
   </script>
+
   <style>
     @media (max-width: 768px) {
       #tab-overview > div:first-child {
