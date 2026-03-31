@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoNoGo UK — Settings</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="admin-content" style="display:none">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title">Settings</h1>
+        <p class="text-sm text-secondary">Manage your account, admin team, and UK brand portal users</p>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-link" style="color:var(--blue);margin-right:var(--space-2)"></i> Quick Links
+      </h3>
+      <div style="display:flex;gap:var(--space-4);flex-wrap:wrap">
+        <a href="brand-dashboard.html" class="btn btn-sm" style="background:var(--blue);color:#fff">
+          <i class="fa-solid fa-building"></i> Brand Portal
+        </a>
+        <a href="admin.html" class="btn btn-sm" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary)">
+          <i class="fa-solid fa-shield-halved"></i> Admin Dashboard
+        </a>
+        <a href="index.html" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary)">
+          <i class="fa-solid fa-globe"></i> View Live Site
+        </a>
+        <a href="https://gonogo.co.za/admin.html" target="_blank" rel="noopener noreferrer" class="btn btn-sm" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary)">
+          <i class="fa-solid fa-earth-africa"></i> SA Admin
+        </a>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-key" style="color:var(--blue);margin-right:var(--space-2)"></i> Change Password
+      </h3>
+      <form id="password-form" onsubmit="changePassword(event)" style="max-width:400px">
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input type="password" id="current-pw" required placeholder="Enter current password">
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" id="new-pw" required placeholder="Enter new password" minlength="6">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <input type="password" id="confirm-pw" required placeholder="Repeat new password" minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" id="pw-btn">
+          <i class="fa-solid fa-check"></i> Update Password
+        </button>
+      </form>
+    </div>
+
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4)">
+        <h3 class="text-sm font-semibold">
+          <i class="fa-solid fa-users" style="color:var(--blue);margin-right:var(--space-2)"></i> Admin Team
+        </h3>
+        <button class="btn btn-primary btn-sm" onclick="showAddUser()">
+          <i class="fa-solid fa-user-plus"></i> Add Member
+        </button>
+      </div>
+      <div id="users-list" style="display:flex;flex-direction:column;gap:var(--space-3)">
+        <div class="text-sm text-muted" style="text-align:center;padding:var(--space-6)">Loading...</div>
+      </div>
+    </div>
+
+    <div class="card" id="add-user-card" style="display:none;margin-bottom:var(--space-6);padding:var(--space-6);border-color:var(--blue-dim)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-user-plus" style="color:var(--blue);margin-right:var(--space-2)"></i> Add Admin Member
+      </h3>
+      <form id="add-user-form" onsubmit="addUser(event)" style="max-width:500px">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="new-user-email" required placeholder="team@gonogo.co.uk">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Display Name</label>
+            <input type="text" id="new-user-name" placeholder="e.g. Jane Smith">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="new-user-pw" required placeholder="Set password" minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select id="new-user-role">
+              <option value="admin">Admin</option>
+              <option value="editor">Editor</option>
+              <option value="viewer">Viewer</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--space-2)">
+          <button type="submit" class="btn btn-primary btn-sm" id="add-user-btn">
+            <i class="fa-solid fa-check"></i> Add Member
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddUser()">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4)">
+        <h3 class="text-sm font-semibold">
+          <i class="fa-solid fa-building" style="color:var(--blue);margin-right:var(--space-2)"></i> Brand Portal Users
+        </h3>
+        <button class="btn btn-sm btn-primary" onclick="document.getElementById('brand-user-form').style.display=document.getElementById('brand-user-form').style.display==='none'?'block':'none'">
+          <i class="fa-solid fa-plus"></i> Add Brand User
+        </button>
+      </div>
+      <form id="brand-user-form" onsubmit="addBrandUser(event)" style="display:none;max-width:500px;margin-bottom:var(--space-6);padding:var(--space-4);background:var(--surface-1);border-radius:var(--radius-lg);border:1px solid var(--border-primary)">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+          <div class="form-group"><label class="form-label">Email</label><input type="email" id="bu-email" required placeholder="brand@example.co.uk"></div>
+          <div class="form-group"><label class="form-label">Password</label><input type="password" id="bu-password" required placeholder="Set a password" minlength="6"></div>
+          <div class="form-group"><label class="form-label">Display Name</label><input type="text" id="bu-name" placeholder="e.g. Tesco Team"></div>
+          <div class="form-group"><label class="form-label">Brand</label><select id="bu-brand" required><option value="">Loading brands...</option></select></div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm" style="margin-top:var(--space-3)" id="bu-btn"><i class="fa-solid fa-user-plus"></i> Create Account</button>
+      </form>
+      <div id="brand-user-list" class="text-sm text-muted">Loading brand portal users...</div>
+    </div>
+
+    <div class="card" style="padding:var(--space-6)">
+      <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
+        <i class="fa-solid fa-circle-info" style="color:var(--blue);margin-right:var(--space-2)"></i> Session Info
+      </h3>
+      <div id="session-info" class="text-sm text-secondary"></div>
+    </div>
+
+    <div style="padding:var(--space-6) 0;text-align:center">
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom</p>
+    </div>
+  </main>
+</div>
+
+<script src="data/data_partA.js"></script>
+<script src="data/data_partB.js"></script>
+<script src="data/data_partC.js"></script>
+<script src="data/data_partD.js"></script>
+<script src="data/data_partE.js"></script>
+<script src="data/data_partF.js"></script>
+<script src="data/data.js"></script>
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
+
+<script>
+  document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('settings');
+  if (Components.checkAdminAuth()) initAdminPage();
+
+  async function initAdminPage() {
+    document.getElementById('admin-content').style.display = '';
+    var user = Components.getAdminUser();
+    document.getElementById('session-info').innerHTML =
+      '<div style="display:flex;flex-direction:column;gap:var(--space-2)">' +
+        '<div><strong>Signed in as:</strong> ' + (user.display_name || user.email) + '</div>' +
+        '<div><strong>Email:</strong> ' + user.email + '</div>' +
+        '<div><strong>Role:</strong> ' + (user.role || 'admin') + '</div>' +
+      '</div>';
+    await loadUsers();
+    await loadBrandUsers();
+    await loadBrandDropdown();
+  }
+
+  async function loadUsers() {
+    try {
+      var users = await GoNoGoAPI.adminGetUsers();
+      var currentUser = Components.getAdminUser();
+      var container = document.getElementById('users-list');
+
+      if (!users.length) {
+        container.innerHTML = '<div class="text-sm text-muted" style="text-align:center;padding:var(--space-4)">No admin users found. Add your first admin above.</div>';
+        return;
+      }
+
+      container.innerHTML = users.map(function(u) {
+        var isSelf = u.id === currentUser.id;
+        var roleBadge = u.role === 'admin'
+          ? '<span class="freshness-badge freshness-fresh">Admin</span>'
+          : u.role === 'editor'
+            ? '<span class="freshness-badge freshness-stale">Editor</span>'
+            : '<span class="freshness-badge freshness-outdated">Viewer</span>';
+        var actions = isSelf
+          ? '<span class="text-xs text-muted">(You)</span>'
+          : '<button class="btn btn-ghost btn-sm" style="color:var(--red-text)" onclick="removeUser(\'' + u.id + '\',\'' + u.email.replace(/'/g, "\\'") + '\')"><i class="fa-solid fa-trash"></i></button>';
+        return '<div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);background:var(--surface-secondary);border-radius:var(--radius-md);border:1px solid var(--border-dim)">' +
+          '<div style="width:36px;height:36px;border-radius:50%;background:var(--blue-dim);display:flex;align-items:center;justify-content:center">' +
+            '<i class="fa-solid fa-user" style="color:var(--blue);font-size:14px"></i>' +
+          '</div>' +
+          '<div style="flex:1">' +
+            '<div class="text-sm font-semibold">' + (u.display_name || u.email) + '</div>' +
+            '<div class="text-xs text-muted">' + u.email + '</div>' +
+          '</div>' +
+          roleBadge +
+          '<div class="text-xs text-muted">' + Components.formatRelativeDate(u.created_at) + '</div>' +
+          actions +
+        '</div>';
+      }).join('');
+    } catch(e) {
+      document.getElementById('users-list').innerHTML = '<div class="text-sm text-muted" style="text-align:center;padding:var(--space-4)">Could not load admin users. Make sure the admin_users table exists in Supabase.</div>';
+    }
+  }
+
+  async function changePassword(e) {
+    e.preventDefault();
+    var btn = document.getElementById('pw-btn');
+    var currentPw = document.getElementById('current-pw').value;
+    var newPw = document.getElementById('new-pw').value;
+    var confirmPw = document.getElementById('confirm-pw').value;
+
+    if (newPw !== confirmPw) {
+      Components.showToast('New passwords do not match', 'error');
+      return;
+    }
+    if (newPw.length < 6) {
+      Components.showToast('Password must be at least 6 characters', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+
+    try {
+      var user = Components.getAdminUser();
+      await GoNoGoAPI.adminChangePassword(user.id, currentPw, newPw);
+      Components.showToast('Password updated successfully');
+      document.getElementById('password-form').reset();
+    } catch(err) {
+      Components.showToast(err.message || 'Failed to update password', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Update Password';
+    }
+  }
+
+  function showAddUser() {
+    document.getElementById('add-user-card').style.display = '';
+    document.getElementById('new-user-email').focus();
+  }
+
+  function hideAddUser() {
+    document.getElementById('add-user-card').style.display = 'none';
+    document.getElementById('add-user-form').reset();
+  }
+
+  async function addUser(e) {
+    e.preventDefault();
+    var btn = document.getElementById('add-user-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
+
+    try {
+      var email = document.getElementById('new-user-email').value.trim();
+      var name = document.getElementById('new-user-name').value.trim();
+      var pw = document.getElementById('new-user-pw').value;
+      var role = document.getElementById('new-user-role').value;
+
+      await GoNoGoAPI.adminAddUser(email, pw, name, role);
+      Components.showToast('Admin member added: ' + email);
+      hideAddUser();
+      await loadUsers();
+    } catch(err) {
+      Components.showToast('Error: ' + (err.message || 'Failed to add member'), 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-check"></i> Add Member';
+    }
+  }
+
+  async function removeUser(userId, email) {
+    if (!confirm('Remove ' + email + ' from the admin team?')) return;
+    try {
+      await GoNoGoAPI.adminRemoveUser(userId);
+      Components.showToast('Removed ' + email);
+      await loadUsers();
+    } catch(err) {
+      Components.showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  async function loadBrandDropdown() {
+    try {
+      var brands = await GoNoGoAPI.getAllBrandSlugs();
+      var select = document.getElementById('bu-brand');
+      select.innerHTML = '<option value="">Select a brand...</option>';
+      brands.forEach(function(b) {
+        select.innerHTML += '<option value="' + b.slug + '">' + Components.escapeHTML(b.name) + ' (' + b.gonogo_score + '/100)</option>';
+      });
+    } catch(e) {}
+  }
+
+  async function loadBrandUsers() {
+    try {
+      var users = await GoNoGoAPI.getBrandUsers();
+      var container = document.getElementById('brand-user-list');
+      if (!users.length) {
+        container.innerHTML = '<div style="text-align:center;padding:var(--space-4);color:var(--text-muted)">No brand portal users yet. Create one above.</div>';
+        return;
+      }
+      container.innerHTML = '<table class="data-table" style="width:100%"><thead><tr>' +
+        '<th>Email</th><th>Name</th><th>Brand</th><th>Role</th><th>Created</th><th></th>' +
+        '</tr></thead><tbody>' +
+        users.map(function(u) {
+          return '<tr>' +
+            '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(u.email) + '</td>' +
+            '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(u.display_name || '-') + '</td>' +
+            '<td style="font-size:var(--text-sm);font-weight:600">' + Components.escapeHTML(u.brand_slug) + '</td>' +
+            '<td><span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-sm);background:var(--blue-dim);color:var(--blue);font-weight:600">' + (u.role || 'brand_viewer') + '</span></td>' +
+            '<td style="font-size:var(--text-xs);color:var(--text-muted)">' + (u.created_at ? new Date(u.created_at).toLocaleDateString() : '') + '</td>' +
+            '<td><button class="btn btn-ghost btn-sm" style="color:var(--red-text)" onclick="removeBrandUser(\'' + u.id + '\', \'' + Components.escapeHTML(u.email).replace(/'/g, "\\'") + '\')"><i class="fa-solid fa-trash"></i></button></td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table>';
+    } catch(e) {
+      document.getElementById('brand-user-list').innerHTML = '<div class="text-sm" style="color:var(--red-text)">Error loading brand users. Run the brand portal SQL first.</div>';
+    }
+  }
+
+  async function addBrandUser(e) {
+    e.preventDefault();
+    var btn = document.getElementById('bu-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+
+    try {
+      var email = document.getElementById('bu-email').value.trim();
+      var pw = document.getElementById('bu-password').value;
+      var name = document.getElementById('bu-name').value.trim();
+      var brandSlug = document.getElementById('bu-brand').value;
+
+      if (!brandSlug) {
+        throw new Error('Please select a brand');
+      }
+
+      await GoNoGoAPI.addBrandUser(email, pw, name, brandSlug, 'uk');
+      Components.showToast('Brand user created: ' + email);
+      document.getElementById('brand-user-form').reset();
+      document.getElementById('brand-user-form').style.display = 'none';
+      await loadBrandUsers();
+    } catch (err) {
+      Components.showToast('Error: ' + (err.message || 'Failed to create brand user'), 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
+    }
+  }
+
+  async function removeBrandUser(userId, email) {
+    if (!confirm('Remove brand portal access for ' + email + '?')) return;
+    try {
+      await GoNoGoAPI.removeBrandUser(userId);
+      Components.showToast('Removed ' + email);
+      await loadBrandUsers();
+    } catch(err) {
+      Components.showToast('Error: ' + err.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>
