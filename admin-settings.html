@@ -314,31 +314,36 @@
   }
 
   async function loadBrandUsers() {
-    try {
-      var users = await GoNoGoAPI.getBrandUsers();
-      var container = document.getElementById('brand-user-list');
-      if (!users.length) {
-        container.innerHTML = '<div style="text-align:center;padding:var(--space-4);color:var(--text-muted)">No brand portal users yet. Create one above.</div>';
-        return;
-      }
-      container.innerHTML = '<table class="data-table" style="width:100%"><thead><tr>' +
-        '<th>Email</th><th>Name</th><th>Brand</th><th>Role</th><th>Created</th><th></th>' +
-        '</tr></thead><tbody>' +
-        users.map(function(u) {
-          return '<tr>' +
-            '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(u.email) + '</td>' +
-            '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(u.display_name || '-') + '</td>' +
-            '<td style="font-size:var(--text-sm);font-weight:600">' + Components.escapeHTML(u.brand_slug) + '</td>' +
-            '<td><span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-sm);background:var(--blue-dim);color:var(--blue);font-weight:600">' + (u.role || 'brand_viewer') + '</span></td>' +
-            '<td style="font-size:var(--text-xs);color:var(--text-muted)">' + (u.created_at ? new Date(u.created_at).toLocaleDateString() : '') + '</td>' +
-            '<td><button class="btn btn-ghost btn-sm" style="color:var(--red-text)" onclick="removeBrandUser(\\'' + u.id + '\\', \\'' + Components.escapeHTML(u.email).replace(/'/g, "\\\\'") + '\\')"><i class="fa-solid fa-trash"></i></button></td>' +
-          '</tr>';
-        }).join('') +
-        '</tbody></table>';
-    } catch(e) {
-      document.getElementById('brand-user-list').innerHTML = '<div class="text-sm" style="color:var(--red-text)">Error loading brand users. Run the brand portal SQL first.</div>';
+  try {
+    var users = await GoNoGoAPI.getBrandUsers();
+    var container = document.getElementById('brand-user-list');
+
+    if (!users.length) {
+      container.innerHTML = '<div style="text-align:center;padding:var(--space-4);color:var(--text-muted)">No brand portal users yet. Create one above.</div>';
+      return;
     }
+
+    container.innerHTML = '<table class="data-table" style="width:100%"><thead><tr>' +
+      '<th>Email</th><th>Name</th><th>Brand</th><th>Role</th><th>Created</th><th></th>' +
+      '</tr></thead><tbody>' +
+      users.map(function(u) {
+        var safeId = String(u.id || '').replace(/'/g, "\\'");
+        var safeEmail = String(u.email || '').replace(/'/g, "\\'");
+
+        return '<tr>' +
+          '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(u.email || '') + '</td>' +
+          '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(u.display_name || '-') + '</td>' +
+          '<td style="font-size:var(--text-sm);font-weight:600">' + Components.escapeHTML(u.brand_slug || '') + '</td>' +
+          '<td><span style="font-size:10px;padding:2px 8px;border-radius:var(--radius-sm);background:var(--blue-dim);color:var(--blue);font-weight:600">' + Components.escapeHTML(u.role || 'brand_viewer') + '</span></td>' +
+          '<td style="font-size:var(--text-xs);color:var(--text-muted)">' + (u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '') + '</td>' +
+          '<td><button class="btn btn-ghost btn-sm" style="color:var(--red-text)" onclick="removeBrandUser(\'' + safeId + '\', \'' + safeEmail + '\')"><i class="fa-solid fa-trash"></i></button></td>' +
+        '</tr>';
+      }).join('') +
+      '</tbody></table>';
+  } catch (e) {
+    document.getElementById('brand-user-list').innerHTML = '<div class="text-sm" style="color:var(--red-text)">Error loading brand users. Run the brand portal SQL first.</div>';
   }
+}
 
   async function addBrandUser(e) {
     e.preventDefault();
