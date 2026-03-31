@@ -595,47 +595,61 @@ var GoNoGoAPI = (function () {
     },
 
     // Brand user management (admin only)
-    addBrandUser: function (email, password, displayName, brandSlug, region) {
-      return this._hashPassword(password).then(function (hash) {
-        return supabaseRequest('brand_users', {
-          method: 'POST',
-          body: { email: email.toLowerCase().trim(), password_hash: hash, display_name: displayName || '', brand_slug: brandSlug, region: region || SITE_REGION, role: 'brand_viewer' }
-        });
-      }).then(function (rows) { return { ok: true, user: rows && rows[0] ? rows[0] : null }; });
-    },
 getBrandUsers: function () {
-  return supabaseRequest(
-    'brand_users?region=eq.' + SITE_REGION +
-    '&select=id,email,display_name,brand_slug,role,created_at&order=created_at.asc'
-  )
-  .then(function (rows) { return rows || []; })
-  .catch(function () { return []; });
+  return supabaseRequest('rpc/admin_list_brand_users', {
+    method: 'POST',
+    body: {}
+  }).then(function (rows) {
+    return rows || [];
+  }).catch(function () {
+    return [];
+  });
+},
+
+addBrandUser: function (email, password, displayName, brandSlug, region) {
+  return this._hashPassword(password).then(function (hash) {
+    return supabaseRequest('rpc/admin_add_brand_user', {
+      method: 'POST',
+      body: {
+        p_email: email.toLowerCase().trim(),
+        p_hash: hash,
+        p_display_name: displayName || '',
+        p_brand_slug: brandSlug,
+        p_region: region || SITE_REGION
+      }
+    });
+  }).then(function (rows) {
+    return { ok: true, user: rows && rows[0] ? rows[0] : null };
+  });
 },
 
 removeBrandUser: function (userId) {
-  return supabaseRequest('brand_users?id=eq.' + encodeURIComponent(userId), {
-    method: 'DELETE'
-  }).then(function () { return { ok: true }; });
+  return supabaseRequest('rpc/admin_remove_brand_user', {
+    method: 'POST',
+    body: { p_user_id: userId }
+  }).then(function () {
+    return { ok: true };
+  });
 },
-    
-    getBrandUser: function () {
-      try {
-        var stored = GoNoGoStorage.get('brandUser');
-        if (stored) {
-          var loginTime = GoNoGoStorage.get('brandLoginTime');
-          if (loginTime) {
-            var elapsed = Date.now() - loginTime;
-            if (elapsed > 24 * 60 * 60 * 1000) {
-              GoNoGoStorage.remove('brandUser');
-              GoNoGoStorage.remove('brandLoginTime');
-              return null;
-            }
-          }
-          return stored;
+
+getBrandUser: function () {
+  try {
+    var stored = GoNoGoStorage.get('brandUser');
+    if (stored) {
+      var loginTime = GoNoGoStorage.get('brandLoginTime');
+      if (loginTime) {
+        var elapsed = Date.now() - loginTime;
+        if (elapsed > 24 * 60 * 60 * 1000) {
+          GoNoGoStorage.remove('brandUser');
+          GoNoGoStorage.remove('brandLoginTime');
+          return null;
         }
-      } catch (e) {}
-      return null;
-    },
+      }
+      return stored;
+    }
+  } catch (e) {}
+  return null;
+},
 
     // ==========================================
     // BRAND-SCOPED DATA
