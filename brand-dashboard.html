@@ -864,7 +864,7 @@
 
     function renderHeader(brand) {
       var logoHtml = brand.logo
-        ? '<img src="' + brand.logo + '" alt="' + Components.escapeHTML(brand.name) + '" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:contain;background:var(--surface-3);" onerror="this.style.display=\\'none\\'">'
+       ? '<img src="' + brand.logo + '" alt="' + Components.escapeHTML(brand.name) + '" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:contain;background:var(--surface-3);" onerror="this.style.display=\'none\'">'
         : '';
       document.getElementById('brand-logo-area').innerHTML = logoHtml;
       document.getElementById('brand-welcome').textContent = 'Welcome, ' + brand.name;
