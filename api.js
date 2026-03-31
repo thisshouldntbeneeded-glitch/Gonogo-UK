@@ -603,7 +603,21 @@ var GoNoGoAPI = (function () {
         });
       }).then(function (rows) { return { ok: true, user: rows && rows[0] ? rows[0] : null }; });
     },
+getBrandUsers: function () {
+  return supabaseRequest(
+    'brand_users?region=eq.' + SITE_REGION +
+    '&select=id,email,display_name,brand_slug,role,created_at&order=created_at.asc'
+  )
+  .then(function (rows) { return rows || []; })
+  .catch(function () { return []; });
+},
 
+removeBrandUser: function (userId) {
+  return supabaseRequest('brand_users?id=eq.' + encodeURIComponent(userId), {
+    method: 'DELETE'
+  }).then(function () { return { ok: true }; });
+},
+    
     getBrandUser: function () {
       try {
         var stored = GoNoGoStorage.get('brandUser');
