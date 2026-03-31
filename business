@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="For UK brands: display your independent GoNoGo score, get a step-by-step improvement plan, reply to comments with guided templates, and collect QR-based feedback. Transparent pricing in GBP.">
+<link rel="canonical" href="https://gonogo.co.uk/business">
+<meta property="og:title" content="GoNoGo for Business — Score, Improve, Respond">
+<meta property="og:description" content="Show your GoNoGo score, get actionable steps to improve it, reply to customer comments with guided templates, and collect QR feedback across locations.">
+<meta property="og:image" content="https://gonogo.co.uk/logos/og-share.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://gonogo.co.uk/business">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GoNoGo UK">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GoNoGo for Business — Score, Improve, Respond">
+<meta name="twitter:description" content="Show your GoNoGo score, get actionable steps to improve it, reply to customer comments with guided templates, and collect QR feedback.">
+<meta name="twitter:image" content="https://gonogo.co.uk/logos/og-share.jpg">
+<meta name="robots" content="index, follow">
+<title>For Business — GoNoGo UK</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})()</script>
+</head>
+<body>
+  <div id="nav"></div>
+
+  <!-- HERO -->
+  <section class="section business-hero-section">
+    <div class="container business-hero">
+      <div class="business-left">
+        <div class="business-eyebrow">Independent brand scores + live feedback layer</div>
+        <h1 class="section-title business-title">Turn your GoNoGo score into a growth asset.</h1>
+        <p class="business-lead">
+          GoNoGo gives UK brands a public trust signal and a private portal:
+          show your independent score, get a step-by-step plan to improve it, reply to
+          customer comments with guided templates, and collect QR-based feedback across
+          branches, clinics, stores, terminals, offices or service points.
+        </p>
+
+        <div class="business-actions">
+          <a href="mailto:mike@gonogo.co.uk?subject=GoNoGo%20Business%20Demo" class="btn btn-primary">Book a business demo</a>
+          <a href="#pricing" class="btn btn-secondary">View pricing</a>
+        </div>
+
+        <div class="value-points">
+          <div class="value-chip"><i class="fa-solid fa-badge-check"></i><span>Independent score badges</span></div>
+          <div class="value-chip"><i class="fa-solid fa-list-check"></i><span>Step-by-step improvement plan</span></div>
+          <div class="value-chip"><i class="fa-solid fa-reply"></i><span>Guided reply templates</span></div>
+          <div class="value-chip"><i class="fa-solid fa-qrcode"></i><span>QR feedback across locations</span></div>
+        </div>
+
+        <!-- UK EXAMPLE BRAND BADGES -->
+        <div class="brand-badges">
+          <div class="brand-badge">
+            <div class="brand-badge-score go">91</div>
+            <div>
+              <strong>Monzo</strong>
+              <span>GO · Banking</span>
+            </div>
+          </div>
+          <div class="brand-badge">
+            <div class="brand-badge-score go">87</div>
+            <div>
+              <strong>Octopus Energy</strong>
+              <span>GO · Utilities</span>
+            </div>
+          </div>
+          <div class="brand-badge">
+            <div class="brand-badge-score go">84</div>
+            <div>
+              <strong>Aviva</strong>
+              <span>GO · Insurance</span>
+            </div>
+          </div>
+          <div class="brand-badge">
+            <div class="brand-badge-score go">82</div>
+            <div>
+              <strong>easyJet</strong>
+              <span>GO · Travel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="business-right">
+        <div class="hero-card">
+          <div class="card-label">One layer, five jobs</div>
+          <div class="hero-card-list">
+            <div class="hero-list-item">
+              <i class="fa-solid fa-display"></i>
+              <div>
+                <strong>Display your score</strong>
+                <span>Use a live GoNoGo badge on home, product and campaign pages.</span>
+              </div>
+            </div>
+            <div class="hero-list-item">
+              <i class="fa-solid fa-route"></i>
+              <div>
+                <strong>Get a plan to improve it</strong>
+                <span>A priority improvement plan ranks your weakest areas and tells you what to fix first.</span>
+              </div>
+            </div>
+            <div class="hero-list-item">
+              <i class="fa-solid fa-chart-line"></i>
+              <div>
+                <strong>Model score-lift scenarios</strong>
+                <span>See how fixing one category could move your overall score before you invest.</span>
+              </div>
+            </div>
+            <div class="hero-list-item">
+              <i class="fa-solid fa-message-check"></i>
+              <div>
+                <strong>Reply with guided templates</strong>
+                <span>A reply coach recommends tone, pre-reply steps, and starter templates tailored to your situation.</span>
+              </div>
+            </div>
+            <div class="hero-list-item">
+              <i class="fa-solid fa-location-dot"></i>
+              <div>
+                <strong>Capture in-location feedback</strong>
+                <span>QR feedback tied to branches, terminals, clinics, counters or service desks.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY IT MATTERS -->
+  <section class="section" style="padding-top:0">
+    <div class="container acquisition-strip">
+      <div class="strip-card">
+        <strong>Proof, not promises</strong>
+        <span>Use an independent score instead of self-written trust claims. Customers trust third-party evidence.</span>
+      </div>
+      <div class="strip-card">
+        <strong>Fix, don't just measure</strong>
+        <span>Most platforms show you a score. GoNoGo tells you what to do about it — ranked by impact, with projected score lifts.</span>
+      </div>
+      <div class="strip-card">
+        <strong>Shared reality for teams</strong>
+        <span>Give CX, operations and marketing one common view of reputation — and one improvement plan to act on.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PORTAL -->
+  <section class="section" id="portal">
+    <div class="container">
+      <div class="section-heading-wrap">
+        <h2 class="business-subtitle">The GoNoGo business portal</h2>
+        <p class="section-copy">
+          Not just a dashboard — a workspace that tells your team what's happening, why it matters,
+          and what to do next. Scores, improvement plans, reply coaching and trend tracking in one place.
+        </p>
+      </div>
+
+      <div class="portal-showcase">
+        <div class="portal-copy">
+          <div class="portal-feature">
+            <i class="fa-solid fa-list-check"></i>
+            <div>
+              <h3>Priority improvement plan</h3>
+              <p>Your lowest-scoring categories translated into ranked actions with urgency levels — critical, moderate or fine-tuning.</p>
+            </div>
+          </div>
+
+          <div class="portal-feature">
+            <i class="fa-solid fa-arrow-trend-up"></i>
+            <div>
+              <h3>Score-lift scenarios</h3>
+              <p>Model what happens if you improve a specific area. See projected score changes before committing budget.</p>
+            </div>
+          </div>
+
+          <div class="portal-feature">
+            <i class="fa-solid fa-reply"></i>
+            <div>
+              <h3>Reply coach & templates</h3>
+              <p>Get recommended tone, a pre-reply checklist, and starter replies tailored to your brand's weakest areas and review themes.</p>
+            </div>
+          </div>
+
+          <div class="portal-feature">
+            <i class="fa-solid fa-face-smile"></i>
+            <div>
+              <h3>Review intelligence</h3>
+              <p>Theme extraction from customer reviews mapped to sentiment — so you know not just what was said, but what it means for your score.</p>
+            </div>
+          </div>
+
+          <div class="portal-feature">
+            <i class="fa-solid fa-ranking-star"></i>
+            <div>
+              <h3>Peer position & opportunity areas</h3>
+              <p>See exactly where you rank in your category and which framework areas offer the most available points.</p>
+            </div>
+          </div>
+
+          <div class="portal-feature">
+            <i class="fa-solid fa-qrcode"></i>
+            <div>
+              <h3>QR-based feedback flows</h3>
+              <p>Generate QR codes for stores, clinics, counters or gates. Capture structured Go / No Go feedback in the moment.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="portal-mockup">
+          <div class="mockup-top">
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+          </div>
+
+          <div class="mockup-body">
+            <div class="mockup-sidebar">
+              <div class="mockup-brand">GoNoGo Business</div>
+              <div class="mockup-nav active">Dashboard</div>
+              <div class="mockup-nav">Reviews</div>
+              <div class="mockup-nav">Insights</div>
+              <div class="mockup-nav">Replies</div>
+              <div class="mockup-nav">QR Codes</div>
+            </div>
+
+            <div class="mockup-main">
+              <div class="mockup-title">Welcome, Monzo</div>
+
+              <div class="mockup-goal">
+                <div class="mockup-goal-text">
+                  <strong><i class="fa-solid fa-bullseye" style="color:var(--green);margin-right:6px;"></i> Improvement Goal</strong>
+                  <span>Strengthen complaint resolution speed to move toward a score of 94.</span>
+                </div>
+                <div class="mockup-goal-chip">+3</div>
+              </div>
+
+              <div class="mockup-kpis">
+                <div class="kpi-card">
+                  <span>GoNoGo score</span>
+                  <strong>91</strong>
+                </div>
+                <div class="kpi-card">
+                  <span>Industry rank</span>
+                  <strong>#1</strong>
+                </div>
+                <div class="kpi-card">
+                  <span>Positive</span>
+                  <strong>86%</strong>
+                </div>
+              </div>
+
+              <div class="mockup-plan">
+                <div class="mockup-plan-title">Priority Improvement Plan</div>
+                <div class="mockup-plan-item critical">
+                  <span class="mockup-plan-dot"></span>
+                  <div>
+                    <strong>Customer Support — Urgent fix</strong>
+                    <span>Reduce complaint resolution time. 4 points available.</span>
+                  </div>
+                </div>
+                <div class="mockup-plan-item warning">
+                  <span class="mockup-plan-dot"></span>
+                  <div>
+                    <strong>Accessibility — Moderate gap</strong>
+                    <span>Improve support discoverability and assisted journeys. 2 points available.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing" style="padding-top:0">
+    <div class="container">
+      <div class="section-heading-wrap">
+        <h2 class="business-subtitle">Simple, transparent pricing</h2>
+        <p class="section-copy">
+          Start with a score badge, or plug in the full business portal and QR feedback layer.
+          Pricing below is monthly, ex VAT, billed to UK entities in GBP.
+        </p>
+      </div>
+
+      <div class="pricing-special">
+        <div class="pricing-special-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+        <div class="pricing-special-text">
+          <strong>Founding client rates — limited availability</strong>
+          <span>The first 10 UK brands to sign up lock in discounted founding rates (shown in green below) for 12 months before moving to standard pricing. All core features included.</span>
+        </div>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- Starter -->
+        <article class="price-card">
+          <div class="tag">Starter</div>
+          <h3>Score Badge</h3>
+
+          <div class="price-stack">
+            <div class="price-founding-line">
+              <span class="price-founding-label">Founding rate</span>
+              <div class="price">£350 <small>/ month</small></div>
+            </div>
+            <div class="price-standard-line">
+              <span class="price-standard-label">Standard price</span>
+              <div class="price-standard">£500 <small>/ month</small></div>
+            </div>
+          </div>
+
+          <p class="price-lead">For brands that want a clean, independent trust signal on their website.</p>
+          <ul class="price-list">
+            <li>Live GoNoGo score badge</li>
+            <li>Embed code for your site or landing pages</li>
+            <li>Automatic score updates</li>
+            <li>Score breakdowns by category</li>
+            <li>Email support</li>
+          </ul>
+          <a href="mailto:mike@gonogo.co.uk?subject=Starter%20Badge%20Plan" class="btn btn-secondary full-width-btn">Enquire about Starter</a>
+          <p class="price-note">No lock-in. Cancel with 30 days' notice.</p>
+        </article>
+
+        <!-- Growth -->
+        <article class="price-card featured">
+          <div class="tag highlight">Most popular</div>
+          <h3>Badge + Portal</h3>
+
+          <div class="price-stack">
+            <div class="price-founding-line">
+              <span class="price-founding-label">Founding rate</span>
+              <div class="price">£900 <small>/ month</small></div>
+            </div>
+            <div class="price-standard-line">
+              <span class="price-standard-label">Standard price</span>
+              <div class="price-standard">£1,500 <small>/ month</small></div>
+            </div>
+          </div>
+
+          <p class="price-lead">For teams that want both a public score and a private portal with improvement guidance they can act from.</p>
+          <ul class="price-list">
+            <li>Everything in Starter</li>
+            <li>Full business portal for your team</li>
+            <li>Priority improvement plan with ranked actions</li>
+            <li>Score-lift scenario modelling</li>
+            <li>Review intelligence & theme extraction</li>
+            <li>Reply coach with guided templates</li>
+            <li>Peer position benchmarking</li>
+            <li>Exports for reports and presentations</li>
+          </ul>
+          <a href="mailto:mike@gonogo.co.uk?subject=Badge%20%2B%20Portal%20Plan" class="btn btn-primary full-width-btn">Book a Growth demo</a>
+          <p class="price-note">Month-to-month. Upgrade or cancel with 30 days' notice.</p>
+        </article>
+
+        <!-- Enterprise -->
+        <article class="price-card">
+          <div class="tag">Enterprise</div>
+          <h3>Portal + QR Feedback</h3>
+          <div class="price">
+            Custom <small>pilot & group pricing</small>
+          </div>
+          <p class="price-sub-note">From £3,000 / month</p>
+          <p class="price-lead">For transport groups, healthcare providers, large retailers and regulated UK service brands using QR feedback at scale.</p>
+          <ul class="price-list">
+            <li>Everything in Badge + Portal</li>
+            <li>Multi-location QR feedback setup</li>
+            <li>Location and route-level reporting</li>
+            <li>Dedicated rollout & training support</li>
+            <li>Custom dashboards & insight projects</li>
+            <li>Regulatory and compliance reporting</li>
+          </ul>
+          <a href="mailto:mike@gonogo.co.uk?subject=Enterprise%20QR%20Feedback" class="btn btn-secondary full-width-btn">Discuss Enterprise</a>
+          <p class="price-note">Pilot options available for group rollouts and regulated-sector projects.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- BEST FOR / WHAT YOU SELL -->
+  <section class="section" style="padding-top:0">
+    <div class="container two-col-business">
+      <div class="business-panel">
+        <h2 class="business-subtitle">Who it's ideal for</h2>
+        <ul class="business-list">
+          <li>Banks, insurers and fintech brands</li>
+          <li>Energy, telecoms and utility providers</li>
+          <li>Travel, transport and airport operators</li>
+          <li>Healthcare groups, clinics and service networks</li>
+          <li>Retailers, franchises and branch-based businesses</li>
+          <li>Subscription and digital-first consumer brands</li>
+        </ul>
+      </div>
+
+      <div class="business-panel">
+        <h2 class="business-subtitle">What you're actually buying</h2>
+        <ul class="business-list">
+          <li>Public trust badge with an independent score</li>
+          <li>A priority improvement plan — not just data, but what to do about it</li>
+          <li>Score-lift modelling so you can plan before you spend</li>
+          <li>Reply coaching with recommended tone and starter templates</li>
+          <li>Review intelligence that maps themes to your score</li>
+          <li>QR-driven, location-based feedback collection</li>
+          <li>Peer benchmarking and reporting for leadership</li>
+        </ul>
+        <div class="trust-note">
+          GoNoGo does not sell higher scores. Brands pay for access, tools and insight — never for better ratings.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="cta-panel">
+        <div>
+          <h2 class="business-subtitle" style="margin-top:0">Ready to see your business view?</h2>
+          <p class="cta-copy">
+            Share your brand and category, and we'll walk you through your GoNoGo profile,
+            improvement plan and the right pricing tier for your team.
+          </p>
+        </div>
+        <div class="cta-actions">
+          <a href="mailto:mike@gonogo.co.uk?subject=GoNoGo%20Business%20Demo" class="btn btn-primary">Book a business demo</a>
+          <a href="mailto:mike@gonogo.co.uk?subject=GoNoGo%20Business%20Question" class="btn btn-secondary">Ask a question</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div id="footer"></div>
+
+  <script src="data/helpers.js"></script>
+  <script src="components.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = Components.renderPublicNav('business');
+    Components.initTheme();
+    document.getElementById('footer').innerHTML = Components.renderFooter();
+  </script>
+
+  <style>
+    .business-hero {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: var(--space-8);
+      align-items: start;
+    }
+
+    .business-eyebrow {
+      display: inline-block;
+      background: rgba(39, 174, 96, 0.12);
+      color: var(--green);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: var(--text-xs);
+      font-weight: 700;
+      margin-bottom: var(--space-4);
+    }
+
+    .business-title {
+      text-align: left !important;
+      margin-bottom: var(--space-4);
+    }
+
+    .business-lead {
+      font-size: var(--text-base);
+      line-height: 1.75;
+      color: var(--text-secondary);
+      max-width: 62ch;
+      margin-bottom: var(--space-5);
+    }
+
+    .business-actions,
+    .cta-actions,
+    .value-points {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .value-points {
+      margin: var(--space-5) 0;
+    }
+
+    .value-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      font-size: var(--text-xs);
+      font-weight: 600;
+    }
+
+    .brand-badges {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--space-3);
+      margin-top: var(--space-5);
+    }
+
+    .brand-badge,
+    .hero-card,
+    .strip-card,
+    .sales-card,
+    .business-panel,
+    .cta-panel,
+    .portal-mockup,
+    .portal-feature,
+    .price-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .brand-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: var(--space-4);
+    }
+
+    .brand-badge strong {
+      display: block;
+      color: var(--text-primary);
+      font-size: var(--text-sm);
+      margin-bottom: 4px;
+    }
+
+    .brand-badge span {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+    }
+
+    .brand-badge-score {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 1rem;
+      flex-shrink: 0;
+      background: rgba(39, 174, 96, 0.12);
+      color: var(--green);
+    }
+
+    .hero-card {
+      padding: var(--space-6);
+    }
+
+    .card-label {
+      font-size: var(--text-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: var(--space-4);
+      font-weight: 700;
+    }
+
+    .hero-card-list {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .hero-list-item {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .hero-list-item i {
+      color: var(--green);
+      margin-top: 4px;
+    }
+
+    .hero-list-item strong {
+      display: block;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+      font-size: var(--text-sm);
+    }
+
+    .hero-list-item span {
+      color: var(--text-secondary);
+      font-size: var(--text-xs);
+      line-height: 1.6;
+    }
+
+    .acquisition-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+    }
+
+    .strip-card {
+      padding: var(--space-5);
+    }
+
+    .strip-card strong {
+      display: block;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      font-size: var(--text-sm);
+    }
+
+    .strip-card span,
+    .section-copy,
+    .cta-copy,
+    .business-list li,
+    .price-lead,
+    .price-note {
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      line-height: 1.7;
+    }
+
+    .section-heading-wrap {
+      margin-bottom: var(--space-6);
+    }
+
+    .business-subtitle {
+      text-align: left !important;
+      margin: 0 0 var(--space-3);
+    }
+
+    .portal-showcase {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: var(--space-6);
+      align-items: stretch;
+    }
+
+    .portal-copy {
+      display: grid;
+      gap: var(--space-4);
+    }
+
+    .portal-feature {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: 14px;
+      padding: var(--space-5);
+    }
+
+    .portal-feature i {
+      color: var(--green);
+      margin-top: 4px;
+    }
+
+    .portal-feature h3 {
+      margin: 0 0 6px;
+      font-size: var(--text-sm);
+      color: var(--text-primary);
+    }
+
+    .portal-feature p {
+      margin: 0;
+    }
+
+    .portal-mockup {
+      overflow: hidden;
+    }
+
+    .mockup-top {
+      display: flex;
+      gap: 8px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+
+    .mockup-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #d0d7de;
+    }
+
+    .mockup-body {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      min-height: 430px;
+    }
+
+    .mockup-sidebar {
+      background: #f8faf8;
+      border-right: 1px solid var(--border);
+      padding: var(--space-5);
+    }
+
+    .mockup-brand {
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: var(--space-5);
+      font-size: var(--text-sm);
+    }
+
+    .mockup-nav {
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: var(--text-secondary);
+      font-size: var(--text-sm);
+      margin-bottom: 8px;
+    }
+
+    .mockup-nav.active {
+      background: rgba(39, 174, 96, 0.10);
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .mockup-main {
+      padding: var(--space-5);
+    }
+
+    .mockup-title {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: var(--space-4);
+    }
+
+    .mockup-goal {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(17,165,81,0.08), rgba(59,130,246,0.05));
+      margin-bottom: var(--space-4);
+    }
+
+    .mockup-goal-text strong {
+      display: block;
+      font-size: var(--text-xs);
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .mockup-goal-text span {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .mockup-goal-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 42px;
+      height: 32px;
+      padding: 0 var(--space-3);
+      border-radius: 999px;
+      font-size: var(--text-sm);
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #11a551, #0d8742);
+      box-shadow: 0 4px 12px rgba(17,165,81,0.2);
+      flex-shrink: 0;
+    }
+
+    .mockup-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .kpi-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: var(--space-4);
+    }
+
+    .kpi-card span {
+      display: block;
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .kpi-card strong {
+      font-size: 1.5rem;
+      color: var(--text-primary);
+    }
+
+    .mockup-plan {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: var(--space-4);
+      background: white;
+    }
+
+    .mockup-plan-title {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-3);
+    }
+
+    .mockup-plan-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: var(--space-3);
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .mockup-plan-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .mockup-plan-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    .mockup-plan-item.critical .mockup-plan-dot {
+      background: #e74c3c;
+    }
+
+    .mockup-plan-item.warning .mockup-plan-dot {
+      background: #ff9800;
+    }
+
+    .mockup-plan-item strong {
+      display: block;
+      font-size: var(--text-xs);
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .mockup-plan-item span {
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .pricing-special {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+      padding: var(--space-4) var(--space-5);
+      border: 1px solid rgba(39, 174, 96, 0.22);
+      background: rgba(39, 174, 96, 0.06);
+      border-radius: var(--radius-lg);
+    }
+
+    .pricing-special-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(39, 174, 96, 0.12);
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px;
+    }
+
+    .pricing-special-text {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .pricing-special-text strong {
+      display: block;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-5);
+    }
+
+    .price-card {
+      padding: var(--space-5);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .price-card.featured {
+      border-color: rgba(39, 174, 96, 0.35);
+      box-shadow: 0 20px 40px rgba(39, 174, 96, 0.12);
+      transform: translateY(-4px);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      margin-bottom: var(--space-3);
+      width: fit-content;
+    }
+
+    .tag.highlight {
+      background: rgba(39, 174, 96, 0.10);
+      color: var(--green);
+    }
+
+    .price-card h3 {
+      margin: 0 0 6px;
+      font-size: var(--text-lg);
+      color: var(--text-primary);
+    }
+
+    .price-stack {
+      margin-bottom: var(--space-3);
+    }
+
+    .price-founding-line {
+      margin-bottom: 10px;
+    }
+
+    .price-founding-label {
+      display: block;
+      font-size: var(--text-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+
+    .price-standard-label {
+      display: block;
+      font-size: var(--text-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .price-standard {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    .price-standard small {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .price {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: var(--space-3);
+      letter-spacing: -0.04em;
+      color: var(--text-primary);
+    }
+
+    .price small {
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      font-weight: 500;
+      letter-spacing: 0;
+    }
+
+    .price-sub-note {
+      font-size: var(--text-sm);
+      color: var(--text-muted);
+      margin: 0 0 var(--space-3);
+    }
+
+    .price-lead {
+      margin: 0 0 var(--space-4);
+    }
+
+    .price-list {
+      margin: 0 0 var(--space-4);
+      padding-left: 18px;
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: 1.7;
+      flex-grow: 1;
+    }
+
+    .price-list li {
+      margin-bottom: 6px;
+    }
+
+    .full-width-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .price-note {
+      margin-top: var(--space-3);
+      font-size: var(--text-xs);
+    }
+
+    .sales-grid,
+    .two-col-business {
+      display: grid;
+      gap: var(--space-5);
+    }
+
+    .two-col-business {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .business-panel {
+      padding: var(--space-5);
+    }
+
+    .business-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .business-list li {
+      margin-bottom: 8px;
+    }
+
+    .trust-note {
+      background: rgba(243, 156, 18, 0.10);
+      border: 1px solid rgba(243, 156, 18, 0.18);
+      color: var(--text-primary);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      font-size: var(--text-sm);
+      line-height: 1.6;
+      margin-top: var(--space-4);
+    }
+
+    .cta-panel {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: var(--space-5);
+      padding: var(--space-5);
+    }
+
+    .cta-copy {
+      margin: 0;
+      max-width: 60ch;
+    }
+
+    @media (max-width: 1100px) {
+      .business-hero,
+      .portal-showcase,
+      .two-col-business,
+      .cta-panel {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .acquisition-strip,
+      .pricing-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cta-actions {
+        justify-content: flex-start;
+      }
+
+      .price-card.featured {
+        transform: none;
+      }
+
+      .pricing-special {
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .brand-badges,
+      .mockup-kpis {
+        grid-template-columns: 1fr;
+      }
+
+      .mockup-body {
+        grid-template-columns: 1fr;
+      }
+
+      .mockup-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .mockup-goal {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</body>
+</html>
