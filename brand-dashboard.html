@@ -8,94 +8,690 @@
 / /___/ /_/ / / / / / / /_/ / /_/ / /_/  __/ /
 \____/\____/_/ /_/ /_/ .___/\__,_/\__/\___/_/
                     /_/
-        Created with Perplexity Computer
-        https://www.perplexity.ai/computer
 -->
-<meta name="generator" content="Perplexity Computer">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GoNoGo SA — Brand Dashboard</title>
+<title>GoNoGo UK — Brand Dashboard</title>
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  .portal-grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .portal-grid-2 {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: var(--space-6);
+  }
+
+  .portal-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+
+  .insight-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .insight-card::after {
+    content: '';
+    position: absolute;
+    inset: auto -20% -55% auto;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(17,165,81,0.10) 0%, rgba(17,165,81,0) 70%);
+    pointer-events: none;
+  }
+
+  .section-header-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .section-header-copy p {
+    max-width: none;
+  }
+
+  .priority-list,
+  .theme-list,
+  .action-list,
+  .reply-list,
+  .micro-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+  }
+
+  .priority-item,
+  .theme-item,
+  .reply-item,
+  .micro-item {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    padding: var(--space-4);
+    border: 1px solid var(--border-primary);
+    background: var(--surface-2);
+    border-radius: var(--radius-lg);
+  }
+
+  .priority-icon,
+  .theme-icon,
+  .reply-icon,
+  .micro-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+
+  .priority-icon.critical { background: rgba(231,76,60,0.12); color: #e74c3c; }
+  .priority-icon.warning { background: rgba(255,152,0,0.12); color: #ff9800; }
+  .priority-icon.good { background: rgba(17,165,81,0.12); color: #11a551; }
+  .theme-icon { background: rgba(59,130,246,0.12); color: #3b82f6; }
+  .reply-icon { background: rgba(139,92,246,0.12); color: #8b5cf6; }
+  .micro-icon { background: rgba(17,165,81,0.10); color: var(--green); }
+
+  .priority-meta,
+  .theme-meta,
+  .reply-meta,
+  .micro-meta {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .priority-title,
+  .theme-title,
+  .reply-title,
+  .micro-title {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .priority-desc,
+  .theme-desc,
+  .reply-desc,
+  .micro-desc {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    line-height: 1.55;
+    max-width: none;
+  }
+
+  .metric-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+
+  .metric-box {
+    border: 1px solid var(--border-primary);
+    background: var(--surface-2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .metric-box-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .metric-box-value {
+    font-size: clamp(1.4rem, 1.2rem + 0.6vw, 1.9rem);
+    line-height: 1;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .metric-box-note {
+    margin-top: 8px;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
+
+  .goal-banner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-primary);
+    background:
+      linear-gradient(135deg, rgba(17,165,81,0.10), rgba(59,130,246,0.07));
+  }
+
+  .goal-banner h3 {
+    margin: 0 0 8px;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+  }
+
+  .goal-banner p {
+    margin: 0;
+    max-width: none;
+  }
+
+  .goal-score-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 88px;
+    height: 48px;
+    padding: 0 var(--space-4);
+    border-radius: 999px;
+    font-size: var(--text-lg);
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #11a551, #0d8742);
+    box-shadow: 0 8px 24px rgba(17,165,81,0.18);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scenario-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+
+  .scenario-card {
+    border: 1px solid var(--border-primary);
+    background: var(--surface-2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+  }
+
+  .scenario-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .scenario-title {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .scenario-delta {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(17,165,81,0.12);
+    color: #11a551;
+  }
+
+  .scenario-score-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .scenario-score-line strong {
+    font-size: var(--text-lg);
+    color: var(--text-primary);
+  }
+
+  .scenario-arrow {
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .scenario-copy {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    line-height: 1.55;
+    max-width: none;
+  }
+
+  .themes-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .theme-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: var(--space-3);
+  }
+
+  .theme-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--surface-3);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-primary);
+  }
+
+  .sentiment-summary {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: var(--space-5);
+    align-items: center;
+  }
+
+  .mini-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .mini-table th,
+  .mini-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-subtle);
+    text-align: left;
+    font-size: var(--text-xs);
+  }
+
+  .mini-table th {
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  .coach-box {
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-primary);
+    background: var(--surface-2);
+  }
+
+  .coach-box + .coach-box {
+    margin-top: var(--space-4);
+  }
+
+  .coach-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .coach-copy {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: none;
+  }
+
+  .coach-copy strong {
+    color: var(--text-primary);
+  }
+
+  .opportunity-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .opportunity-row {
+    display: grid;
+    grid-template-columns: minmax(140px, 180px) 1fr auto;
+    gap: var(--space-3);
+    align-items: center;
+  }
+
+  .opportunity-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .opportunity-track {
+    height: 10px;
+    border-radius: 999px;
+    background: var(--surface-3);
+    overflow: hidden;
+    position: relative;
+  }
+
+  .opportunity-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ff9800, #11a551);
+  }
+
+  .opportunity-value {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--text-secondary);
+    min-width: 58px;
+    text-align: right;
+  }
+
+  .embed-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .embed-preview-shell {
+    background: var(--surface-1);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    min-height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .embed-tips {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .embed-tip {
+    border: 1px solid var(--border-primary);
+    background: var(--surface-2);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+  }
+
+  .embed-tip-title {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+
+  .embed-tip-copy {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    max-width: none;
+  }
+
+  .empty-soft {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--border-primary);
+    text-align: center;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    background: var(--surface-2);
+  }
+
+  .heat-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 999px;
+  }
+
+  .heat-badge.high {
+    background: rgba(231,76,60,0.12);
+    color: #e74c3c;
+  }
+
+  .heat-badge.medium {
+    background: rgba(255,152,0,0.12);
+    color: #ff9800;
+  }
+
+  .heat-badge.low {
+    background: rgba(17,165,81,0.12);
+    color: #11a551;
+  }
+
+  @media (max-width: 1200px) {
+    .portal-grid-2,
+    .themes-grid,
+    .embed-grid,
+    .sentiment-summary {
+      grid-template-columns: 1fr;
+    }
+
+    .scenario-grid,
+    .metric-strip {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .portal-grid-3,
+    .scenario-grid,
+    .metric-strip {
+      grid-template-columns: 1fr;
+    }
+
+    .opportunity-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .goal-banner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .admin-header {
+      flex-direction: column;
+      align-items: flex-start !important;
+      gap: var(--space-4);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .admin-main > div:nth-child(2) {
+      grid-template-columns: 1fr !important;
+    }
+    .admin-main > div:nth-child(3) {
+      grid-template-columns: 1fr !important;
+    }
+    .admin-main > div:nth-child(4) {
+      grid-template-columns: 1fr !important;
+    }
+  }
+</style>
 </head>
 <body>
   <div class="admin-layout">
     <div id="sidebar-container"></div>
+
     <main class="admin-main" id="brand-content" style="display:none;">
-      <!-- Welcome header -->
       <div class="admin-header" id="brand-header">
         <div style="display:flex;align-items:center;gap:var(--space-4);">
           <div id="brand-logo-area"></div>
           <div>
             <h1 class="admin-title" id="brand-welcome">Dashboard</h1>
-            <p class="text-sm text-secondary" id="brand-subtitle">Your GoNoGo brand overview</p>
+            <p class="text-sm text-secondary" id="brand-subtitle">Your GoNoGo UK brand overview</p>
           </div>
         </div>
-        <div style="display:flex;gap:var(--space-3);">
+        <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;">
           <a href="brand-reviews.html" class="btn btn-sm" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">
             <i class="fa-solid fa-comments"></i> Reviews
           </a>
-          <a href="brand-insights.html" class="btn btn-primary btn-sm">
+          <a href="brand-insights.html" class="btn btn-sm" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">
             <i class="fa-solid fa-chart-line"></i> Insights
+          </a>
+          <a href="#api-embed-section" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-code"></i> Embed Score
           </a>
         </div>
       </div>
 
-      <!-- Score + Verdict -->
+      <div class="goal-banner" id="goal-banner" style="margin-bottom:var(--space-6);">
+        <div>
+          <h3><i class="fa-solid fa-bullseye" style="color:var(--green);margin-right:8px;"></i> Improvement Goal</h3>
+          <p class="text-sm text-secondary" id="goal-banner-copy">Loading your best next move...</p>
+        </div>
+        <div class="goal-score-chip" id="goal-banner-chip">+0</div>
+      </div>
+
       <div style="display:grid;grid-template-columns:auto 1fr;gap:var(--space-6);margin-bottom:var(--space-8);align-items:start;">
-        <div class="card" style="text-align:center;padding:var(--space-8);">
+        <div class="card insight-card" style="text-align:center;padding:var(--space-8);">
           <div id="score-circle-area" style="display:flex;justify-content:center;margin-bottom:var(--space-4);"></div>
           <div id="verdict-badge-area" style="margin-bottom:var(--space-2);"></div>
           <div class="text-xs text-muted" id="score-label">Overall GoNoGo Score</div>
         </div>
+
         <div>
-          <!-- KPI row -->
           <div class="kpi-grid" style="margin-bottom:var(--space-6);" id="kpi-grid">
             <div class="kpi-card"><div class="kpi-label">Loading...</div></div>
           </div>
-          <!-- Quick links -->
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);">
-            <a href="brand-reviews.html" class="card card-hover" style="text-decoration:none;display:flex;align-items:center;gap:var(--space-3);">
-              <div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--blue-dim);display:flex;align-items:center;justify-content:center;">
-                <i class="fa-solid fa-comments" style="color:var(--blue);"></i>
-              </div>
-              <div>
-                <div style="font-weight:600;font-size:var(--text-sm);color:var(--text-primary);">View Reviews</div>
-                <div class="text-xs text-muted">Read &amp; reply to customer reviews</div>
-              </div>
-            </a>
-            <a href="brand-insights.html" class="card card-hover" style="text-decoration:none;display:flex;align-items:center;gap:var(--space-3);">
-              <div style="width:40px;height:40px;border-radius:var(--radius-md);background:var(--green-bg);display:flex;align-items:center;justify-content:center;">
-                <i class="fa-solid fa-chart-line" style="color:var(--green);"></i>
-              </div>
-              <div>
-                <div style="font-weight:600;font-size:var(--text-sm);color:var(--text-primary);">View Insights</div>
-                <div class="text-xs text-muted">Trends &amp; industry comparison</div>
-              </div>
-            </a>
+
+          <div class="metric-strip" id="metric-strip">
+            <div class="metric-box">
+              <div class="metric-box-label">Improvement Headroom</div>
+              <div class="metric-box-value">0</div>
+              <div class="metric-box-note">Loading...</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Framework Breakdown -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8);">
-        <div class="card">
-          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
-            <i class="fa-solid fa-spider" style="color:var(--green);margin-right:var(--space-2);"></i>
-            Scoring Radar
-          </h3>
-          <div style="height:300px;"><canvas id="radar-chart"></canvas></div>
+      <div class="portal-grid" style="margin-bottom:var(--space-8);">
+        <div class="portal-grid-2">
+          <div class="card">
+            <div class="section-header-row">
+              <div class="section-header-copy">
+                <h3 class="text-sm font-semibold" style="margin-bottom:6px;">
+                  <i class="fa-solid fa-list-check" style="color:var(--green);margin-right:var(--space-2);"></i>
+                  Priority Improvement Plan
+                </h3>
+                <p class="text-xs text-muted">Your lowest-scoring categories translated into clear action.</p>
+              </div>
+              <div id="priority-heat-badge"></div>
+            </div>
+            <ul id="improvement-list" class="priority-list"></ul>
+          </div>
+
+          <div class="card">
+            <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+              <i class="fa-solid fa-spider" style="color:var(--green);margin-right:var(--space-2);"></i>
+              Scoring Radar
+            </h3>
+            <div style="height:320px;"><canvas id="radar-chart"></canvas></div>
+            <p class="text-xs text-muted" id="radar-note" style="margin-top:var(--space-3);">Your strongest and weakest scoring dimensions relative to the 100-point framework.</p>
+          </div>
         </div>
-        <div class="card">
-          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
-            <i class="fa-solid fa-list-check" style="color:var(--green);margin-right:var(--space-2);"></i>
-            Framework Breakdown
-          </h3>
-          <div id="framework-table" style="overflow-x:auto;"></div>
+
+        <div class="portal-grid-2">
+          <div class="card">
+            <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+              <i class="fa-solid fa-arrow-trend-up" style="color:var(--blue);margin-right:var(--space-2);"></i>
+              Score-Lift Scenarios
+            </h3>
+            <div id="scenario-grid" class="scenario-grid"></div>
+          </div>
+
+          <div class="card">
+            <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+              <i class="fa-solid fa-ranking-star" style="color:var(--orange);margin-right:var(--space-2);"></i>
+              Biggest Opportunity Areas
+            </h3>
+            <div id="opportunity-bars" class="opportunity-bar-wrap"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Strengths & Concerns -->
+      <div class="portal-grid" style="margin-bottom:var(--space-8);">
+        <div class="portal-grid-2">
+          <div class="card">
+            <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+              <i class="fa-solid fa-list-check" style="color:var(--green);margin-right:var(--space-2);"></i>
+              Framework Breakdown
+            </h3>
+            <div id="framework-table" style="overflow-x:auto;"></div>
+          </div>
+
+          <div class="card">
+            <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+              <i class="fa-solid fa-chart-column" style="color:var(--blue);margin-right:var(--space-2);"></i>
+              Position in Your Category
+            </h3>
+            <div style="height:300px;"><canvas id="peer-position-chart"></canvas></div>
+            <p class="text-xs text-muted" id="peer-position-note" style="margin-top:var(--space-3);">How your score compares with other UK brands in your category.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="themes-grid" style="margin-bottom:var(--space-8);">
+        <div class="card">
+          <div class="section-header-row">
+            <div class="section-header-copy">
+              <h3 class="text-sm font-semibold" style="margin-bottom:6px;">
+                <i class="fa-solid fa-face-smile" style="color:var(--green);margin-right:var(--space-2);"></i>
+                Review Intelligence
+              </h3>
+              <p class="text-xs text-muted">Not just what customers said, but what it means for your score.</p>
+            </div>
+          </div>
+
+          <div class="sentiment-summary" style="margin-bottom:var(--space-5);">
+            <div style="height:220px;"><canvas id="sentiment-chart"></canvas></div>
+            <div>
+              <div id="review-intel-summary" class="coach-box" style="margin:0;">
+                <div class="coach-label">Insight</div>
+                <div class="coach-copy">Loading review analysis...</div>
+              </div>
+              <div class="theme-pill-row" id="theme-pill-row"></div>
+            </div>
+          </div>
+
+          <div id="review-theme-list" class="theme-list"></div>
+        </div>
+
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+            <i class="fa-solid fa-reply" style="color:var(--purple);margin-right:var(--space-2);"></i>
+            Reply Coach
+          </h3>
+
+          <div class="coach-box">
+            <div class="coach-label">Recommended tone</div>
+            <div class="coach-copy" id="reply-tone-box">Loading reply guidance...</div>
+          </div>
+
+          <div class="coach-box">
+            <div class="coach-label">What to do before replying</div>
+            <ul id="reply-action-list" class="action-list"></ul>
+          </div>
+
+          <div class="coach-box">
+            <div class="coach-label">Suggested reply starters</div>
+            <div id="reply-template-list" class="reply-list"></div>
+          </div>
+        </div>
+      </div>
+
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8);">
         <div class="card">
           <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);color:var(--green-text);">
@@ -104,6 +700,7 @@
           </h3>
           <ul id="strengths-list" style="list-style:none;display:flex;flex-direction:column;gap:var(--space-2);"></ul>
         </div>
+
         <div class="card">
           <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);color:var(--orange-text);">
             <i class="fa-solid fa-triangle-exclamation" style="margin-right:var(--space-2);"></i>
@@ -113,49 +710,73 @@
         </div>
       </div>
 
-      <!-- API Embed Section -->
       <div class="card" style="margin-bottom:var(--space-8);" id="api-embed-section">
-        <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
-          <i class="fa-solid fa-code" style="color:var(--green);margin-right:var(--space-2);"></i>
-          Display Your GoNoGo Score on Your Website
-        </h3>
-        <p class="text-sm text-secondary" style="margin-bottom:var(--space-4);">
-          Copy the code below to embed your live GoNoGo score badge on your website. The score updates automatically.
-        </p>
-
-        <div style="margin-bottom:var(--space-4);">
-          <label class="form-label">Badge Style</label>
-          <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap;">
-            <button class="btn btn-sm" id="badge-style-full" onclick="setBadgeStyle('full')" style="background:var(--green);color:#fff;">Full Badge</button>
-            <button class="btn btn-sm" id="badge-style-compact" onclick="setBadgeStyle('compact')" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">Compact</button>
-            <button class="btn btn-sm" id="badge-style-score" onclick="setBadgeStyle('score')" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">Score Only</button>
+        <div class="section-header-row">
+          <div class="section-header-copy">
+            <h3 class="text-sm font-semibold" style="margin-bottom:6px;">
+              <i class="fa-solid fa-code" style="color:var(--green);margin-right:var(--space-2);"></i>
+              Display Your GoNoGo Score on Your Website
+            </h3>
+            <p class="text-sm text-secondary">Publish your live score badge and reinforce trust wherever UK customers compare brands.</p>
           </div>
         </div>
 
-        <div style="margin-bottom:var(--space-4);">
-          <label class="form-label">Preview</label>
-          <div id="badge-preview" style="background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-lg);padding:var(--space-6);display:flex;justify-content:center;"></div>
-        </div>
+        <div class="embed-grid">
+          <div>
+            <div style="margin-bottom:var(--space-4);">
+              <label class="form-label">Badge Style</label>
+              <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap;">
+                <button class="btn btn-sm" id="badge-style-full" onclick="setBadgeStyle('full')" style="background:var(--green);color:#fff;">Full Badge</button>
+                <button class="btn btn-sm" id="badge-style-compact" onclick="setBadgeStyle('compact')" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">Compact</button>
+                <button class="btn btn-sm" id="badge-style-score" onclick="setBadgeStyle('score')" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">Score Only</button>
+              </div>
+            </div>
 
-        <div style="margin-bottom:var(--space-4);">
-          <label class="form-label">Embed Code (HTML)</label>
-          <div style="position:relative;">
-            <pre id="embed-code" style="background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);font-size:var(--text-xs);overflow-x:auto;white-space:pre-wrap;word-break:break-all;color:var(--text-secondary);margin:0;"></pre>
-            <button class="btn btn-sm" onclick="copyEmbedCode()" style="position:absolute;top:8px;right:8px;background:var(--green);color:#fff;font-size:11px;padding:4px 10px;">
-              <i class="fa-solid fa-copy"></i> Copy
-            </button>
+            <div style="margin-bottom:var(--space-4);">
+              <label class="form-label">Preview</label>
+              <div class="embed-preview-shell">
+                <div id="badge-preview" style="display:flex;justify-content:center;width:100%;"></div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div>
-          <label class="form-label">API Endpoint (JSON)</label>
-          <div style="position:relative;">
-            <pre id="api-endpoint" style="background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);font-size:var(--text-xs);overflow-x:auto;color:var(--text-secondary);margin:0;"></pre>
-            <button class="btn btn-sm" onclick="copyApiEndpoint()" style="position:absolute;top:8px;right:8px;background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);font-size:11px;padding:4px 10px;">
-              <i class="fa-solid fa-copy"></i> Copy
-            </button>
+          <div>
+            <div class="embed-tips" style="margin-bottom:var(--space-4);">
+              <div class="embed-tip">
+                <div class="embed-tip-title">Where to place it</div>
+                <div class="embed-tip-copy">Best-performing placements are your homepage trust section, UK pricing pages, and About or compliance content.</div>
+              </div>
+              <div class="embed-tip">
+                <div class="embed-tip-title">What it signals</div>
+                <div class="embed-tip-copy">A live badge works best when paired with clear service promises, transparent fees, and visible support routes for UK customers.</div>
+              </div>
+              <div class="embed-tip">
+                <div class="embed-tip-title">How to improve conversion value</div>
+                <div class="embed-tip-copy">If your score is below 80, improve the weakest categories first, then embed the badge once your strengths match the message on your site.</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:var(--space-4);">
+              <label class="form-label">Embed Code (HTML)</label>
+              <div style="position:relative;">
+                <pre id="embed-code" style="background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);font-size:var(--text-xs);overflow-x:auto;white-space:pre-wrap;word-break:break-all;color:var(--text-secondary);margin:0;"></pre>
+                <button class="btn btn-sm" onclick="copyEmbedCode()" style="position:absolute;top:8px;right:8px;background:var(--green);color:#fff;font-size:11px;padding:4px 10px;">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label class="form-label">API Endpoint (JSON)</label>
+              <div style="position:relative;">
+                <pre id="api-endpoint" style="background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);font-size:var(--text-xs);overflow-x:auto;color:var(--text-secondary);margin:0;"></pre>
+                <button class="btn btn-sm" onclick="copyApiEndpoint()" style="position:absolute;top:8px;right:8px;background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);font-size:11px;padding:4px 10px;">
+                  <i class="fa-solid fa-copy"></i> Copy
+                </button>
+              </div>
+              <p class="text-xs text-muted" style="margin-top:var(--space-2);">Use this endpoint to power custom widgets or internal reporting dashboards.</p>
+            </div>
           </div>
-          <p class="text-xs text-muted" style="margin-top:var(--space-2);">Use this endpoint to fetch your brand data as JSON for custom integrations.</p>
         </div>
       </div>
 
@@ -185,13 +806,14 @@
       initBrandPage();
     }
 
+    var currentBadgeStyle = 'full';
+    var reviewReplyTemplates = [];
+
     async function initBrandPage() {
       var user = Components.getBrandUser();
       if (!user) return;
 
       document.getElementById('brand-content').style.display = '';
-
-      // Re-render sidebar with user info now available
       document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('dashboard');
 
       var brandSlug = user.brand_slug;
@@ -210,87 +832,174 @@
       var brand = data.normalized;
       var raw = data.raw;
 
-      // Welcome header
+      var results = await Promise.all([
+        GoNoGoAPI.getBrandReviews(brand.name),
+        GoNoGoAPI.getBrandsInCategory(raw.category_slug)
+      ]);
+
+      var reviews = Array.isArray(results[0]) ? results[0] : [];
+      var peers = Array.isArray(results[1]) ? results[1] : [];
+
+      renderHeader(brand);
+      renderTopSummary(brand, raw, reviews, peers, brandSlug);
+      renderRadar(brand);
+      renderFrameworkTable(raw);
+      renderStrengths(brand);
+      renderConcerns(brand);
+
+      var frameworkAnalysis = analyseFramework(raw.framework_breakdown || [], brand.overallScore);
+      var reviewAnalysis = analyseReviews(reviews);
+      var peerAnalysis = analysePeers(peers, brandSlug, brand.overallScore);
+
+      renderGoalBanner(brand, frameworkAnalysis, reviewAnalysis);
+      renderImprovementPlan(brand, frameworkAnalysis, reviewAnalysis);
+      renderScoreLiftScenarios(brand, frameworkAnalysis);
+      renderOpportunityBars(frameworkAnalysis);
+      renderPeerPositionChart(peers, brandSlug, brand.name);
+      renderSentiment(reviewAnalysis);
+      renderReviewThemes(reviewAnalysis, frameworkAnalysis);
+      renderReplyCoach(brand, reviewAnalysis, frameworkAnalysis);
+      setupEmbed(brandSlug, brand.name, brand.overallScore, brand.verdict);
+    }
+
+    function renderHeader(brand) {
       var logoHtml = brand.logo
-        ? '<img src="' + brand.logo + '" alt="' + Components.escapeHTML(brand.name) + '" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:contain;background:var(--surface-3);" onerror="this.style.display=\'none\'">'
+        ? '<img src="' + brand.logo + '" alt="' + Components.escapeHTML(brand.name) + '" style="width:48px;height:48px;border-radius:var(--radius-md);object-fit:contain;background:var(--surface-3);" onerror="this.style.display=\\'none\\'">'
         : '';
       document.getElementById('brand-logo-area').innerHTML = logoHtml;
       document.getElementById('brand-welcome').textContent = 'Welcome, ' + brand.name;
       document.getElementById('brand-subtitle').textContent = brand.categoryName + ' — Last updated ' + Components.formatDate(brand.lastUpdated);
-
-      // Score circle + verdict
       document.getElementById('score-circle-area').innerHTML = Components.renderScoreCircle(brand.overallScore, 'lg');
       document.getElementById('verdict-badge-area').innerHTML = Components.renderVerdictBadge(brand.verdict);
+    }
 
-      // Fetch reviews + category peers for KPIs
-      var reviews = await GoNoGoAPI.getBrandReviews(brand.name);
-      var peers = await GoNoGoAPI.getBrandsInCategory(raw.category_slug);
-
-      // Compute rank
+    function renderTopSummary(brand, raw, reviews, peers, brandSlug) {
       var rank = 1;
       for (var i = 0; i < peers.length; i++) {
-        if (peers[i].slug === brandSlug) { rank = i + 1; break; }
+        if (peers[i].slug === brandSlug) {
+          rank = i + 1;
+          break;
+        }
       }
 
-      // Sentiment
-      var goReviews = reviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'GO'; });
-      var nogoReviews = reviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'NOGO'; });
-      var avgSentiment = reviews.length > 0 ? Math.round((goReviews.length / reviews.length) * 100) : 0;
+      var goReviews = reviews.filter(function(r) {
+        return normalizeVerdict(r.verdict) === 'GO';
+      });
+      var negativeReviews = reviews.filter(function(r) {
+        var v = normalizeVerdict(r.verdict);
+        return v === 'NOGO' || v === 'GO WITH CAUTION';
+      });
 
-      // KPIs
+      var avgSentiment = reviews.length > 0 ? Math.round((goReviews.length / reviews.length) * 100) : 0;
+      var totalPossible = getFrameworkTotal(raw.framework_breakdown || []);
+      var currentPoints = getFrameworkEarned(raw.framework_breakdown || []);
+      var headroom = Math.max(0, totalPossible - currentPoints);
+      var toNextBand = brand.overallScore >= 80 ? 0 : (brand.overallScore >= 60 ? 80 - brand.overallScore : 60 - brand.overallScore);
+
       document.getElementById('kpi-grid').innerHTML =
         '<div class="kpi-card">' +
           '<div class="kpi-label">Total Reviews</div>' +
           '<div class="kpi-value">' + reviews.length + '</div>' +
-          '<div class="kpi-delta" style="color:' + (reviews.length > 0 ? 'var(--green-text)' : 'var(--text-muted)') + ';">' + (reviews.length > 0 ? goReviews.length + ' positive' : 'None yet') + '</div>' +
+          '<div class="kpi-delta" style="color:' + (reviews.length > 0 ? 'var(--green-text)' : 'var(--text-muted)') + ';">' +
+            (reviews.length > 0 ? goReviews.length + ' positive signals' : 'None yet') +
+          '</div>' +
         '</div>' +
         '<div class="kpi-card">' +
           '<div class="kpi-label">Positive Sentiment</div>' +
           '<div class="kpi-value">' + avgSentiment + '<span class="text-sm text-muted">%</span></div>' +
-          '<div class="kpi-delta text-muted">Based on review verdicts</div>' +
+          '<div class="kpi-delta text-muted">Based on review verdict mix</div>' +
         '</div>' +
         '<div class="kpi-card">' +
-          '<div class="kpi-label">Industry Rank</div>' +
+          '<div class="kpi-label">UK Category Rank</div>' +
           '<div class="kpi-value">#' + rank + '<span class="text-sm text-muted"> / ' + peers.length + '</span></div>' +
           '<div class="kpi-delta text-muted">' + Components.escapeHTML(brand.categoryName) + '</div>' +
         '</div>';
 
-      // Radar chart
+      document.getElementById('metric-strip').innerHTML =
+        '<div class="metric-box">' +
+          '<div class="metric-box-label">Improvement Headroom</div>' +
+          '<div class="metric-box-value">' + headroom + '</div>' +
+          '<div class="metric-box-note">Points still available across your framework.</div>' +
+        '</div>' +
+        '<div class="metric-box">' +
+          '<div class="metric-box-label">To Next Rating Band</div>' +
+          '<div class="metric-box-value">' + toNextBand + '</div>' +
+          '<div class="metric-box-note">' + (toNextBand > 0 ? 'Points needed to reach the next verdict band.' : 'You are already in the top GO band.') + '</div>' +
+        '</div>' +
+        '<div class="metric-box">' +
+          '<div class="metric-box-label">Critical Review Load</div>' +
+          '<div class="metric-box-value">' + negativeReviews.length + '</div>' +
+          '<div class="metric-box-note">Reviews likely to affect trust if left unanswered.</div>' +
+        '</div>' +
+        '<div class="metric-box">' +
+          '<div class="metric-box-label">Current Category Points</div>' +
+          '<div class="metric-box-value">' + currentPoints + '/' + totalPossible + '</div>' +
+          '<div class="metric-box-note">Raw points earned before score normalisation.</div>' +
+        '</div>';
+    }
+
+    function renderGoalBanner(brand, frameworkAnalysis, reviewAnalysis) {
+      var topGap = frameworkAnalysis.lowest[0];
+      var copy = '';
+      var chip = '+0';
+
+      if (!topGap) {
+        copy = 'Complete more framework data to unlock personalised score-improvement guidance.';
+      } else {
+        var nextTarget = brand.overallScore >= 80 ? Math.min(100, brand.overallScore + 5) : (brand.overallScore >= 60 ? 80 : 60);
+        var issuePhrase = reviewAnalysis.topNegativeTheme ? ' and reducing "' + reviewAnalysis.topNegativeTheme.label + '" complaints' : '';
+        copy = 'Your fastest improvement path is to strengthen ' + topGap.category + issuePhrase + '. That is the clearest route toward a score of ' + nextTarget + '.';
+        chip = '+' + Math.min(12, Math.max(3, Math.round(topGap.missing * 0.6)));
+      }
+
+      document.getElementById('goal-banner-copy').textContent = copy;
+      document.getElementById('goal-banner-chip').textContent = chip;
+    }
+
+    function renderRadar(brand) {
       if (brand.categoryScores && Object.keys(brand.categoryScores).length > 0) {
         Components.createRadarChart('radar-chart', brand, { labelSize: 11, showTicks: true });
       } else {
         document.getElementById('radar-chart').parentElement.innerHTML =
-          '<div style="display:flex;align-items:center;justify-content:center;height:300px;color:var(--text-muted);font-size:var(--text-sm);">No scoring data available</div>';
+          '<div class="empty-soft">No scoring data available yet.</div>';
       }
+    }
 
-      // Framework table
+    function renderFrameworkTable(raw) {
       var fb = raw.framework_breakdown || [];
-      if (fb.length > 0) {
-        var tableHtml = '<table class="data-table" style="width:100%;"><thead><tr>' +
-          '<th style="text-align:left;">Category</th>' +
-          '<th style="text-align:center;">Score</th>' +
-          '<th style="text-align:left;">Description</th>' +
-          '</tr></thead><tbody>';
-        fb.forEach(function(item) {
-          var parts = item.score.split('/');
-          var pct = Math.round((parseFloat(parts[0]) / parseFloat(parts[1])) * 100);
-          var color = getScoreColor(pct);
-          tableHtml += '<tr>' +
-            '<td style="font-weight:600;font-size:var(--text-sm);">' + Components.escapeHTML(item.category) + '</td>' +
-            '<td style="text-align:center;">' +
-              '<span style="display:inline-block;padding:2px 10px;border-radius:var(--radius-sm);background:' + color + '15;color:' + color + ';font-weight:700;font-size:var(--text-sm);">' + Components.escapeHTML(item.score) + '</span>' +
-            '</td>' +
-            '<td style="font-size:var(--text-xs);color:var(--text-secondary);max-width:300px;">' + Components.escapeHTML(item.description) + '</td>' +
-          '</tr>';
-        });
-        tableHtml += '</tbody></table>';
-        document.getElementById('framework-table').innerHTML = tableHtml;
-      } else {
+      if (!fb.length) {
         document.getElementById('framework-table').innerHTML =
-          '<div style="padding:var(--space-6);text-align:center;color:var(--text-muted);font-size:var(--text-sm);">No framework breakdown available</div>';
+          '<div class="empty-soft">No framework breakdown available.</div>';
+        return;
       }
 
-      // Strengths
+      var tableHtml = '<table class="data-table" style="width:100%;"><thead><tr>' +
+        '<th style="text-align:left;">Category</th>' +
+        '<th style="text-align:center;">Score</th>' +
+        '<th style="text-align:center;">%</th>' +
+        '<th style="text-align:left;">What it means</th>' +
+        '</tr></thead><tbody>';
+
+      fb.forEach(function(item) {
+        var parsed = parseScore(item.score);
+        var pct = parsed.max > 0 ? Math.round((parsed.score / parsed.max) * 100) : 0;
+        var color = getScoreColor(pct);
+
+        tableHtml += '<tr>' +
+          '<td style="font-weight:600;font-size:var(--text-sm);">' + Components.escapeHTML(item.category) + '</td>' +
+          '<td style="text-align:center;">' +
+            '<span style="display:inline-block;padding:2px 10px;border-radius:var(--radius-sm);background:' + color + '15;color:' + color + ';font-weight:700;font-size:var(--text-sm);">' + Components.escapeHTML(item.score) + '</span>' +
+          '</td>' +
+          '<td style="text-align:center;font-size:var(--text-xs);font-weight:700;color:' + color + ';">' + pct + '%</td>' +
+          '<td style="font-size:var(--text-xs);color:var(--text-secondary);max-width:320px;">' + Components.escapeHTML(item.description || 'This category contributes directly to your GoNoGo outcome.') + '</td>' +
+        '</tr>';
+      });
+
+      tableHtml += '</tbody></table>';
+      document.getElementById('framework-table').innerHTML = tableHtml;
+    }
+
+    function renderStrengths(brand) {
       var strengthsHtml = '';
       (brand.strengths || []).forEach(function(s) {
         strengthsHtml += '<li style="display:flex;align-items:flex-start;gap:var(--space-2);font-size:var(--text-sm);color:var(--text-secondary);">' +
@@ -298,8 +1007,9 @@
         '</li>';
       });
       document.getElementById('strengths-list').innerHTML = strengthsHtml || '<li class="text-sm text-muted">No strengths listed</li>';
+    }
 
-      // Concerns
+    function renderConcerns(brand) {
       var concernsHtml = '';
       (brand.concerns || []).forEach(function(c) {
         concernsHtml += '<li style="display:flex;align-items:flex-start;gap:var(--space-2);font-size:var(--text-sm);color:var(--text-secondary);">' +
@@ -307,12 +1017,338 @@
         '</li>';
       });
       document.getElementById('concerns-list').innerHTML = concernsHtml || '<li class="text-sm text-muted">No concerns listed</li>';
+    }
 
-      // API Embed section
+    function renderImprovementPlan(brand, frameworkAnalysis, reviewAnalysis) {
+      var heat = frameworkAnalysis.lowest.length ? frameworkAnalysis.lowest[0].pct : 100;
+      var heatClass = heat < 40 ? 'high' : (heat < 70 ? 'medium' : 'low');
+      var heatText = heat < 40 ? 'Urgent fix' : (heat < 70 ? 'Moderate gap' : 'Fine-tuning');
+
+      document.getElementById('priority-heat-badge').innerHTML =
+        '<span class="heat-badge ' + heatClass + '"><i class="fa-solid fa-bolt"></i> ' + heatText + '</span>';
+
+      if (!frameworkAnalysis.lowest.length) {
+        document.getElementById('improvement-list').innerHTML = '<div class="empty-soft">No framework categories available yet.</div>';
+        return;
+      }
+
+      var html = '';
+      frameworkAnalysis.lowest.slice(0, 4).forEach(function(item, index) {
+        var iconClass = item.pct < 40 ? 'critical' : (item.pct < 70 ? 'warning' : 'good');
+        var title = buildPriorityTitle(item, index);
+        var description = buildPriorityDescription(item, reviewAnalysis);
+
+        html += '<li class="priority-item">' +
+          '<span class="priority-icon ' + iconClass + '"><i class="fa-solid ' + getPriorityIcon(item.category) + '"></i></span>' +
+          '<div class="priority-meta">' +
+            '<div class="priority-title">' + Components.escapeHTML(title) + '</div>' +
+            '<div class="priority-desc">' + Components.escapeHTML(description) + '</div>' +
+          '</div>' +
+        '</li>';
+      });
+
+      document.getElementById('improvement-list').innerHTML = html;
+    }
+
+    function renderScoreLiftScenarios(brand, frameworkAnalysis) {
+      var container = document.getElementById('scenario-grid');
+      if (!frameworkAnalysis.sorted.length) {
+        container.innerHTML = '<div class="empty-soft" style="grid-column:1/-1;">No scenario modelling available yet.</div>';
+        return;
+      }
+
+      var scenarios = buildScenarios(brand, frameworkAnalysis);
+      var html = '';
+
+      scenarios.forEach(function(s) {
+        html += '<div class="scenario-card">' +
+          '<div class="scenario-top">' +
+            '<div class="scenario-title">' + Components.escapeHTML(s.title) + '</div>' +
+            '<div class="scenario-delta">+' + s.delta + '</div>' +
+          '</div>' +
+          '<div class="scenario-score-line">' +
+            '<strong>' + brand.overallScore + '</strong>' +
+            '<span class="scenario-arrow"><i class="fa-solid fa-arrow-right"></i></span>' +
+            '<strong>' + s.projected + '</strong>' +
+          '</div>' +
+          '<div class="scenario-copy">' + Components.escapeHTML(s.copy) + '</div>' +
+        '</div>';
+      });
+
+      container.innerHTML = html;
+    }
+
+    function renderOpportunityBars(frameworkAnalysis) {
+      var container = document.getElementById('opportunity-bars');
+      if (!frameworkAnalysis.sorted.length) {
+        container.innerHTML = '<div class="empty-soft">No opportunity analysis available.</div>';
+        return;
+      }
+
+      var html = '';
+      frameworkAnalysis.sorted.slice(0, 5).forEach(function(item) {
+        var gainPct = item.max > 0 ? Math.round((item.missing / item.max) * 100) : 0;
+        html += '<div class="opportunity-row">' +
+          '<div class="opportunity-label">' + Components.escapeHTML(item.category) + '</div>' +
+          '<div class="opportunity-track"><div class="opportunity-fill" style="width:' + gainPct + '%;"></div></div>' +
+          '<div class="opportunity-value">+' + item.missing + ' pts</div>' +
+        '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    function renderPeerPositionChart(peers, brandSlug, brandName) {
+      var canvas = document.getElementById('peer-position-chart');
+      if (!canvas || !peers || !peers.length) {
+        document.getElementById('peer-position-note').textContent = 'No peer data available for this category yet.';
+        return;
+      }
+
+      var tc = Components._getChartThemeColors();
+      var labels = peers.map(function(p) { return p.name; });
+      var scores = peers.map(function(p) { return parseInt(p.gonogo_score, 10) || 0; });
+      var colors = peers.map(function(p) {
+        return p.slug === brandSlug ? '#11a551' : 'rgba(59,130,246,0.45)';
+      });
+      var borders = peers.map(function(p) {
+        return p.slug === brandSlug ? '#11a551' : 'rgba(59,130,246,0.7)';
+      });
+
+      new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: scores,
+            backgroundColor: colors,
+            borderColor: borders,
+            borderWidth: 1,
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: peers.length > 7 ? 'y' : 'x',
+          scales: {
+            x: {
+              min: peers.length > 7 ? 0 : undefined,
+              max: peers.length > 7 ? 100 : undefined,
+              grid: { color: peers.length > 7 ? tc.gridColor : 'transparent' },
+              ticks: { color: tc.tickColor, font: { family: 'Inter', size: 10 }, maxRotation: 45 }
+            },
+            y: {
+              min: peers.length > 7 ? undefined : 0,
+              max: peers.length > 7 ? undefined : 100,
+              grid: { color: peers.length > 7 ? 'transparent' : tc.gridColor },
+              ticks: { color: tc.tickColor, font: { family: 'Inter', size: 10 }, stepSize: 20 }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: tc.tooltipBg,
+              titleColor: tc.tooltipTitle,
+              bodyColor: tc.tooltipBody,
+              borderColor: tc.tooltipBorder,
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 10,
+              callbacks: {
+                label: function(ctx) {
+                  var p = peers[ctx.dataIndex];
+                  var suffix = p && p.slug === brandSlug ? ' (Your brand)' : '';
+                  return 'Score: ' + ctx.raw + '/100' + suffix;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      document.getElementById('peer-position-note').textContent = brandName + ' is highlighted in green so you can see where you sit in your UK category.';
+    }
+
+    function renderSentiment(reviewAnalysis) {
+      var canvas = document.getElementById('sentiment-chart');
+      var tc = Components._getChartThemeColors();
+
+      var labels = [];
+      var data = [];
+      var colors = [];
+
+      if (reviewAnalysis.go > 0) { labels.push('Go'); data.push(reviewAnalysis.go); colors.push('#11a551'); }
+      if (reviewAnalysis.caution > 0) { labels.push('Caution'); data.push(reviewAnalysis.caution); colors.push('#ff9800'); }
+      if (reviewAnalysis.nogo > 0) { labels.push('NoGo'); data.push(reviewAnalysis.nogo); colors.push('#e74c3c'); }
+      if (reviewAnalysis.noVerdict > 0) { labels.push('No Verdict'); data.push(reviewAnalysis.noVerdict); colors.push('#666666'); }
+
+      if (reviewAnalysis.total === 0) {
+        labels = ['No Reviews'];
+        data = [1];
+        colors = ['#333333'];
+      }
+
+      new Chart(canvas, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderWidth: 0,
+            borderRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '66%',
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: tc.legendColor,
+                font: { family: 'Inter', size: 11 },
+                usePointStyle: true,
+                pointStyle: 'circle',
+                padding: 16
+              }
+            },
+            tooltip: {
+              backgroundColor: tc.tooltipBg,
+              titleColor: tc.tooltipTitle,
+              bodyColor: tc.tooltipBody,
+              borderColor: tc.tooltipBorder,
+              borderWidth: 1,
+              cornerRadius: 8,
+              padding: 10,
+              callbacks: {
+                label: function(ctx) {
+                  var total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                  var pct = total > 0 ? Math.round((ctx.raw / total) * 100) : 0;
+                  return ctx.label + ': ' + ctx.raw + ' (' + pct + '%)';
+                }
+              }
+            }
+          }
+        }
+      });
+
+      var summary = 'You have ' + reviewAnalysis.total + ' review' + (reviewAnalysis.total === 1 ? '' : 's') + '. ';
+      if (reviewAnalysis.total === 0) {
+        summary += 'As reviews arrive, this section will show recurring themes and what they imply for your score.';
+      } else if (reviewAnalysis.nogo > reviewAnalysis.go) {
+        summary += 'Negative verdicts currently outweigh positive ones, which suggests unresolved customer issues are still visible.';
+      } else if (reviewAnalysis.go >= reviewAnalysis.nogo) {
+        summary += 'Positive signals are stronger than negative ones, but recurring complaints still show where trust can improve.';
+      }
+      if (reviewAnalysis.topNegativeTheme) {
+        summary += ' The most repeated concern is "' + reviewAnalysis.topNegativeTheme.label + '".';
+      }
+
+      document.getElementById('review-intel-summary').innerHTML =
+        '<div class="coach-label">Insight</div><div class="coach-copy">' + Components.escapeHTML(summary) + '</div>';
+
+      var pills = [];
+      if (reviewAnalysis.topPositiveTheme) {
+        pills.push('<span class="theme-pill"><i class="fa-solid fa-circle-check" style="color:#11a551;"></i> ' + Components.escapeHTML(reviewAnalysis.topPositiveTheme.label) + '</span>');
+      }
+      if (reviewAnalysis.topNegativeTheme) {
+        pills.push('<span class="theme-pill"><i class="fa-solid fa-triangle-exclamation" style="color:#ff9800;"></i> ' + Components.escapeHTML(reviewAnalysis.topNegativeTheme.label) + '</span>');
+      }
+      pills.push('<span class="theme-pill"><i class="fa-solid fa-hashtag"></i> ' + reviewAnalysis.total + ' reviews analysed</span>');
+      document.getElementById('theme-pill-row').innerHTML = pills.join('');
+    }
+
+    function renderReviewThemes(reviewAnalysis, frameworkAnalysis) {
+      var container = document.getElementById('review-theme-list');
+
+      if (!reviewAnalysis.total) {
+        container.innerHTML = '<div class="empty-soft">No review text available yet. Once customers start reviewing, this section will surface the issues you should fix first.</div>';
+        return;
+      }
+
+      var combined = [];
+      (reviewAnalysis.negativeThemes || []).slice(0, 3).forEach(function(theme) {
+        combined.push({
+          icon: 'fa-triangle-exclamation',
+          title: theme.label + ' is dragging trust',
+          desc: 'Mentioned ' + theme.count + ' time' + (theme.count === 1 ? '' : 's') + '. Customers are flagging this as a friction point, so resolving it can improve both sentiment and your score trajectory.'
+        });
+      });
+
+      (reviewAnalysis.positiveThemes || []).slice(0, 2).forEach(function(theme) {
+        combined.push({
+          icon: 'fa-circle-check',
+          title: theme.label + ' is a trust asset',
+          desc: 'Mentioned ' + theme.count + ' time' + (theme.count === 1 ? '' : 's') + '. Preserve this strength in your brand messaging while fixing weaker areas around it.'
+        });
+      });
+
+      if (!combined.length && frameworkAnalysis.lowest.length) {
+        combined.push({
+          icon: 'fa-lightbulb',
+          title: frameworkAnalysis.lowest[0].category + ' needs stronger evidence',
+          desc: 'Your review mix is not yet rich enough to expose clear themes, so the weakest framework category should be your immediate operating priority.'
+        });
+      }
+
+      container.innerHTML = combined.map(function(item) {
+        return '<div class="theme-item">' +
+          '<span class="theme-icon"><i class="fa-solid ' + item.icon + '"></i></span>' +
+          '<div class="theme-meta">' +
+            '<div class="theme-title">' + Components.escapeHTML(item.title) + '</div>' +
+            '<div class="theme-desc">' + Components.escapeHTML(item.desc) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function renderReplyCoach(brand, reviewAnalysis, frameworkAnalysis) {
+      var toneBox = document.getElementById('reply-tone-box');
+      var actionList = document.getElementById('reply-action-list');
+      var templateList = document.getElementById('reply-template-list');
+
+      var weakest = frameworkAnalysis.lowest[0] ? frameworkAnalysis.lowest[0].category : 'customer experience';
+      var topNegativeTheme = reviewAnalysis.topNegativeTheme ? reviewAnalysis.topNegativeTheme.label : weakest.toLowerCase();
+
+      var tone = 'Use a calm, accountable tone. Thank the customer, acknowledge the issue clearly, explain the next step, and avoid sounding defensive or legalistic. When the complaint relates to ' + topNegativeTheme + ', your reply should show ownership and a specific resolution path.';
+      toneBox.textContent = tone;
+
+      var actions = [
+        'Confirm the root cause internally before replying publicly.',
+        'Address the specific issue mentioned, not just the overall rating.',
+        'Offer a named next step, such as callback, refund review, escalation, or service recovery.',
+        'If the complaint reflects ' + weakest + ', feed it into your improvement plan rather than treating it as a one-off.'
+      ];
+
+      actionList.innerHTML = actions.map(function(text) {
+        return '<li class="micro-item">' +
+          '<span class="micro-icon"><i class="fa-solid fa-check"></i></span>' +
+          '<div class="micro-meta">' +
+            '<div class="micro-desc">' + Components.escapeHTML(text) + '</div>' +
+          '</div>' +
+        '</li>';
+      }).join('');
+
+      reviewReplyTemplates = buildReplyTemplates(brand.name, topNegativeTheme);
+      templateList.innerHTML = reviewReplyTemplates.map(function(item) {
+        return '<div class="reply-item">' +
+          '<span class="reply-icon"><i class="fa-solid fa-pen"></i></span>' +
+          '<div class="reply-meta">' +
+            '<div class="reply-title">' + Components.escapeHTML(item.title) + '</div>' +
+            '<div class="reply-desc">' + Components.escapeHTML(item.body) + '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function setupEmbed(brandSlug, brandName, brandScore, brandVerdict) {
       window._brandSlug = brandSlug;
-      window._brandName = brand.name;
-      window._brandScore = brand.overallScore;
-      window._brandVerdict = brand.verdict;
+      window._brandName = brandName;
+      window._brandScore = brandScore;
+      window._brandVerdict = brandVerdict;
       window._siteUrl = window.location.origin;
       setBadgeStyle('full');
 
@@ -320,16 +1356,19 @@
       document.getElementById('api-endpoint').textContent = apiUrl;
     }
 
-    var currentBadgeStyle = 'full';
-
     function setBadgeStyle(style) {
       currentBadgeStyle = style;
-      ['full','compact','score'].forEach(function(s) {
+      ['full', 'compact', 'score'].forEach(function(s) {
         var btn = document.getElementById('badge-style-' + s);
+        if (!btn) return;
         if (s === style) {
-          btn.style.background = 'var(--green)'; btn.style.color = '#fff'; btn.style.border = 'none';
+          btn.style.background = 'var(--green)';
+          btn.style.color = '#fff';
+          btn.style.border = 'none';
         } else {
-          btn.style.background = 'var(--surface-3)'; btn.style.color = 'var(--text-secondary)'; btn.style.border = '1px solid var(--border-primary)';
+          btn.style.background = 'var(--surface-3)';
+          btn.style.color = 'var(--text-secondary)';
+          btn.style.border = '1px solid var(--border-primary)';
         }
       });
       updateBadgePreview();
@@ -348,21 +1387,21 @@
       var embedCode = '';
 
       if (currentBadgeStyle === 'full') {
-        badgeHtml = '<a href="' + brandUrl + '" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;gap:12px;padding:12px 20px;background:#0a0a0a;border-radius:12px;border:1px solid #2a2a2a;font-family:Inter,system-ui,sans-serif;">' +
+        badgeHtml = '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-flex;align-items:center;gap:12px;padding:12px 20px;background:#0a0a0a;border-radius:12px;border:1px solid #2a2a2a;font-family:Inter,system-ui,sans-serif;">' +
           '<div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:' + verdictColor + ';">' + score + '</div><div style="font-size:10px;color:#666;">/100</div></div>' +
           '<div style="width:1px;height:40px;background:#2a2a2a;"></div>' +
-          '<div><div style="font-size:13px;font-weight:600;color:#fff;">' + Components.escapeHTML(name) + '</div>' +
+          '<div><div style="font-size:13px;font-weight:600;color:#fff;">' + escapeInline(name) + '</div>' +
           '<div style="font-size:11px;font-weight:700;color:' + verdictColor + ';">' + verdict.replace(/_/g, ' ') + '</div>' +
           '<div style="font-size:9px;color:#666;margin-top:2px;">Rated by GoNoGo</div></div></a>';
         embedCode = badgeHtml;
       } else if (currentBadgeStyle === 'compact') {
-        badgeHtml = '<a href="' + brandUrl + '" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#0a0a0a;border-radius:8px;border:1px solid #2a2a2a;font-family:Inter,system-ui,sans-serif;">' +
+        badgeHtml = '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#0a0a0a;border-radius:8px;border:1px solid #2a2a2a;font-family:Inter,system-ui,sans-serif;">' +
           '<span style="font-size:18px;font-weight:800;color:' + verdictColor + ';">' + score + '</span>' +
           '<span style="font-size:11px;color:#fff;font-weight:600;">' + verdict.replace(/_/g, ' ') + '</span>' +
           '<span style="font-size:9px;color:#666;">GoNoGo</span></a>';
         embedCode = badgeHtml;
       } else {
-        badgeHtml = '<a href="' + brandUrl + '" target="_blank" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#0a0a0a;border-radius:12px;border:1px solid #2a2a2a;font-family:Inter,system-ui,sans-serif;">' +
+        badgeHtml = '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:56px;height:56px;background:#0a0a0a;border-radius:12px;border:1px solid #2a2a2a;font-family:Inter,system-ui,sans-serif;">' +
           '<div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:' + verdictColor + ';">' + score + '</div><div style="font-size:8px;color:#666;">/100</div></div></a>';
         embedCode = badgeHtml;
       }
@@ -373,23 +1412,276 @@
 
     function copyEmbedCode() {
       var code = document.getElementById('embed-code').textContent;
-      navigator.clipboard.writeText(code).then(function() { Components.showToast('Embed code copied to clipboard'); });
+      navigator.clipboard.writeText(code).then(function() {
+        Components.showToast('Embed code copied to clipboard');
+      });
     }
 
     function copyApiEndpoint() {
       var url = document.getElementById('api-endpoint').textContent;
-      navigator.clipboard.writeText(url).then(function() { Components.showToast('API endpoint copied to clipboard'); });
+      navigator.clipboard.writeText(url).then(function() {
+        Components.showToast('API endpoint copied to clipboard');
+      });
+    }
+
+    function analyseFramework(frameworkBreakdown, overallScore) {
+      var items = (frameworkBreakdown || []).map(function(item) {
+        var parsed = parseScore(item.score);
+        var pct = parsed.max > 0 ? Math.round((parsed.score / parsed.max) * 100) : 0;
+        return {
+          category: item.category || 'Category',
+          score: parsed.score,
+          max: parsed.max,
+          pct: pct,
+          missing: Math.max(0, parsed.max - parsed.score),
+          description: item.description || ''
+        };
+      });
+
+      var sortedByPct = items.slice().sort(function(a, b) { return a.pct - b.pct; });
+      var sortedByMissing = items.slice().sort(function(a, b) {
+        if (b.missing !== a.missing) return b.missing - a.missing;
+        return a.pct - b.pct;
+      });
+
+      return {
+        items: items,
+        lowest: sortedByPct.slice(0, 4),
+        sorted: sortedByMissing,
+        highest: items.slice().sort(function(a, b) { return b.pct - a.pct; }).slice(0, 3),
+        score: overallScore
+      };
+    }
+
+    function analysePeers(peers, brandSlug, brandScore) {
+      var ordered = (peers || []).slice().sort(function(a, b) {
+        return (parseInt(b.gonogo_score, 10) || 0) - (parseInt(a.gonogo_score, 10) || 0);
+      });
+
+      var rank = 1;
+      for (var i = 0; i < ordered.length; i++) {
+        if (ordered[i].slug === brandSlug) {
+          rank = i + 1;
+          break;
+        }
+      }
+
+      var top = ordered[0] ? (parseInt(ordered[0].gonogo_score, 10) || 0) : brandScore;
+      return {
+        rank: rank,
+        total: ordered.length,
+        gapToTop: Math.max(0, top - brandScore)
+      };
+    }
+
+    function analyseReviews(reviews) {
+      var total = reviews.length;
+      var go = 0, caution = 0, nogo = 0, noVerdict = 0;
+      var positiveThemes = {};
+      var negativeThemes = {};
+
+      reviews.forEach(function(review) {
+        var verdict = normalizeVerdict(review.verdict);
+        if (verdict === 'GO') go++;
+        else if (verdict === 'GO WITH CAUTION') caution++;
+        else if (verdict === 'NOGO') nogo++;
+        else noVerdict++;
+
+        var text = String(review.review_text || review.reviewtext || '').toLowerCase();
+        var themesFound = extractThemes(text);
+
+        themesFound.forEach(function(theme) {
+          if (verdict === 'GO') {
+            positiveThemes[theme] = (positiveThemes[theme] || 0) + 1;
+          } else {
+            negativeThemes[theme] = (negativeThemes[theme] || 0) + 1;
+          }
+        });
+      });
+
+      var positive = mapThemeCounts(positiveThemes);
+      var negative = mapThemeCounts(negativeThemes);
+
+      return {
+        total: total,
+        go: go,
+        caution: caution,
+        nogo: nogo,
+        noVerdict: noVerdict,
+        positiveThemes: positive,
+        negativeThemes: negative,
+        topPositiveTheme: positive[0] || null,
+        topNegativeTheme: negative[0] || null
+      };
+    }
+
+    function buildScenarios(brand, frameworkAnalysis) {
+      var current = brand.overallScore;
+      var items = frameworkAnalysis.sorted.slice(0, 3);
+
+      return items.map(function(item, idx) {
+        var categoryLift = item.max > 0 ? Math.min(item.max, item.score + Math.max(1, Math.ceil(item.missing * (idx === 0 ? 0.75 : idx === 1 ? 0.55 : 0.35)))) : item.score;
+        var gainedRaw = Math.max(0, categoryLift - item.score);
+        var projected = Math.min(100, current + Math.max(2, Math.round((gainedRaw / Math.max(1, item.max)) * 8)));
+        var delta = projected - current;
+
+        return {
+          title: idx === 0 ? 'Best immediate move' : (idx === 1 ? 'Balanced improvement' : 'Longer-term lift'),
+          projected: projected,
+          delta: delta,
+          copy: 'Improving ' + item.category + ' from ' + item.score + '/' + item.max + ' toward a stronger operating standard could move your score by about ' + delta + ' points, especially if the changes are visible to customers.'
+        };
+      });
+    }
+
+    function buildPriorityTitle(item, index) {
+      if (index === 0) return item.category + ' is your fastest route to a higher score';
+      if (index === 1) return item.category + ' is holding back trust';
+      return item.category + ' still has meaningful points available';
+    }
+
+    function buildPriorityDescription(item, reviewAnalysis) {
+      var theme = reviewAnalysis.topNegativeTheme ? reviewAnalysis.topNegativeTheme.label : '';
+      var prefix = item.pct < 40
+        ? 'This is a critical weakness.'
+        : (item.pct < 70 ? 'This is one of your most important improvement areas.' : 'This is a refinement opportunity.');
+
+      var action = getCategoryAction(item.category, theme);
+      return prefix + ' You have ' + item.missing + ' point' + (item.missing === 1 ? '' : 's') + ' available in this category. ' + action;
+    }
+
+    function getCategoryAction(category, theme) {
+      var name = String(category || '').toLowerCase();
+      if (name.indexOf('support') !== -1) {
+        return 'Reduce response times, make support channels easier to find, and close the loop on complaints faster.';
+      }
+      if (name.indexOf('satisfaction') !== -1) {
+        return 'Resolve repeat complaints and ask satisfied customers for reviews after successful service interactions.';
+      }
+      if (name.indexOf('product') !== -1 || name.indexOf('value') !== -1) {
+        return 'Clarify pricing, simplify the offer, and make the value-for-money case more obvious on your website and sales pages.';
+      }
+      if (name.indexOf('innovation') !== -1) {
+        return 'Improve your digital journey and communicate product upgrades more clearly so customers can see progress.';
+      }
+      if (name.indexOf('compliance') !== -1) {
+        return 'Make policies, accreditations, and compliance signals easier to verify and easier for customers to understand.';
+      }
+      if (name.indexOf('accessibility') !== -1 || name.indexOf('security') !== -1) {
+        return 'Strengthen visible trust markers around accessibility, reliability, and data handling.';
+      }
+      if (theme) {
+        return 'Start by fixing the repeated customer issue around ' + theme + ', then make the change visible in your customer journey.';
+      }
+      return 'Review the underlying criteria in this category and address the easiest high-impact gaps first.';
+    }
+
+    function buildReplyTemplates(brandName, negativeTheme) {
+      return [
+        {
+          title: 'Accountable public reply',
+          body: 'Thank you for your feedback. We are sorry that your experience with ' + brandName + ' did not meet expectations, especially around ' + negativeTheme + '. We are reviewing this with the relevant team and would like to help resolve it directly.'
+        },
+        {
+          title: 'Service recovery reply',
+          body: 'We appreciate you taking the time to share this. Your comments about ' + negativeTheme + ' are important, and we are using them to improve the experience. Please send us your details so we can investigate and follow up properly.'
+        },
+        {
+          title: 'Trust-rebuilding reply',
+          body: 'We are sorry to hear this. We understand how frustrating issues around ' + negativeTheme + ' can be, and we are actively working to improve in this area. Thank you for highlighting it so we can address it.'
+        }
+      ];
+    }
+
+    function extractThemes(text) {
+      if (!text) return [];
+      var lexicon = [
+        { label: 'support', terms: ['support', 'help', 'service', 'agent', 'staff', 'call centre', 'call center', 'response', 'reply', 'answered'] },
+        { label: 'pricing', terms: ['price', 'pricing', 'expensive', 'cost', 'fee', 'fees', 'value', 'overpriced', 'cheap'] },
+        { label: 'delivery', terms: ['delivery', 'delivered', 'shipping', 'courier', 'late', 'delay', 'arrived'] },
+        { label: 'quality', terms: ['quality', 'broken', 'faulty', 'poor', 'excellent', 'durable', 'defect', 'issue'] },
+        { label: 'communication', terms: ['communication', 'informed', 'update', 'updates', 'contact', 'feedback'] },
+        { label: 'refunds', terms: ['refund', 'refunds', 'refunding', 'returned', 'return', 'chargeback'] },
+        { label: 'website experience', terms: ['website', 'app', 'checkout', 'login', 'online', 'portal', 'digital'] },
+        { label: 'speed', terms: ['slow', 'fast', 'quick', 'waiting', 'wait', 'delay', 'timely'] },
+        { label: 'staff attitude', terms: ['rude', 'friendly', 'helpful', 'attitude', 'professional', 'courteous'] },
+        { label: 'trust', terms: ['trust', 'honest', 'transparent', 'misleading', 'hidden', 'promise'] }
+      ];
+
+      var matches = [];
+      lexicon.forEach(function(entry) {
+        for (var i = 0; i < entry.terms.length; i++) {
+          if (text.indexOf(entry.terms[i]) !== -1) {
+            matches.push(entry.label);
+            break;
+          }
+        }
+      });
+
+      return dedupe(matches);
+    }
+
+    function mapThemeCounts(obj) {
+      return Object.keys(obj).map(function(key) {
+        return { label: key, count: obj[key] };
+      }).sort(function(a, b) {
+        return b.count - a.count;
+      });
+    }
+
+    function normalizeVerdict(verdict) {
+      var v = String(verdict || '').toUpperCase().trim();
+      if (v === 'CAUTION') return 'GO WITH CAUTION';
+      return v;
+    }
+
+    function parseScore(scoreStr) {
+      var parts = String(scoreStr || '0/0').split('/');
+      return {
+        score: parseFloat(parts[0]) || 0,
+        max: parseFloat(parts[1]) || 0
+      };
+    }
+
+    function getFrameworkTotal(fb) {
+      return (fb || []).reduce(function(sum, item) {
+        return sum + (parseScore(item.score).max || 0);
+      }, 0);
+    }
+
+    function getFrameworkEarned(fb) {
+      return (fb || []).reduce(function(sum, item) {
+        return sum + (parseScore(item.score).score || 0);
+      }, 0);
+    }
+
+    function getPriorityIcon(category) {
+      var name = String(category || '').toLowerCase();
+      if (name.indexOf('support') !== -1) return 'fa-headset';
+      if (name.indexOf('satisfaction') !== -1) return 'fa-face-smile';
+      if (name.indexOf('product') !== -1 || name.indexOf('value') !== -1) return 'fa-tags';
+      if (name.indexOf('innovation') !== -1) return 'fa-lightbulb';
+      if (name.indexOf('compliance') !== -1) return 'fa-scale-balanced';
+      if (name.indexOf('security') !== -1 || name.indexOf('accessibility') !== -1) return 'fa-shield-halved';
+      return 'fa-arrow-trend-up';
+    }
+
+    function dedupe(arr) {
+      var out = [];
+      arr.forEach(function(item) {
+        if (out.indexOf(item) === -1) out.push(item);
+      });
+      return out;
+    }
+
+    function escapeInline(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
     }
   </script>
-  <style>
-    @media (max-width: 1024px) {
-      .admin-header { flex-direction: column; align-items: flex-start !important; gap: var(--space-4); }
-    }
-    @media (max-width: 768px) {
-      .admin-main > div:nth-child(2) { grid-template-columns: 1fr !important; }
-      .admin-main > div:nth-child(3) { grid-template-columns: 1fr !important; }
-      .admin-main > div:nth-child(4) { grid-template-columns: 1fr !important; }
-    }
-  </style>
 </body>
 </html>
