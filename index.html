@@ -15,26 +15,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
   <meta name="keywords" content="brand ratings UK, brand comparison United Kingdom, consumer reviews, GoNoGo, product ratings, company reviews UK, best brands UK">
-  <link rel="canonical" href="https://gonogo-uk.vercel.app/">
+  <meta name="author" content="GoNoGo United Kingdom">
+  <link rel="canonical" href="https://gonogo.co.uk/">
   <meta property="og:title" content="GoNoGo United Kingdom — Honest Brand Ratings">
   <meta property="og:description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
-  <meta property="og:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
+  <meta property="og:image" content="https://gonogo.co.uk/logos/og-share.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://gonogo-uk.vercel.app/">
+  <meta property="og:url" content="https://gonogo.co.uk/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="GoNoGo United Kingdom">
+  <meta property="og:locale" content="en_GB">
   <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@GoNoGoUK">
   <meta name="twitter:title" content="GoNoGo United Kingdom — Honest Brand Ratings">
   <meta name="twitter:description" content="Independent, data-driven brand ratings for the UK. We score every brand out of 100 across Compliance, Customer Satisfaction, Product Value, Innovation, Support, and Security. Find out: Go, or No Go.">
-  <meta name="twitter:image" content="https://gonogo-uk.vercel.app/logos/og-share.jpg">
+  <meta name="twitter:image" content="https://gonogo.co.uk/logos/og-share.jpg">
   <meta name="robots" content="index, follow">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "GoNoGo United Kingdom",
+    "url": "https://gonogo.co.uk",
+    "description": "Independent, data-driven brand ratings for the UK.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://gonogo.co.uk/brand?id={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
   <title>GoNoGo United Kingdom — Honest Brand Ratings & Comparisons</title>
-   <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="site.webmanifest">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="site.webmanifest">
   <script>
     (function() {
       var t = localStorage.getItem('gonogo_theme');
@@ -53,7 +70,7 @@
   <section class="hero">
     <div class="container">
       <div style="text-align:center;margin-bottom:var(--space-4)">
-        <img src="logos/gonogo-hero-dark.jpg" alt="GoNoGo" class="hero-logo" style="height:80px;width:auto;display:block;margin:0 auto;border-radius:8px;">
+        <img src="logos/gonogo-hero-dark.jpg" alt="GoNoGo UK — Honest Brand Ratings" class="hero-logo" style="height:80px;width:auto;display:block;margin:0 auto;border-radius:8px;">
       </div>
       <p class="hero-subtitle">
         Honest brand comparisons for the UK market. We rate every brand on a transparent 100-point scoring framework so you can decide: Go, or No Go.
@@ -70,6 +87,7 @@
             id="hero-search"
             placeholder="Search for a brand..."
             autocomplete="off"
+            aria-label="Search for a brand"
             style="width:100%;padding:14px 16px 14px 44px;background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-lg);color:var(--text-primary);font-size:var(--text-base);outline:none;transition:border-color 0.2s"
             onfocus="this.style.borderColor='var(--green)'"
             onblur="setTimeout(function(){document.getElementById('search-results').style.display='none';},200);this.style.borderColor='var(--border-primary)'"
@@ -78,6 +96,8 @@
         </div>
         <div
           id="search-results"
+          role="listbox"
+          aria-label="Brand search results"
           style="display:none;position:absolute;top:100%;left:0;right:0;margin-top:4px;background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-lg);max-height:60vh;overflow-y:auto;z-index:100;box-shadow:0 8px 32px rgba(0,0,0,0.4)"
         ></div>
       </div>
@@ -150,7 +170,7 @@
             <span class="category-card-name"><i class="fa-solid fa-coins"></i> Product Value</span>
           </div>
           <div class="score-bar"><div class="score-bar-fill" style="width:100%;background:var(--green)"></div></div>
-          <p class="category-card-desc">Pricing fairness, feature breadth, transparency of fees, and overall value for money in the SA context.</p>
+          <p class="category-card-desc">Pricing fairness, feature breadth, transparency of fees, and overall value for money in the UK context.</p>
         </div>
         <div class="category-card">
           <div class="category-card-header">
@@ -171,7 +191,7 @@
             <span class="category-card-name"><i class="fa-solid fa-lock"></i> Accessibility &amp; Security</span>
           </div>
           <div class="score-bar"><div class="score-bar-fill" style="width:100%;background:var(--green)"></div></div>
-          <p class="category-card-desc">Platform accessibility, data security practices, POPIA compliance, and inclusive design considerations.</p>
+          <p class="category-card-desc">Platform accessibility, data security practices, UK GDPR compliance, and inclusive design considerations.</p>
         </div>
       </div>
       <p style="color:var(--text-muted);font-size:var(--text-xs);margin-top:var(--space-6);text-align:center">
