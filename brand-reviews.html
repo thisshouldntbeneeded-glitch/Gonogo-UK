@@ -93,40 +93,6 @@
       initBrandPage();
     }
 
-    function pick(obj, keys, fallback) {
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        if (obj && obj[key] !== undefined && obj[key] !== null && obj[key] !== '') {
-          return obj[key];
-        }
-      }
-      return fallback;
-    }
-
-    function normaliseReview(r) {
-      return {
-        id: pick(r, ['id', 'review_id'], ''),
-        reviewer_name: pick(r, ['reviewer_name', 'reviewername', 'ReviewerName', 'author'], 'Anonymous'),
-        review_text: pick(r, ['review_text', 'reviewtext', 'ReviewText', 'text'], ''),
-        verdict: pick(r, ['verdict', 'Verdict'], ''),
-        status: String(pick(r, ['status', 'Status'], 'pending')).toLowerCase(),
-        created_at: pick(r, ['created_at', 'createdat', 'createdAt'], ''),
-        date: pick(r, ['date', 'created_at', 'createdat', 'createdAt'], ''),
-        brand_name: pick(r, ['brand_name', 'brandname', 'BrandName'], ''),
-        category: pick(r, ['category', 'Category'], '')
-      };
-    }
-
-    function normaliseReply(r) {
-      return {
-        review_id: pick(r, ['review_id', 'reviewid'], ''),
-        brand_slug: pick(r, ['brand_slug', 'brandslug'], ''),
-        reply_text: pick(r, ['reply_text', 'replytext'], ''),
-        replied_by: pick(r, ['replied_by', 'repliedby'], 'Brand'),
-        created_at: pick(r, ['created_at', 'createdat', 'createdAt'], '')
-      };
-    }
-
     async function initBrandPage() {
       _brandUser = Components.getBrandUser();
       if (!_brandUser) return;
@@ -138,24 +104,36 @@
 
       try {
         var data = await GoNoGoAPI.getBrandData(_brandSlug);
-        if (!data) {
+        if (!data || !data.raw) {
           document.getElementById('reviews-list').innerHTML =
             '<div class="card" style="text-align:center;padding:var(--space-8);"><p class="text-sm text-muted">Brand not found.</p></div>';
           return;
         }
 
-        _brandName = pick(data, ['name'], '') || pick(data.raw || {}, ['name'], '') || pick(data.brand || {}, ['name'], '');
+        _brandName = data.raw.name || '';
         document.getElementById('review-subtitle').textContent = 'Customer reviews for ' + (_brandName || 'your brand');
 
         var results = await Promise.all([
-          GoNoGoAPI.getBrandReviews(_brandName),
+          GoNoGoAPI.getReviews(_brandName),
           GoNoGoAPI.getReviewReplies(_brandSlug)
         ]);
 
-        _allReviews = (results[0] || []).map(normaliseReview).filter(function(r) { return r.id; });
+        _allReviews = (results[0] || []).map(function(r) {
+          return {
+            id: r.id,
+            reviewer_name: r.reviewername || 'Anonymous',
+            review_text: r.reviewtext || '',
+            verdict: (r.verdict || '').toUpperCase(),
+            status: (r.status || 'approved').toLowerCase(),
+            date: r.date || '',
+            created_at: r.created_at || ''
+          };
+        }).filter(function(r) {
+          return r.id;
+        });
 
         _allReplies = {};
-        (results[1] || []).map(normaliseReply).forEach(function(r) {
+        (results[1] || []).forEach(function(r) {
           if (!r.review_id) return;
           if (!_allReplies[r.review_id]) _allReplies[r.review_id] = [];
           _allReplies[r.review_id].push(r);
@@ -175,11 +153,11 @@
 
     function updateStats() {
       var goCount = _allReviews.filter(function(r) {
-        return (r.verdict || '').toUpperCase() === 'GO';
+        return r.verdict === 'GO';
       }).length;
 
       var nogoCount = _allReviews.filter(function(r) {
-        return (r.verdict || '').toUpperCase() === 'NOGO';
+        return r.verdict === 'NOGO';
       }).length;
 
       var repliedCount = 0;
@@ -210,14 +188,14 @@
       var reviews = _allReviews.slice();
 
       if (_currentFilter === 'go') {
-        reviews = reviews.filter(function(r) { return (r.verdict || '').toUpperCase() === 'GO'; });
+        reviews = reviews.filter(function(r) { return r.verdict === 'GO'; });
       } else if (_currentFilter === 'nogo') {
-        reviews = reviews.filter(function(r) { return (r.verdict || '').toUpperCase() === 'NOGO'; });
+        reviews = reviews.filter(function(r) { return r.verdict === 'NOGO'; });
       }
 
       reviews.sort(function(a, b) {
-        var da = new Date(a.created_at || a.date || 0);
-        var db = new Date(b.created_at || b.date || 0);
+        var da = new Date(a.created_at || 0);
+        var db = new Date(b.created_at || 0);
         return _currentSort === 'newest' ? db - da : da - db;
       });
 
@@ -232,9 +210,8 @@
 
       var html = '';
       reviews.forEach(function(review) {
-        var verdictUpper = (review.verdict || '').toUpperCase();
-        var verdictClass = verdictUpper === 'GO' ? 'badge-go' : verdictUpper === 'NOGO' ? 'badge-nogo' : 'badge-caution';
-        var verdictIcon = verdictUpper === 'GO' ? 'fa-circle-check' : verdictUpper === 'NOGO' ? 'fa-circle-xmark' : 'fa-triangle-exclamation';
+        var verdictClass = review.verdict === 'GO' ? 'badge-go' : review.verdict === 'NOGO' ? 'badge-nogo' : 'badge-caution';
+        var verdictIcon = review.verdict === 'GO' ? 'fa-circle-check' : review.verdict === 'NOGO' ? 'fa-circle-xmark' : 'fa-triangle-exclamation';
         var statusBadge = review.status === 'approved'
           ? '<span style="font-size:10px;color:var(--green-text);"><i class="fa-solid fa-check-circle"></i> Approved</span>'
           : '<span style="font-size:10px;color:var(--orange-text);"><i class="fa-solid fa-clock"></i> ' + Components.escapeHTML(review.status || 'pending') + '</span>';
@@ -337,7 +314,7 @@
         var displayName = _brandUser.display_name || _brandUser.email || 'Brand';
         var result = await GoNoGoAPI.submitReply(_currentReviewId, _brandSlug, text, displayName);
 
-        if (result && (result.ok || result.success || result.id)) {
+        if (result && result.ok) {
           if (!_allReplies[_currentReviewId]) _allReplies[_currentReviewId] = [];
           _allReplies[_currentReviewId].push({
             review_id: _currentReviewId,
@@ -355,6 +332,7 @@
           Components.showToast('Failed to post reply.', 'error');
         }
       } catch (e) {
+        console.error('Reply submission error:', e);
         Components.showToast('Error: ' + e.message, 'error');
       }
 
