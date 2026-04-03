@@ -18,7 +18,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GoNoGo UK — Brand Management</title>
-   <link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -26,7 +26,6 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-  /* Icon Picker Styles */
   .icon-picker-wrapper { position: relative; }
   .icon-picker-btn {
     display: inline-flex; align-items: center; gap: var(--space-2);
@@ -62,7 +61,6 @@
   .icon-picker-item:hover { background: var(--green-bg); color: var(--green-text); }
   .icon-picker-item.active { background: var(--green); color: #fff; }
 
-  /* Category Management Panel */
   .cat-manage-row {
     display: flex; align-items: center; gap: var(--space-2);
     padding: var(--space-3); border-bottom: 1px solid var(--border-primary);
@@ -72,7 +70,6 @@
   .cat-manage-name { flex: 1; font-size: var(--text-sm); font-weight: 500; }
   .cat-manage-count { font-size: var(--text-xs); color: var(--text-muted); margin-right: var(--space-2); }
 
-  /* Confirm dialog */
   .confirm-overlay {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.6); z-index: 2000; align-items: center; justify-content: center;
@@ -87,7 +84,6 @@
   .confirm-box p { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-4); }
   .confirm-actions { display: flex; justify-content: flex-end; gap: var(--space-2); }
 
-  /* New category fields in brand form */
   .new-category-fields {
     display: none; margin-top: var(--space-2);
     padding: var(--space-3); background: var(--surface-2);
@@ -172,7 +168,6 @@
     </main>
   </div>
 
-  <!-- Add/Edit Brand Modal -->
   <div class="modal-overlay" id="brand-modal">
     <div class="modal" style="max-width:800px;max-height:90vh;overflow-y:auto;">
       <div class="modal-header">
@@ -183,12 +178,11 @@
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Brand Name</label>
-            <input type="text" id="f-name" required placeholder="e.g. Discovery Bank">
+            <input type="text" id="f-name" required placeholder="e.g. Monzo">
           </div>
           <div class="form-group">
             <label class="form-label">Industry</label>
             <select id="f-industry" required onchange="onIndustryChange()"></select>
-            <!-- New Category inline fields -->
             <div class="new-category-fields" id="new-cat-fields">
               <div class="form-group" style="margin-bottom:var(--space-2);">
                 <label class="form-label text-xs">New Category Name</label>
@@ -197,7 +191,7 @@
               <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label text-xs">Icon</label>
                 <div class="icon-picker-wrapper">
-                  <button type="button" class="icon-picker-btn" onclick="toggleIconPicker('new-cat-icon-picker', 'new-cat-icon-value', 'new-cat-icon-display')">
+                  <button type="button" class="icon-picker-btn" onclick="toggleIconPicker('new-cat-icon-picker')">
                     <i class="fa-solid fa-tag selected-icon" id="new-cat-icon-display"></i>
                     <span id="new-cat-icon-label">fa-tag</span>
                   </button>
@@ -208,6 +202,7 @@
             </div>
           </div>
         </div>
+
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Website URL</label>
@@ -248,7 +243,7 @@
         <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-tags"></i> Features, Strengths &amp; Concerns</h4>
         <div class="form-group">
           <label class="form-label">Key Features <span class="text-xs text-muted">(comma-separated)</span></label>
-          <input type="text" id="f-features" placeholder="e.g. no monthly fees, GoalSave 10%+, PayShap, Visa debit">
+          <input type="text" id="f-features" placeholder="e.g. app-based banking, budgeting pots, instant notifications">
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -257,29 +252,29 @@
           </div>
           <div class="form-group">
             <label class="form-label">Concerns <span class="text-xs text-muted">(comma-separated)</span></label>
-            <textarea id="f-concerns" rows="2" placeholder="e.g. fraud vulnerabilities, support response"></textarea>
+            <textarea id="f-concerns" rows="2" placeholder="e.g. support delays, account freezes, dispute handling"></textarea>
           </div>
         </div>
 
         <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-coins"></i> Pricing</h4>
         <div class="form-group">
           <label class="form-label">Pricing Info</label>
-          <textarea id="f-pricing" rows="2" placeholder="e.g. No monthly fee; ATM R10, card replace R100, intl 2% FX"></textarea>
+          <textarea id="f-pricing" rows="2" placeholder="e.g. Free basic plan; paid tiers from £5/month"></textarea>
         </div>
 
         <h4 class="text-sm font-semibold" style="margin:var(--space-5) 0 var(--space-3);color:var(--green);"><i class="fa-solid fa-comments"></i> Social Sentiment</h4>
         <div class="form-group">
           <label class="form-label">Sentiment Summary</label>
-          <input type="text" id="f-sentiment-summary" placeholder="e.g. Praise for UI/fees; complaints about fraud/support">
+          <input type="text" id="f-sentiment-summary" placeholder="e.g. Praise for app UX; complaints about support wait times">
         </div>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Positive Themes <span class="text-xs text-muted">(comma-separated)</span></label>
-            <input type="text" id="f-sentiment-positive" placeholder="e.g. easy app, no fees, high interest">
+            <input type="text" id="f-sentiment-positive" placeholder="e.g. easy app, low fees, fast signup">
           </div>
           <div class="form-group">
             <label class="form-label">Common Concerns <span class="text-xs text-muted">(comma-separated)</span></label>
-            <input type="text" id="f-sentiment-concerns" placeholder="e.g. fraud, account holds, slow support">
+            <input type="text" id="f-sentiment-concerns" placeholder="e.g. support, fraud disputes, account holds">
           </div>
         </div>
 
@@ -291,7 +286,6 @@
     </div>
   </div>
 
-  <!-- Add Category Modal -->
   <div class="modal-overlay" id="category-modal">
     <div class="modal" style="max-width:500px;">
       <div class="modal-header">
@@ -307,7 +301,7 @@
         <div class="form-group">
           <label class="form-label">Icon</label>
           <div class="icon-picker-wrapper">
-            <button type="button" class="icon-picker-btn" onclick="toggleIconPicker('fc-icon-picker', 'fc-icon', 'fc-icon-display')">
+            <button type="button" class="icon-picker-btn" onclick="toggleIconPicker('fc-icon-picker')">
               <i class="fa-solid fa-tag selected-icon" id="fc-icon-display"></i>
               <span id="fc-icon-label">fa-tag</span>
             </button>
@@ -327,7 +321,6 @@
     </div>
   </div>
 
-  <!-- Manage Categories Modal -->
   <div class="modal-overlay" id="manage-categories-modal">
     <div class="modal" style="max-width:600px;max-height:80vh;overflow-y:auto;">
       <div class="modal-header">
@@ -342,7 +335,6 @@
     </div>
   </div>
 
-  <!-- CSV Import Modal -->
   <div class="modal-overlay" id="csv-modal">
     <div class="modal" style="max-width:600px;">
       <div class="modal-header">
@@ -357,7 +349,6 @@
     </div>
   </div>
 
-  <!-- Confirmation Dialog -->
   <div class="confirm-overlay" id="confirm-dialog">
     <div class="confirm-box">
       <h3 id="confirm-title">Confirm</h3>
@@ -387,9 +378,6 @@
       initAdminPage();
     }
 
-    // ============================================================
-    // ICON LIBRARY — Curated subset of Font Awesome 6 Solid icons
-    // ============================================================
     var FA_ICONS = [
       'fa-tag', 'fa-tags', 'fa-building', 'fa-building-columns', 'fa-landmark',
       'fa-store', 'fa-shop', 'fa-cart-shopping', 'fa-basket-shopping', 'fa-bag-shopping',
@@ -421,24 +409,86 @@
       'fa-map-location-dot', 'fa-location-dot', 'fa-compass', 'fa-earth-europe', 'fa-flag'
     ];
 
-    // ============================================================
-    // STATE
-    // ============================================================
     var currentSort = { key: 'overallScore', dir: 'desc' };
     var allBrandsData = [];
     var allCategoriesData = [];
+    var rawBrandsData = [];
+    var rawCategoriesData = [];
     var editingBrandId = null;
     var editingBrandData = null;
     var confirmCallback = null;
 
-    // ============================================================
-    // INIT
-    // ============================================================
+    function normaliseSlug(value) {
+      return (value || '').toString().toLowerCase().trim();
+    }
+
+    function slugify(value) {
+      return (value || '')
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    }
+
+    function isUKBrand(b) {
+      var country = (
+        b.country ||
+        b.countryCode ||
+        b.market ||
+        b.region ||
+        b.locale ||
+        ''
+      ).toString().toLowerCase().trim();
+
+      if (country === 'uk' || country === 'gb' || country === 'united kingdom' || country === 'great britain') return true;
+
+      var website = (b.website || '').toLowerCase().trim();
+      if (website.indexOf('.co.uk') !== -1 || website.indexOf('.uk') !== -1) return true;
+
+      return false;
+    }
+
+    function getCategorySlug(cat) {
+      return normaliseSlug(cat && (cat.slug || cat.id || cat.name));
+    }
+
+    function getBrandCategorySlug(brand) {
+      return normaliseSlug(brand && (brand.categorySlug || brand.category || brand.category_id));
+    }
+
+    function buildUKCategoryList(brands, categories) {
+      var used = {};
+      (brands || []).forEach(function(b) {
+        var slug = getBrandCategorySlug(b);
+        if (slug) used[slug] = true;
+      });
+
+      return (categories || []).filter(function(cat) {
+        var slug = getCategorySlug(cat);
+        return !!used[slug];
+      });
+    }
+
+    async function refreshDashboardData() {
+      rawBrandsData = await GoNoGoAPI.getAllBrands();
+      rawCategoriesData = await GoNoGoAPI.getCategories();
+
+      allBrandsData = (rawBrandsData || []).filter(isUKBrand);
+      allCategoriesData = buildUKCategoryList(allBrandsData, rawCategoriesData);
+    }
+
+    function findCategoryBySlug(slug) {
+      var wanted = normaliseSlug(slug);
+      for (var i = 0; i < rawCategoriesData.length; i++) {
+        if (getCategorySlug(rawCategoriesData[i]) === wanted) return rawCategoriesData[i];
+      }
+      return null;
+    }
+
     async function initAdminPage() {
       document.getElementById('admin-content').style.display = '';
-      allBrandsData = await GoNoGoAPI.getAllBrands();
-      allCategoriesData = await GoNoGoAPI.getCategories();
-
+      await refreshDashboardData();
       populateIndustryDropdowns();
       initScoreFields();
       initIconPickers();
@@ -453,11 +503,12 @@
       fIndustry.innerHTML = '';
 
       allCategoriesData.forEach(function(cat) {
-        industryFilter.innerHTML += '<option value="' + cat.id + '">' + Components.escapeHTML(cat.name) + '</option>';
-        fIndustry.innerHTML += '<option value="' + cat.id + '">' + Components.escapeHTML(cat.name) + '</option>';
+        var slug = getCategorySlug(cat);
+        if (!slug) return;
+        industryFilter.innerHTML += '<option value="' + slug + '">' + Components.escapeHTML(cat.name) + '</option>';
+        fIndustry.innerHTML += '<option value="' + slug + '">' + Components.escapeHTML(cat.name) + '</option>';
       });
 
-      // Add "Create New Category" option at the end
       fIndustry.innerHTML += '<option value="__new__" style="font-weight:bold;color:#11a551;">➕ Create New Category</option>';
     }
 
@@ -479,9 +530,6 @@
       });
     }
 
-    // ============================================================
-    // ICON PICKER
-    // ============================================================
     function initIconPickers() {
       renderIconPickerGrid('fc-icon-picker', 'fc-icon', 'fc-icon-display', 'fc-icon-label', 'fc-icon-preview');
       renderIconPickerGrid('new-cat-icon-picker', 'new-cat-icon-value', 'new-cat-icon-display', 'new-cat-icon-label', null);
@@ -505,10 +553,9 @@
       }).join('');
     }
 
-    function toggleIconPicker(pickerId, hiddenId, displayId) {
+    function toggleIconPicker(pickerId) {
       var picker = document.getElementById(pickerId);
       var isOpen = picker.classList.contains('open');
-      // Close all pickers first
       document.querySelectorAll('.icon-picker-dropdown').forEach(function(el) { el.classList.remove('open'); });
       if (!isOpen) picker.classList.add('open');
     }
@@ -519,7 +566,6 @@
       if (labelId) document.getElementById(labelId).textContent = icon;
       if (previewId) document.getElementById(previewId).innerHTML = '<i class="fa-solid ' + icon + '"></i>';
 
-      // Update active state
       var grid = document.getElementById(pickerId + '-grid');
       if (grid) {
         grid.querySelectorAll('.icon-picker-item').forEach(function(el) {
@@ -540,16 +586,12 @@
       });
     }
 
-    // Close icon pickers on outside click
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.icon-picker-wrapper')) {
         document.querySelectorAll('.icon-picker-dropdown').forEach(function(el) { el.classList.remove('open'); });
       }
     });
 
-    // ============================================================
-    // CONFIRMATION DIALOG
-    // ============================================================
     function showConfirm(title, message, btnLabel, btnStyle, callback) {
       document.getElementById('confirm-title').textContent = title;
       document.getElementById('confirm-message').textContent = message;
@@ -571,18 +613,20 @@
       confirmCallback = null;
     }
 
-    // ============================================================
-    // BRAND TABLE
-    // ============================================================
     function filterBrands() {
-      var search = document.getElementById('search-input').value.toLowerCase();
-      var industry = document.getElementById('industry-filter').value;
-      var verdict = document.getElementById('verdict-filter').value;
+      var search = document.getElementById('search-input').value.toLowerCase().trim();
+      var industry = document.getElementById('industry-filter').value.toLowerCase().trim();
+      var verdict = document.getElementById('verdict-filter').value.toLowerCase().trim();
 
       var filtered = allBrandsData.filter(function(b) {
-        var matchSearch = !search || b.name.toLowerCase().indexOf(search) !== -1 || b.categoryName.toLowerCase().indexOf(search) !== -1;
-        var matchIndustry = !industry || b.categorySlug === industry;
-        var matchVerdict = !verdict || b.verdict === verdict;
+        var name = (b.name || '').toLowerCase();
+        var categoryName = (b.categoryName || '').toLowerCase();
+        var categorySlug = getBrandCategorySlug(b);
+        var brandVerdict = (b.verdict || '').toLowerCase().trim();
+
+        var matchSearch = !search || name.indexOf(search) !== -1 || categoryName.indexOf(search) !== -1;
+        var matchIndustry = !industry || categorySlug === industry;
+        var matchVerdict = !verdict || brandVerdict === verdict;
         return matchSearch && matchIndustry && matchVerdict;
       });
 
@@ -604,25 +648,33 @@
       document.getElementById('brand-count').textContent = data.length + ' brands';
       var tbody = document.getElementById('brands-tbody');
 
+      if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">No UK brands found</td></tr>';
+        return;
+      }
+
       tbody.innerHTML = data.map(function(b) {
         var logoHtml = Components.renderLogo(b, 'brand-logo');
+        var gp = (b.appRatings && (b.appRatings.googlePlay || b.appRatings.googlePlayScore)) || '';
+        var ios = (b.appRatings && (b.appRatings.ios || b.appRatings.iosScore)) || '';
+
         return '<tr>' +
           '<td>' +
             '<div class="brand-cell">' +
               logoHtml +
               '<div>' +
-                '<div class="font-semibold text-sm">' + Components.escapeHTML(b.name) + '</div>' +
-                (b.website ? '<a href="' + b.website + '" target="_blank" rel="noopener" class="text-xs text-muted">' + b.website.replace('https://', '').replace('http://', '') + '</a>' : '') +
+                '<div class="font-semibold text-sm">' + Components.escapeHTML(b.name || '') + '</div>' +
+                (b.website ? '<a href="' + b.website + '" target="_blank" rel="noopener noreferrer" class="text-xs text-muted">' + Components.escapeHTML(b.website.replace('https://', '').replace('http://', '')) + '</a>' : '') +
               '</div>' +
             '</div>' +
           '</td>' +
-          '<td><span class="text-sm">' + Components.escapeHTML(b.categoryName) + '</span></td>' +
+          '<td><span class="text-sm">' + Components.escapeHTML(b.categoryName || '') + '</span></td>' +
           '<td>' + Components.renderScoreBadge(b.overallScore) + '</td>' +
           '<td>' + Components.renderVerdictBadge(b.verdict) + '</td>' +
           '<td>' +
             '<div style="display:flex;flex-direction:column;gap:2px;font-size:var(--text-xs)">' +
-              '<span><i class="fa-brands fa-google-play" style="width:14px;opacity:0.5"></i> ' + b.appRatings.googlePlay + '</span>' +
-              '<span><i class="fa-brands fa-apple" style="width:14px;opacity:0.5"></i> ' + b.appRatings.ios + '</span>' +
+              '<span><i class="fa-brands fa-google-play" style="width:14px;opacity:0.5"></i> ' + gp + '</span>' +
+              '<span><i class="fa-brands fa-apple" style="width:14px;opacity:0.5"></i> ' + ios + '</span>' +
             '</div>' +
           '</td>' +
           '<td><span class="text-xs text-muted">' + Components.formatRelativeDate(b.lastUpdated) + '</span></td>' +
@@ -630,16 +682,13 @@
             '<div style="display:flex;gap:var(--space-1);">' +
               '<a href="brand.html?id=' + b.id + '" class="btn btn-ghost btn-sm" title="View"><i class="fa-solid fa-eye"></i></a>' +
               '<button class="btn btn-ghost btn-sm" title="Edit" onclick="editBrand(\'' + b.id + '\')"><i class="fa-solid fa-pen"></i></button>' +
-              '<button class="btn btn-ghost btn-sm" title="Delete" style="color:var(--red-text);opacity:0.7;" onclick="deleteBrand(\'' + b.id + '\', \'' + Components.escapeHTML(b.name).replace(/'/g, "\\'") + '\')"><i class="fa-solid fa-trash"></i></button>' +
+              '<button class="btn btn-ghost btn-sm" title="Delete" style="color:var(--red-text);opacity:0.7;" onclick="deleteBrand(\'' + b.id + '\', \'' + Components.escapeHTML(b.name || '').replace(/'/g, "\\'") + '\')"><i class="fa-solid fa-trash"></i></button>' +
             '</div>' +
           '</td>' +
         '</tr>';
       }).join('');
     }
 
-    // ============================================================
-    // DELETE BRAND
-    // ============================================================
     function deleteBrand(id, name) {
       showConfirm(
         'Delete Brand',
@@ -650,7 +699,8 @@
           try {
             await GoNoGoAPI.deleteBrand(id);
             Components.showToast('Brand "' + name + '" deleted');
-            allBrandsData = await GoNoGoAPI.getAllBrands();
+            await refreshDashboardData();
+            populateIndustryDropdowns();
             filterBrands();
           } catch (err) {
             Components.showToast('Error: ' + err.message, 'error');
@@ -659,16 +709,13 @@
       );
     }
 
-    // ============================================================
-    // ADD / EDIT BRAND
-    // ============================================================
     function openAddModal() {
       editingBrandId = null;
       editingBrandData = null;
       document.getElementById('modal-title').textContent = 'Add Brand';
       document.getElementById('brand-form').reset();
       document.getElementById('new-cat-fields').classList.remove('visible');
-      document.getElementById('f-industry').value = allCategoriesData.length > 0 ? allCategoriesData[0].id : '';
+      document.getElementById('f-industry').value = allCategoriesData.length > 0 ? getCategorySlug(allCategoriesData[0]) : '';
       document.getElementById('brand-modal').classList.add('open');
     }
 
@@ -689,16 +736,17 @@
         if (allBrandsData[i].id === id) { b = allBrandsData[i]; break; }
       }
       if (!b) return;
+
       editingBrandId = id;
       editingBrandData = b;
       document.getElementById('modal-title').textContent = 'Edit: ' + b.name;
-      document.getElementById('f-name').value = b.name;
-      document.getElementById('f-industry').value = b.categorySlug;
+      document.getElementById('f-name').value = b.name || '';
+      document.getElementById('f-industry').value = getBrandCategorySlug(b);
       document.getElementById('new-cat-fields').classList.remove('visible');
       document.getElementById('f-website').value = b.website || '';
       document.getElementById('f-logo').value = b.logo || '';
-      document.getElementById('f-googleplay').value = b.appRatings.googlePlayScore || '';
-      document.getElementById('f-ios').value = b.appRatings.iosScore || '';
+      document.getElementById('f-googleplay').value = (b.appRatings && (b.appRatings.googlePlayScore || b.appRatings.googlePlay || '')).toString().replace('/5', '');
+      document.getElementById('f-ios').value = (b.appRatings && (b.appRatings.iosScore || b.appRatings.ios || '')).toString().replace('/5', '');
       document.getElementById('f-overview').value = b.overview || '';
       document.getElementById('f-rating-summary').value = b.ratingSummary || '';
       document.getElementById('f-features').value = (b.keyFeatures || []).join(', ');
@@ -710,15 +758,14 @@
       document.getElementById('f-sentiment-positive').value = (ss.positive_themes || []).join(', ');
       document.getElementById('f-sentiment-concerns').value = (ss.common_concerns || []).join(', ');
 
-      // Fill in category scores + descriptions
-      Object.entries(b.categoryScores).forEach(function(entry) {
+      Object.entries(b.categoryScores || {}).forEach(function(entry) {
         var name = entry[0], data = entry[1];
         var fieldId = 'f-' + name.toLowerCase().replace(/[^a-z]+/g, '-');
         var scoreEl = document.getElementById(fieldId + '-score');
         var maxEl = document.getElementById(fieldId + '-max');
         var descEl = document.getElementById(fieldId + '-desc');
-        if (scoreEl) scoreEl.value = data.score;
-        if (maxEl) maxEl.value = data.max;
+        if (scoreEl) scoreEl.value = data.score || '';
+        if (maxEl) maxEl.value = data.max || '';
         if (descEl) descEl.value = data.description || '';
       });
 
@@ -735,9 +782,8 @@
       saveBtn.disabled = true;
       saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
-      var industryVal = document.getElementById('f-industry').value;
+      var industryVal = normaliseSlug(document.getElementById('f-industry').value);
 
-      // Handle "Create New Category" option
       if (industryVal === '__new__') {
         var newCatName = document.getElementById('f-new-cat-name').value.trim();
         var newCatIcon = document.getElementById('new-cat-icon-value').value || 'fa-tag';
@@ -747,7 +793,7 @@
           saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Brand';
           return;
         }
-        var newCatSlug = newCatName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        var newCatSlug = slugify(newCatName);
         try {
           await GoNoGoAPI.saveCategory({
             slug: newCatSlug,
@@ -772,7 +818,6 @@
         }
       }
 
-      // Collect scores
       var scoreCategories = ['Compliance', 'Customer Satisfaction', 'Product Value', 'Innovation', 'Customer Support', 'Accessibility & Security'];
       var scores = {};
       scoreCategories.forEach(function(catName) {
@@ -792,7 +837,6 @@
       var gpVal = document.getElementById('f-googleplay').value;
       var iosVal = document.getElementById('f-ios').value;
 
-      // When editing, preserve descriptions from existing framework_breakdown
       if (editingBrandData && editingBrandData.categoryScores) {
         Object.keys(scores).forEach(function(catName) {
           var existing = editingBrandData.categoryScores[catName];
@@ -802,7 +846,6 @@
         });
       }
 
-      // Parse comma-separated fields
       function csvToArr(id) {
         var val = document.getElementById(id).value.trim();
         return val ? val.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
@@ -839,9 +882,7 @@
         Components.showToast('Brand saved — ' + result.verdict + ' (' + result.gonogo_score + '/100)');
         closeModal();
 
-        // Refresh data
-        allCategoriesData = await GoNoGoAPI.getCategories();
-        allBrandsData = await GoNoGoAPI.getAllBrands();
+        await refreshDashboardData();
         populateIndustryDropdowns();
         filterBrands();
       } catch (err) {
@@ -852,20 +893,16 @@
       saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Brand';
     }
 
-    // ============================================================
-    // CATEGORY MANAGEMENT
-    // ============================================================
     function openCategoryModal(editSlug) {
       document.getElementById('category-form').reset();
       document.getElementById('fc-editing-slug').value = '';
 
       if (editSlug) {
-        // Edit mode
-        var cat = allCategoriesData.find(function(c) { return c.id === editSlug; });
+        var cat = findCategoryBySlug(editSlug);
         if (cat) {
           document.getElementById('cat-modal-title').textContent = 'Edit Category';
-          document.getElementById('fc-name').value = cat.name;
-          document.getElementById('fc-editing-slug').value = editSlug;
+          document.getElementById('fc-name').value = cat.name || '';
+          document.getElementById('fc-editing-slug').value = getCategorySlug(cat);
           var icon = cat.icon || 'fa-tag';
           document.getElementById('fc-icon').value = icon;
           document.getElementById('fc-icon-display').className = 'fa-solid ' + icon + ' selected-icon';
@@ -901,12 +938,10 @@
 
       try {
         if (editingSlug) {
-          // Update existing category
           await GoNoGoAPI.updateCategory(editingSlug, name, icon);
           Components.showToast('Category "' + name + '" updated');
         } else {
-          // Create new category
-          var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          var slug = slugify(name);
           await GoNoGoAPI.saveCategory({
             slug: slug,
             name: name,
@@ -922,15 +957,12 @@
           });
           Components.showToast('Category "' + name + '" created');
         }
-        closeCategoryModal();
 
-        // Refresh
-        allCategoriesData = await GoNoGoAPI.getCategories();
-        allBrandsData = await GoNoGoAPI.getAllBrands();
+        closeCategoryModal();
+        await refreshDashboardData();
         populateIndustryDropdowns();
         filterBrands();
 
-        // If manage categories modal is open, refresh it
         if (document.getElementById('manage-categories-modal').classList.contains('open')) {
           renderManageCategoriesList();
         }
@@ -942,9 +974,6 @@
       btn.innerHTML = '<i class="fa-solid fa-check"></i> Save Category';
     }
 
-    // ============================================================
-    // MANAGE CATEGORIES MODAL
-    // ============================================================
     function openManageCategoriesModal() {
       renderManageCategoriesList();
       document.getElementById('manage-categories-modal').classList.add('open');
@@ -962,15 +991,16 @@
       }
 
       container.innerHTML = allCategoriesData.map(function(cat) {
+        var slug = getCategorySlug(cat);
         var brandCount = cat.brandCount || 0;
         return '<div class="cat-manage-row">' +
           '<span class="cat-manage-icon"><i class="fa-solid ' + (cat.icon || 'fa-tag') + '"></i></span>' +
           '<span class="cat-manage-name">' + Components.escapeHTML(cat.name) + '</span>' +
           '<span class="cat-manage-count">' + brandCount + ' brand' + (brandCount !== 1 ? 's' : '') + '</span>' +
-          '<button class="btn btn-ghost btn-sm" title="Edit" onclick="editCategory(\'' + cat.id + '\')">' +
+          '<button class="btn btn-ghost btn-sm" title="Edit" onclick="editCategory(\'' + slug + '\')">' +
             '<i class="fa-solid fa-pen" style="font-size:12px;"></i>' +
           '</button>' +
-          '<button class="btn btn-ghost btn-sm" title="Delete" style="color:var(--red-text);opacity:0.7;" onclick="deleteCategory(\'' + cat.id + '\', \'' + Components.escapeHTML(cat.name).replace(/'/g, "\\'") + '\', ' + brandCount + ')">' +
+          '<button class="btn btn-ghost btn-sm" title="Delete" style="color:var(--red-text);opacity:0.7;" onclick="deleteCategory(\'' + slug + '\', \'' + Components.escapeHTML(cat.name).replace(/'/g, "\\'") + '\', ' + brandCount + ')">' +
             '<i class="fa-solid fa-trash" style="font-size:12px;"></i>' +
           '</button>' +
         '</div>';
@@ -996,9 +1026,10 @@
           try {
             await GoNoGoAPI.deleteCategory(slug);
             Components.showToast('Category "' + name + '" deleted');
-            allCategoriesData = await GoNoGoAPI.getCategories();
+            await refreshDashboardData();
             populateIndustryDropdowns();
             renderManageCategoriesList();
+            filterBrands();
           } catch (err) {
             Components.showToast('Error: ' + err.message, 'error');
           }
@@ -1006,9 +1037,6 @@
       );
     }
 
-    // ============================================================
-    // CSV EXPORT
-    // ============================================================
     function exportBrands() {
       var data = allBrandsData.map(function(b) {
         var cs = b.categoryScores || {};
@@ -1024,8 +1052,8 @@
           Verdict: b.verdict,
           Overview: b.overview || '',
           RatingSummary: b.ratingSummary || '',
-          GooglePlay_Rating: b.appRatings.googlePlay || '',
-          iOS_Rating: b.appRatings.ios || '',
+          GooglePlay_Rating: b.appRatings && b.appRatings.googlePlay ? b.appRatings.googlePlay : '',
+          iOS_Rating: b.appRatings && b.appRatings.ios ? b.appRatings.ios : '',
           KeyFeatures: (b.keyFeatures || []).join(', '),
           KeyStrengths: (b.strengths || []).join(', '),
           KeyConcerns: (b.concerns || []).join(', '),
@@ -1046,12 +1074,9 @@
         return row;
       });
       Components.exportCSV(data, 'gonogo-uk-brands.csv');
-      Components.showToast('CSV exported — all fields included');
+      Components.showToast('CSV exported — UK dashboard brands only');
     }
 
-    // ============================================================
-    // CSV IMPORT
-    // ============================================================
     function closeCSVModal() {
       document.getElementById('csv-modal').classList.remove('open');
     }
@@ -1128,10 +1153,10 @@
         sentimentSummary: findCol(headers, ['socialsentiment_summary', 'sentiment_summary']),
         sentimentPositive: findCol(headers, ['socialsentiment_positive', 'sentiment_positive']),
         sentimentConcerns: findCol(headers, ['socialsentiment_concerns', 'sentiment_concerns']),
-        categoryIcon: findCol(headers, ['categoryicon', 'category_icon', 'icon']),
+        categoryIcon: findCol(headers, ['categoryicon', 'category_icon', 'icon'])
       };
 
-      var created = 0, updated = 0, errors = 0, catsCreated = 0;
+      var created = 0, errors = 0, catsCreated = 0;
       var seenCategories = {};
 
       for (var i = 1; i < lines.length; i++) {
@@ -1142,7 +1167,7 @@
         var catSlug = '';
         if (colMap.category !== -1 && cols[colMap.category]) {
           var catRaw = cols[colMap.category].trim();
-          catSlug = catRaw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+          catSlug = slugify(catRaw);
 
           if (!seenCategories[catSlug]) {
             seenCategories[catSlug] = true;
@@ -1162,7 +1187,7 @@
                 ]
               });
               catsCreated++;
-            } catch(e) { /* category may already exist */ }
+            } catch(e) {}
           }
         }
 
@@ -1176,6 +1201,7 @@
             };
           }
         }
+
         addScore('Compliance', colMap.compliance_score, colMap.compliance_max, colMap.compliance_desc);
         addScore('Customer Satisfaction', colMap.satisfaction_score, colMap.satisfaction_max, colMap.satisfaction_desc);
         addScore('Product Value', colMap.value_score, colMap.value_max, colMap.value_desc);
@@ -1188,6 +1214,7 @@
           categorySlug: catSlug,
           scores: scores
         };
+
         if (colMap.website !== -1 && cols[colMap.website]) brandData.website = cols[colMap.website].trim();
         if (colMap.logo !== -1 && cols[colMap.logo]) brandData.logo = cols[colMap.logo].trim();
         if (colMap.overview !== -1 && cols[colMap.overview]) brandData.overview = cols[colMap.overview].trim();
@@ -1198,6 +1225,7 @@
         if (colMap.keyStrengths !== -1 && cols[colMap.keyStrengths]) brandData.strengths = cols[colMap.keyStrengths].split(',').map(function(s){return s.trim();}).filter(Boolean);
         if (colMap.keyConcerns !== -1 && cols[colMap.keyConcerns]) brandData.concerns = cols[colMap.keyConcerns].split(',').map(function(s){return s.trim();}).filter(Boolean);
         if (colMap.pricing !== -1 && cols[colMap.pricing]) brandData.pricing = [{ name: 'Pricing', cost: cols[colMap.pricing].trim(), features: '' }];
+
         var hasSentiment = false;
         var sentObj = {};
         if (colMap.sentimentSummary !== -1 && cols[colMap.sentimentSummary]) { sentObj.summary = cols[colMap.sentimentSummary].trim(); hasSentiment = true; }
@@ -1219,8 +1247,7 @@
       csvLog('Import complete: ' + created + ' brands saved, ' + errors + ' errors' + (catsCreated > 0 ? ', ' + catsCreated + ' categories created' : ''), created > 0 ? 'success' : 'error');
       document.getElementById('csv-status').innerHTML = '<span class="text-sm" style="color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> Import complete</span>';
 
-      allBrandsData = await GoNoGoAPI.getAllBrands();
-      allCategoriesData = await GoNoGoAPI.getCategories();
+      await refreshDashboardData();
       populateIndustryDropdowns();
       filterBrands();
     }
@@ -1257,9 +1284,6 @@
       return result;
     }
 
-    // ============================================================
-    // MODAL OVERLAY CLOSE ON BACKDROP CLICK
-    // ============================================================
     document.getElementById('brand-modal').addEventListener('click', function(e) {
       if (e.target === this) closeModal();
     });
