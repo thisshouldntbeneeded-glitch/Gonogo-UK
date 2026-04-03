@@ -14,7 +14,7 @@
     <div class="admin-header">
       <div>
         <h1 class="admin-title">Review Moderation</h1>
-        <p class="text-sm text-secondary">Review, approve, and manage user-submitted reviews</p>
+        <p class="text-sm text-secondary">Review, approve, and manage user-submitted reviews for UK brands</p>
       </div>
     </div>
 
@@ -45,38 +45,58 @@
     </div>
   </main>
 </div>
-  <script src="data/data_partA.js"></script>
-  <script src="data/data_partB.js"></script>
-  <script src="data/data_partC.js"></script>
-  <script src="data/data_partD.js"></script>
-  <script src="data/data_partE.js"></script>
-  <script src="data/data_partF.js"></script>
-  <script src="data/data.js"></script>
-  <script src="data/helpers.js"></script>
-  <script src="components.js"></script>
-  <script src="api.js"></script>
 
+<script src="data/data_partA.js"></script>
+<script src="data/data_partB.js"></script>
+<script src="data/data_partC.js"></script>
+script src="data/data_partD.js"></script>
+<script src="data/data_partE.js"></script>
+<script src="data/data_partF.js"></script>
+<script src="data/data.js"></script>
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
 
 <script>
   document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('comments');
   if (Components.checkAdminAuth()) initAdminPage();
 
   var allComments = [];
+  var rawComments = [];
+
+  function normalise(str) {
+    return (str || '').toString().toLowerCase().trim();
+  }
+
+  function isUKBrandFromReview(r) {
+    var name = normalise(r.brandname || r.BrandName || '');
+    var site = normalise(r.website || r.Website || '');
+    if (!name && !site) return false;
+
+    if (site.includes('.co.uk') || site.endsWith('.uk')) return true;
+
+    var ukMarkers = ['monzo', 'starling', 'revolut', 'barclays', 'lloyds', 'hsbc', 'nationwide', 'santander'];
+    return ukMarkers.some(function(m){ return name.includes(m); });
+  }
 
   async function initAdminPage() {
     document.getElementById('admin-content').style.display = '';
     try {
       var reviews = await GoNoGoAPI.getAllReviews();
-      allComments = reviews.map(function (r) {
+      rawComments = reviews || [];
+
+      var ukReviews = rawComments.filter(isUKBrandFromReview);
+
+      allComments = ukReviews.map(function (r) {
         return {
           id: r.id,
           author: r.reviewername || r.ReviewerName || 'Anonymous',
           text: r.reviewtext || r.ReviewText || '',
           verdict: r.verdict || '',
-          date: r.createdat || '',
+          date: r.createdat || r.createdAt || '',
           brandName: r.brandname || r.BrandName || '',
           category: r.category || '',
-          status: r.status || r.Status || 'pending'
+          status: (r.status || r.Status || 'pending').toLowerCase()
         };
       });
     } catch (e) {
@@ -84,13 +104,14 @@
       allComments = [];
     }
 
-    // Populate brand filter
     var brandFilter = document.getElementById('brand-filter');
+    brandFilter.innerHTML = '<option value="">All Brands</option>';
     var seen = {};
     allComments.forEach(function (c) {
-      if (!seen[c.brandName] && c.brandName) {
-        seen[c.brandName] = true;
-        brandFilter.innerHTML += '<option value="' + c.brandName + '">' + c.brandName + '</option>';
+      var name = c.brandName || '';
+      if (!seen[name] && name) {
+        seen[name] = true;
+        brandFilter.innerHTML += '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
       }
     });
 
@@ -100,9 +121,10 @@
 
   function updateKPIs() {
     var total = allComments.length;
-    var pending = allComments.filter(function(c){return c.status==='pending'}).length;
-    var approved = allComments.filter(function(c){return c.status==='approved'}).length;
-    var rejected = allComments.filter(function(c){return c.status==='rejected'}).length;
+    var pending = allComments.filter(function(c){return c.status==='pending';}).length;
+    var approved = allComments.filter(function(c){return c.status==='approved';}).length;
+    var rejected = allComments.filter(function(c){return c.status==='rejected';}).length;
+
     document.getElementById('comment-kpis').innerHTML =
       '<div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">'+total+'</div></div>'+
       '<div class="kpi-card"><div class="kpi-label">Pending</div><div class="kpi-value" style="color:'+(pending>0?'var(--orange-text)':'var(--green-text)')+'">'+pending+'</div></div>'+
@@ -113,15 +135,19 @@
   function filterComments() {
     var bf = document.getElementById('brand-filter').value;
     var sf = document.getElementById('status-filter').value;
+
     var filtered = allComments.filter(function (c) {
-      return (!bf || c.brandName === bf) && (!sf || c.status === sf);
+      var brandMatch = !bf || c.brandName === bf;
+      var statusMatch = !sf || c.status === sf;
+      return brandMatch && statusMatch;
     });
-    // Pending first
+
     filtered.sort(function(a,b){
-      if(a.status==='pending'&&b.status!=='pending')return -1;
-      if(b.status==='pending'&&a.status!=='pending')return 1;
+      if (a.status==='pending' && b.status!=='pending') return -1;
+      if (b.status==='pending' && a.status!=='pending') return 1;
       return 0;
     });
+
     document.getElementById('comment-count').textContent = filtered.length + ' reviews';
     renderComments(filtered);
   }
@@ -129,12 +155,20 @@
   function renderComments(data) {
     var container = document.getElementById('comments-list');
     if (!data.length) {
-      container.innerHTML = '<div style="text-align:center;padding:var(--space-10)"><i class="fa-solid fa-comments" style="font-size:var(--text-2xl);color:var(--text-faint);display:block;margin-bottom:var(--space-3)"></i><p class="text-sm text-muted">No reviews match your filters.</p></div>';
+      container.innerHTML =
+        '<div style="text-align:center;padding:var(--space-10)">'+
+          '<i class="fa-solid fa-comments" style="font-size:var(--text-2xl);color:var(--text-faint);display:block;margin-bottom:var(--space-3)"></i>'+
+          '<p class="text-sm text-muted">No reviews match your filters.</p>'+
+        '</div>';
       return;
     }
+
     container.innerHTML = data.map(function (c) {
-      var border = c.status==='pending' ? 'border-color:var(--orange-dim)' : c.status==='rejected' ? 'border-color:var(--red-dim)' : '';
-      var badge = c.status==='approved' ? 'freshness-fresh' : c.status==='pending' ? 'freshness-stale' : 'freshness-outdated';
+      var border = c.status==='pending' ? 'border-color:var(--orange-dim)' :
+                   c.status==='rejected' ? 'border-color:var(--red-dim)' : '';
+      var badge = c.status==='approved' ? 'freshness-fresh' :
+                  c.status==='pending' ? 'freshness-stale' : 'freshness-outdated';
+
       var actions = '';
       if (c.status === 'pending') {
         actions =
@@ -149,13 +183,23 @@
           '<button class="btn btn-ghost btn-sm" onclick="moderateComment(\''+c.id+'\',\'approved\')"><i class="fa-solid fa-check"></i> Approve</button>'+
           '<button class="btn btn-ghost btn-sm" onclick="moderateComment(\''+c.id+'\',\'pending\')"><i class="fa-solid fa-clock"></i> Reset</button>';
       }
+
+      var verdictChip = '';
+      if (c.verdict === 'GO') {
+        verdictChip = '<span style="color:var(--green-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-check"></i> Go</span>';
+      } else if (c.verdict === 'NOGO') {
+        verdictChip = '<span style="color:var(--red-text,#e74c3c);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-xmark"></i> No Go</span>';
+      } else if (c.verdict) {
+        verdictChip = '<span style="color:var(--orange-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-exclamation"></i> '+c.verdict+'</span>';
+      }
+
       return '<div class="comment-card" style="'+border+'">'+
         '<div class="comment-header">'+
           '<div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">'+
-            '<span class="comment-author">'+c.author+'</span>'+
-            (c.verdict==='GO' ? '<span style="color:var(--green-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-check"></i> Go</span>' : c.verdict==='NOGO' ? '<span style="color:var(--red-text,#e74c3c);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-xmark"></i> No Go</span>' : '') +
+            '<span class="comment-author">'+(c.author || 'Anonymous')+'</span>'+
+            verdictChip+
             '<span class="text-xs text-muted">on <strong>'+c.brandName+'</strong></span>'+
-            '<span class="text-xs text-muted">'+c.category+'</span>'+
+            (c.category ? '<span class="text-xs text-muted">'+c.category+'</span>' : '')+
             '<span class="freshness-badge '+badge+'">'+c.status+'</span>'+
           '</div>'+
           '<span class="comment-date">'+c.date+'</span>'+
