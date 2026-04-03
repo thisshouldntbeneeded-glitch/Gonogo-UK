@@ -14,7 +14,7 @@
     <div class="admin-header">
       <div>
         <h1 class="admin-title">Review Moderation</h1>
-        <p class="text-sm text-secondary">Review, approve, and manage user-submitted reviews for UK brands</p>
+        <p class="text-sm text-secondary">Review, approve, and manage user-submitted reviews</p>
       </div>
     </div>
 
@@ -49,7 +49,7 @@
 <script src="data/data_partA.js"></script>
 <script src="data/data_partB.js"></script>
 <script src="data/data_partC.js"></script>
-script src="data/data_partD.js"></script>
+<script src="data/data_partD.js"></script>
 <script src="data/data_partE.js"></script>
 <script src="data/data_partF.js"></script>
 <script src="data/data.js"></script>
@@ -62,32 +62,12 @@ script src="data/data_partD.js"></script>
   if (Components.checkAdminAuth()) initAdminPage();
 
   var allComments = [];
-  var rawComments = [];
-
-  function normalise(str) {
-    return (str || '').toString().toLowerCase().trim();
-  }
-
-  function isUKBrandFromReview(r) {
-    var name = normalise(r.brandname || r.BrandName || '');
-    var site = normalise(r.website || r.Website || '');
-    if (!name && !site) return false;
-
-    if (site.includes('.co.uk') || site.endsWith('.uk')) return true;
-
-    var ukMarkers = ['monzo', 'starling', 'revolut', 'barclays', 'lloyds', 'hsbc', 'nationwide', 'santander'];
-    return ukMarkers.some(function(m){ return name.includes(m); });
-  }
 
   async function initAdminPage() {
     document.getElementById('admin-content').style.display = '';
     try {
       var reviews = await GoNoGoAPI.getAllReviews();
-      rawComments = reviews || [];
-
-      var ukReviews = rawComments.filter(isUKBrandFromReview);
-
-      allComments = ukReviews.map(function (r) {
+      allComments = (reviews || []).map(function (r) {
         return {
           id: r.id,
           author: r.reviewername || r.ReviewerName || 'Anonymous',
@@ -108,10 +88,9 @@ script src="data/data_partD.js"></script>
     brandFilter.innerHTML = '<option value="">All Brands</option>';
     var seen = {};
     allComments.forEach(function (c) {
-      var name = c.brandName || '';
-      if (!seen[name] && name) {
-        seen[name] = true;
-        brandFilter.innerHTML += '<option value="' + name.replace(/"/g, '&quot;') + '">' + name + '</option>';
+      if (!seen[c.brandName] && c.brandName) {
+        seen[c.brandName] = true;
+        brandFilter.innerHTML += '<option value="' + c.brandName.replace(/"/g, '&quot;') + '">' + c.brandName + '</option>';
       }
     });
 
@@ -121,9 +100,9 @@ script src="data/data_partD.js"></script>
 
   function updateKPIs() {
     var total = allComments.length;
-    var pending = allComments.filter(function(c){return c.status==='pending';}).length;
-    var approved = allComments.filter(function(c){return c.status==='approved';}).length;
-    var rejected = allComments.filter(function(c){return c.status==='rejected';}).length;
+    var pending = allComments.filter(function(c){return c.status === 'pending';}).length;
+    var approved = allComments.filter(function(c){return c.status === 'approved';}).length;
+    var rejected = allComments.filter(function(c){return c.status === 'rejected';}).length;
 
     document.getElementById('comment-kpis').innerHTML =
       '<div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">'+total+'</div></div>'+
@@ -135,16 +114,13 @@ script src="data/data_partD.js"></script>
   function filterComments() {
     var bf = document.getElementById('brand-filter').value;
     var sf = document.getElementById('status-filter').value;
-
     var filtered = allComments.filter(function (c) {
-      var brandMatch = !bf || c.brandName === bf;
-      var statusMatch = !sf || c.status === sf;
-      return brandMatch && statusMatch;
+      return (!bf || c.brandName === bf) && (!sf || c.status === sf);
     });
 
     filtered.sort(function(a,b){
-      if (a.status==='pending' && b.status!=='pending') return -1;
-      if (b.status==='pending' && a.status!=='pending') return 1;
+      if (a.status === 'pending' && b.status !== 'pending') return -1;
+      if (b.status === 'pending' && a.status !== 'pending') return 1;
       return 0;
     });
 
@@ -164,10 +140,10 @@ script src="data/data_partD.js"></script>
     }
 
     container.innerHTML = data.map(function (c) {
-      var border = c.status==='pending' ? 'border-color:var(--orange-dim)' :
-                   c.status==='rejected' ? 'border-color:var(--red-dim)' : '';
-      var badge = c.status==='approved' ? 'freshness-fresh' :
-                  c.status==='pending' ? 'freshness-stale' : 'freshness-outdated';
+      var border = c.status === 'pending' ? 'border-color:var(--orange-dim)' :
+                   c.status === 'rejected' ? 'border-color:var(--red-dim)' : '';
+      var badge = c.status === 'approved' ? 'freshness-fresh' :
+                  c.status === 'pending' ? 'freshness-stale' : 'freshness-outdated';
 
       var actions = '';
       if (c.status === 'pending') {
