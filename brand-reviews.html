@@ -114,18 +114,18 @@
         document.getElementById('review-subtitle').textContent = 'Customer reviews for ' + (_brandName || 'your brand');
 
         var results = await Promise.all([
-          GoNoGoAPI.getReviews(_brandName),
+          GoNoGoAPI.getBrandReviews(_brandName),
           GoNoGoAPI.getReviewReplies(_brandSlug)
         ]);
 
         _allReviews = (results[0] || []).map(function(r) {
           return {
             id: r.id,
-            reviewer_name: r.reviewername || 'Anonymous',
-            review_text: r.reviewtext || '',
+            reviewer_name: r.reviewer_name || r.reviewername || 'Anonymous',
+            review_text: r.review_text || r.reviewtext || '',
             verdict: (r.verdict || '').toUpperCase(),
             status: (r.status || 'approved').toLowerCase(),
-            date: r.date || '',
+            date: r.date || (r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''),
             created_at: r.created_at || ''
           };
         }).filter(function(r) {
