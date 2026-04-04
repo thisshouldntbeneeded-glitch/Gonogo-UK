@@ -90,6 +90,30 @@
     border: 1px solid var(--border-primary); border-radius: var(--radius-md);
   }
   .new-category-fields.visible { display: block; }
+
+  .color-picker-row {
+    display: flex; align-items: center; gap: var(--space-2);
+  }
+  .color-swatch-btn {
+    width: 36px; height: 36px; border-radius: var(--radius-md);
+    border: 2px solid var(--border-primary); cursor: pointer;
+    position: relative; overflow: hidden; padding: 0;
+  }
+  .color-swatch-btn input[type="color"] {
+    position: absolute; top: -4px; left: -4px;
+    width: calc(100% + 8px); height: calc(100% + 8px);
+    border: none; cursor: pointer; background: none;
+  }
+  .color-presets {
+    display: flex; gap: 4px; flex-wrap: wrap;
+  }
+  .color-preset {
+    width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid transparent; cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .color-preset:hover { transform: scale(1.15); }
+  .color-preset.active { border-color: var(--text-primary); }
 </style>
 </head>
 <body>
@@ -299,6 +323,10 @@
           <input type="text" id="fc-name" required placeholder="e.g. Telecommunications">
         </div>
         <div class="form-group">
+          <label class="form-label">Description <span class="text-xs text-muted">(optional)</span></label>
+          <textarea id="fc-description" rows="2" placeholder="Brief description of this category" style="font-size:var(--text-sm);"></textarea>
+        </div>
+        <div class="form-group">
           <label class="form-label">Icon</label>
           <div class="icon-picker-wrapper">
             <button type="button" class="icon-picker-btn" onclick="toggleIconPicker('fc-icon-picker')">
@@ -310,8 +338,18 @@
           </div>
         </div>
         <div class="form-group">
+          <label class="form-label">Icon Colour</label>
+          <div class="color-picker-row">
+            <div class="color-swatch-btn" id="fc-color-swatch" style="background:#11a551;">
+              <input type="color" id="fc-icon-color" value="#11a551" oninput="onCategoryColorChange(this.value)">
+            </div>
+            <div class="color-presets" id="fc-color-presets"></div>
+          </div>
+          <input type="hidden" id="fc-icon-color-value" value="#11a551">
+        </div>
+        <div class="form-group">
           <label class="form-label">Icon Preview</label>
-          <div style="font-size:24px;color:var(--green);padding:var(--space-2)" id="fc-icon-preview"><i class="fa-solid fa-tag"></i></div>
+          <div style="font-size:24px;padding:var(--space-2)" id="fc-icon-preview"><i class="fa-solid fa-tag" style="color:#11a551;"></i></div>
         </div>
         <div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-4);">
           <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">Cancel</button>
@@ -530,9 +568,35 @@
       });
     }
 
+    var COLOR_PRESETS = ['#11a551','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#6366f1','#06b6d4'];
+
     function initIconPickers() {
       renderIconPickerGrid('fc-icon-picker', 'fc-icon', 'fc-icon-display', 'fc-icon-label', 'fc-icon-preview');
       renderIconPickerGrid('new-cat-icon-picker', 'new-cat-icon-value', 'new-cat-icon-display', 'new-cat-icon-label', null);
+      renderColorPresets();
+    }
+
+    function renderColorPresets() {
+      var container = document.getElementById('fc-color-presets');
+      if (!container) return;
+      var current = document.getElementById('fc-icon-color-value').value || '#11a551';
+      container.innerHTML = COLOR_PRESETS.map(function(c) {
+        return '<div class="color-preset' + (c === current ? ' active' : '') + '" style="background:' + c + ';" data-color="' + c + '" onclick="onCategoryColorChange(\'' + c + '\')"></div>';
+      }).join('');
+    }
+
+    function onCategoryColorChange(color) {
+      document.getElementById('fc-icon-color').value = color;
+      document.getElementById('fc-icon-color-value').value = color;
+      document.getElementById('fc-color-swatch').style.background = color;
+      var preview = document.getElementById('fc-icon-preview');
+      if (preview) {
+        var icon = document.getElementById('fc-icon').value || 'fa-tag';
+        preview.innerHTML = '<i class="fa-solid ' + icon + '" style="color:' + color + ';"></i>';
+      }
+      document.querySelectorAll('#fc-color-presets .color-preset').forEach(function(el) {
+        el.classList.toggle('active', el.dataset.color === color);
+      });
     }
 
     function renderIconPickerGrid(pickerId, hiddenId, displayId, labelId, previewId) {
@@ -564,7 +628,12 @@
       document.getElementById(hiddenId).value = icon;
       document.getElementById(displayId).className = 'fa-solid ' + icon + ' selected-icon';
       if (labelId) document.getElementById(labelId).textContent = icon;
-      if (previewId) document.getElementById(previewId).innerHTML = '<i class="fa-solid ' + icon + '"></i>';
+      if (previewId) {
+        var color = '';
+        var colorEl = document.getElementById('fc-icon-color-value');
+        if (previewId === 'fc-icon-preview' && colorEl) color = colorEl.value || '#11a551';
+        document.getElementById(previewId).innerHTML = '<i class="fa-solid ' + icon + '"' + (color ? ' style="color:' + color + ';"' : '') + '></i>';
+      }
 
       var grid = document.getElementById(pickerId + '-grid');
       if (grid) {
@@ -902,21 +971,32 @@
         if (cat) {
           document.getElementById('cat-modal-title').textContent = 'Edit Category';
           document.getElementById('fc-name').value = cat.name || '';
+          document.getElementById('fc-description').value = cat.description || '';
           document.getElementById('fc-editing-slug').value = getCategorySlug(cat);
           var icon = cat.icon || 'fa-tag';
+          var color = cat.icon_color || '#11a551';
           document.getElementById('fc-icon').value = icon;
           document.getElementById('fc-icon-display').className = 'fa-solid ' + icon + ' selected-icon';
           document.getElementById('fc-icon-label').textContent = icon;
-          document.getElementById('fc-icon-preview').innerHTML = '<i class="fa-solid ' + icon + '"></i>';
+          document.getElementById('fc-icon-color').value = color;
+          document.getElementById('fc-icon-color-value').value = color;
+          document.getElementById('fc-color-swatch').style.background = color;
+          document.getElementById('fc-icon-preview').innerHTML = '<i class="fa-solid ' + icon + '" style="color:' + color + ';"></i>';
           renderIconPickerGrid('fc-icon-picker', 'fc-icon', 'fc-icon-display', 'fc-icon-label', 'fc-icon-preview');
+          renderColorPresets();
         }
       } else {
         document.getElementById('cat-modal-title').textContent = 'Add Category';
+        document.getElementById('fc-description').value = '';
         document.getElementById('fc-icon').value = 'fa-tag';
         document.getElementById('fc-icon-display').className = 'fa-solid fa-tag selected-icon';
         document.getElementById('fc-icon-label').textContent = 'fa-tag';
-        document.getElementById('fc-icon-preview').innerHTML = '<i class="fa-solid fa-tag"></i>';
+        document.getElementById('fc-icon-color').value = '#11a551';
+        document.getElementById('fc-icon-color-value').value = '#11a551';
+        document.getElementById('fc-color-swatch').style.background = '#11a551';
+        document.getElementById('fc-icon-preview').innerHTML = '<i class="fa-solid fa-tag" style="color:#11a551;"></i>';
         renderIconPickerGrid('fc-icon-picker', 'fc-icon', 'fc-icon-display', 'fc-icon-label', 'fc-icon-preview');
+        renderColorPresets();
       }
 
       document.getElementById('category-modal').classList.add('open');
@@ -934,11 +1014,18 @@
 
       var name = document.getElementById('fc-name').value.trim();
       var icon = document.getElementById('fc-icon').value.trim() || 'fa-tag';
+      var description = document.getElementById('fc-description').value.trim();
+      var iconColor = document.getElementById('fc-icon-color-value').value || '#11a551';
       var editingSlug = document.getElementById('fc-editing-slug').value;
 
       try {
         if (editingSlug) {
-          await GoNoGoAPI.updateCategory(editingSlug, name, icon);
+          await GoNoGoAPI.updateCategory(editingSlug, {
+            name: name,
+            icon: icon,
+            description: description,
+            icon_color: iconColor
+          });
           Components.showToast('Category "' + name + '" updated');
         } else {
           var slug = slugify(name);
@@ -946,6 +1033,8 @@
             slug: slug,
             name: name,
             icon: icon,
+            description: description,
+            icon_color: iconColor,
             scoringCategories: [
               { name: 'Compliance', max: 20 },
               { name: 'Customer Satisfaction', max: 25 },
@@ -993,9 +1082,14 @@
       container.innerHTML = allCategoriesData.map(function(cat) {
         var slug = getCategorySlug(cat);
         var brandCount = cat.brandCount || 0;
+        var iconColor = cat.icon_color || 'var(--green)';
+        var descSnippet = cat.description ? '<div class="text-xs text-muted" style="margin-top:2px;max-width:260px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + Components.escapeHTML(cat.description) + '</div>' : '';
         return '<div class="cat-manage-row">' +
-          '<span class="cat-manage-icon"><i class="fa-solid ' + (cat.icon || 'fa-tag') + '"></i></span>' +
-          '<span class="cat-manage-name">' + Components.escapeHTML(cat.name) + '</span>' +
+          '<span class="cat-manage-icon" style="color:' + iconColor + ';"><i class="fa-solid ' + (cat.icon || 'fa-tag') + '"></i></span>' +
+          '<div style="flex:1;min-width:0;">' +
+            '<span class="cat-manage-name">' + Components.escapeHTML(cat.name) + '</span>' +
+            descSnippet +
+          '</div>' +
           '<span class="cat-manage-count">' + brandCount + ' brand' + (brandCount !== 1 ? 's' : '') + '</span>' +
           '<button class="btn btn-ghost btn-sm" title="Edit" onclick="editCategory(\'' + slug + '\')">' +
             '<i class="fa-solid fa-pen" style="font-size:12px;"></i>' +

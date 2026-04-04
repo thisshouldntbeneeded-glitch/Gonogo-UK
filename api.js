@@ -71,8 +71,8 @@ var GoNoGoAPI = (function () {
   function normalizeSBBrand(row, categoryName, categoryIcon, scoringCategories) {
     var categoryScores = {};
     (row.framework_breakdown || []).forEach(function (fb) {
-      var parts = fb.score.split('/');
-      categoryScores[fb.category] = { score: parseFloat(parts[0]), max: parseFloat(parts[1]), description: fb.description };
+      var parts = String(fb.score || '0/0').split('/');
+      categoryScores[fb.category] = { score: parseFloat(parts[0]) || 0, max: parseFloat(parts[1]) || 0, description: fb.description || '' };
     });
     var gp = (row.app_ratings && row.app_ratings.google_play) || 'N/A';
     var ios = (row.app_ratings && row.app_ratings.ios) || 'N/A';
@@ -107,7 +107,7 @@ var GoNoGoAPI = (function () {
     return supabaseRequest('categories?select=*&order=name.asc').then(function (rows) {
       _categoryCache = {};
       rows.forEach(function (c) {
-        _categoryCache[c.slug] = { name: c.name, icon: c.icon, scoring_categories: c.scoring_categories };
+        _categoryCache[c.slug] = { name: c.name, icon: c.icon, icon_color: c.icon_color || '', description: c.description || '', scoring_categories: c.scoring_categories };
       });
       return _categoryCache;
     });
@@ -139,7 +139,8 @@ var GoNoGoAPI = (function () {
             brands.forEach(function (b) { counts[b.category_slug] = (counts[b.category_slug] || 0) + 1; });
             return cats.map(function (c) {
               return {
-                id: c.slug, name: c.name, icon: c.icon,
+                id: c.slug, slug: c.slug, name: c.name, icon: c.icon,
+                icon_color: c.icon_color || '', description: c.description || '',
                 brandCount: counts[c.slug] || 0,
                 hasBrands: (counts[c.slug] || 0) > 0,
                 scoringCategories: c.scoring_categories
@@ -318,7 +319,7 @@ var GoNoGoAPI = (function () {
               id: r.id, category: r.category_slug, brandname: r.brand_name,
               reviewername: r.reviewer_name, reviewtext: r.review_text,
               verdict: r.verdict || '',
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });
@@ -337,7 +338,7 @@ var GoNoGoAPI = (function () {
               reviewername: r.reviewer_name, ReviewerName: r.reviewer_name,
               reviewtext: r.review_text, ReviewText: r.review_text,
               verdict: r.verdict || '',
-              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               created_at: r.created_at, status: r.status, Status: r.status
             };
           });
@@ -504,24 +505,39 @@ var GoNoGoAPI = (function () {
     // ==========================================
     saveCategory: function (categoryData) {
       _categoryCache = null; // bust cache
+      var patchBody = { name: categoryData.name, icon: categoryData.icon, scoring_categories: categoryData.scoringCategories || [] };
+      if (categoryData.description !== undefined) patchBody.description = categoryData.description;
+      if (categoryData.icon_color !== undefined) patchBody.icon_color = categoryData.icon_color;
       return supabaseRequest('categories?slug=eq.' + encodeURIComponent(categoryData.slug), {
         method: 'PATCH',
-        body: { name: categoryData.name, icon: categoryData.icon, scoring_categories: categoryData.scoringCategories || [] }
+        body: patchBody
       }).then(function (rows) {
         if (rows && rows.length > 0) return { ok: true };
+        var postBody = { slug: categoryData.slug, name: categoryData.name, icon: categoryData.icon, scoring_categories: categoryData.scoringCategories || [], region: SITE_REGION };
+        if (categoryData.description !== undefined) postBody.description = categoryData.description;
+        if (categoryData.icon_color !== undefined) postBody.icon_color = categoryData.icon_color;
         return supabaseRequest('categories', {
           method: 'POST',
-          body: { slug: categoryData.slug, name: categoryData.name, icon: categoryData.icon, scoring_categories: categoryData.scoringCategories || [], region: SITE_REGION }
+          body: postBody
         }).then(function () { return { ok: true }; });
       });
     },
 
-    // Update category name/icon (rename). Updates all brands that reference this category.
-    updateCategory: function (slug, newName, newIcon) {
+    // Update category fields (name, icon, description, icon_color, scoring_categories).
+    // Accepts (slug, data) where data is an object, or legacy (slug, newName, newIcon) for backwards compat.
+    updateCategory: function (slug, nameOrData, newIcon) {
       _categoryCache = null; // bust cache
       var body = {};
-      if (newName !== undefined) body.name = newName;
-      if (newIcon !== undefined) body.icon = newIcon;
+      if (typeof nameOrData === 'object' && nameOrData !== null) {
+        if (nameOrData.name !== undefined) body.name = nameOrData.name;
+        if (nameOrData.icon !== undefined) body.icon = nameOrData.icon;
+        if (nameOrData.description !== undefined) body.description = nameOrData.description;
+        if (nameOrData.icon_color !== undefined) body.icon_color = nameOrData.icon_color;
+        if (nameOrData.scoring_categories !== undefined) body.scoring_categories = nameOrData.scoring_categories;
+      } else {
+        if (nameOrData !== undefined) body.name = nameOrData;
+        if (newIcon !== undefined) body.icon = newIcon;
+      }
       return supabaseRequest('categories?slug=eq.' + encodeURIComponent(slug), {
         method: 'PATCH',
         body: body
@@ -682,7 +698,7 @@ getBrandUser: function () {
               review_text: r.review_text,
               verdict: r.verdict || '',
               created_at: r.created_at,
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });
