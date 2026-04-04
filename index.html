@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
   <script>
-    (function(){
+    (function () {
       var t = localStorage.getItem('gonogo_theme');
       if (t === 'light' || (!t && window.matchMedia('(prefers-color-scheme: light)').matches)) {
         document.documentElement.classList.add('light-mode');
@@ -69,18 +69,18 @@
           </div>
 
           <div style="display:flex;justify-content:center;margin-bottom:var(--space-5);">
-            <span class="badge" style="padding:6px 12px;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.24);">
+            <span class="badge badge-uk" style="padding:6px 12px;">
               <i class="fa-solid fa-location-dot"></i>
               United Kingdom
             </span>
           </div>
 
           <h1 class="hero-title" style="max-width:12ch;margin-left:auto;margin-right:auto;">
-            Find the brands worth trusting.
+            Find the brands worth trusting
           </h1>
 
           <p class="hero-subtitle" style="max-width:760px;">
-            GoNoGo helps people across the UK compare brands with transparent, data-driven ratings. Browse by category, explore leading brands, and make faster decisions with clear trust signals.
+            GoNoGo helps people across the UK compare brands with transparent, data-driven ratings. Browse by category, explore leading brands, and make faster decisions with clear Go or No-Go trust signals.
           </p>
 
           <div style="display:flex;flex-wrap:wrap;gap:var(--space-3);justify-content:center;margin-bottom:var(--space-8);">
@@ -129,7 +129,7 @@
         <div class="homepage-quick-links-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:var(--space-4);">
           <a href="#categories" class="card card-hover" style="text-decoration:none;color:var(--text-primary);padding:var(--space-4);">
             <div style="display:flex;align-items:center;gap:var(--space-3);">
-              <i class="fa-solid fa-layer-group" style="font-size:var(--text-lg);color:#60a5fa;"></i>
+              <i class="fa-solid fa-layer-group text-accent" style="font-size:var(--text-lg);"></i>
               <div>
                 <div style="font-weight:700;font-size:var(--text-sm);">Categories</div>
                 <div class="text-xs text-muted">Browse by industry</div>
@@ -138,7 +138,7 @@
           </a>
           <a href="#top-brands-section" class="card card-hover" style="text-decoration:none;color:var(--text-primary);padding:var(--space-4);">
             <div style="display:flex;align-items:center;gap:var(--space-3);">
-              <i class="fa-solid fa-trophy" style="font-size:var(--text-lg);color:#60a5fa;"></i>
+              <i class="fa-solid fa-trophy text-accent" style="font-size:var(--text-lg);"></i>
               <div>
                 <div style="font-weight:700;font-size:var(--text-sm);">Top Brands</div>
                 <div class="text-xs text-muted">See leading performers</div>
@@ -147,7 +147,7 @@
           </a>
           <a href="compare.html" class="card card-hover" style="text-decoration:none;color:var(--text-primary);padding:var(--space-4);">
             <div style="display:flex;align-items:center;gap:var(--space-3);">
-              <i class="fa-solid fa-code-compare" style="font-size:var(--text-lg);color:#60a5fa;"></i>
+              <i class="fa-solid fa-code-compare text-accent" style="font-size:var(--text-lg);"></i>
               <div>
                 <div style="font-weight:700;font-size:var(--text-sm);">Compare</div>
                 <div class="text-xs text-muted">Side-by-side ratings</div>
@@ -156,7 +156,7 @@
           </a>
           <a href="business-home-page" class="card card-hover" style="text-decoration:none;color:var(--text-primary);padding:var(--space-4);">
             <div style="display:flex;align-items:center;gap:var(--space-3);">
-              <i class="fa-solid fa-briefcase" style="font-size:var(--text-lg);color:#60a5fa;"></i>
+              <i class="fa-solid fa-briefcase text-accent" style="font-size:var(--text-lg);"></i>
               <div>
                 <div style="font-weight:700;font-size:var(--text-sm);">Business</div>
                 <div class="text-xs text-muted">Visibility and trust</div>
@@ -171,7 +171,7 @@
       <div class="container">
         <div class="section-header" style="max-width:760px;">
           <div style="margin-bottom:var(--space-3);">
-            <span class="badge" style="padding:6px 12px;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.24);">
+            <span class="badge badge-uk" style="padding:6px 12px;">
               <i class="fa-solid fa-grid-2"></i>
               Categories
             </span>
@@ -180,7 +180,7 @@
             Start with the category that matters to you.
           </h2>
           <p class="section-subtitle" style="font-size:var(--text-base);max-width:64ch;">
-            Browse the sectors people compare most often, from banking and insurance to broadband, streaming, travel, and business software.
+            Browse the sectors people compare most often, from banking and insurance to broadband, utilities, travel, mobile, and business software.
           </p>
         </div>
 
@@ -198,7 +198,7 @@
           <div class="homepage-value-grid" style="display:grid;grid-template-columns:1.25fr 0.75fr;gap:var(--space-6);align-items:center;">
             <div>
               <div style="margin-bottom:var(--space-3);">
-                <span class="badge" style="padding:6px 12px;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.24);">
+                <span class="badge badge-uk" style="padding:6px 12px;">
                   <i class="fa-solid fa-circle-check"></i>
                   Why GoNoGo
                 </span>
@@ -211,15 +211,15 @@
               </p>
               <div class="homepage-value-points" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4);">
                 <div>
-                  <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Transparent</div>
+                  <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Transparent</div>
                   <div class="text-sm text-secondary">Structured scoring and easier comparisons.</div>
                 </div>
                 <div>
-                  <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Practical</div>
+                  <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Practical</div>
                   <div class="text-sm text-secondary">Browse by category or jump straight to a brand.</div>
                 </div>
                 <div>
-                  <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Relevant</div>
+                  <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Local</div>
                   <div class="text-sm text-secondary">Built for UK consumer decisions.</div>
                 </div>
               </div>
@@ -231,15 +231,15 @@
               </div>
               <div style="display:flex;flex-direction:column;gap:var(--space-3);">
                 <a href="compare.html" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-3);border:1px solid var(--border-primary);border-radius:var(--radius-md);color:var(--text-primary);text-decoration:none;">
-                  <span><i class="fa-solid fa-code-compare" style="margin-right:8px;color:#60a5fa;"></i>Compare two brands</span>
+                  <span><i class="fa-solid fa-code-compare text-accent" style="margin-right:8px;"></i>Compare two brands</span>
                   <i class="fa-solid fa-arrow-right text-muted"></i>
                 </a>
                 <a href="#top-brands-section" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-3);border:1px solid var(--border-primary);border-radius:var(--radius-md);color:var(--text-primary);text-decoration:none;">
-                  <span><i class="fa-solid fa-trophy" style="margin-right:8px;color:#60a5fa;"></i>See top-rated brands</span>
+                  <span><i class="fa-solid fa-trophy text-accent" style="margin-right:8px;"></i>See top-rated brands</span>
                   <i class="fa-solid fa-arrow-right text-muted"></i>
                 </a>
                 <a href="business-home-page" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-3);border:1px solid var(--border-primary);border-radius:var(--radius-md);color:var(--text-primary);text-decoration:none;">
-                  <span><i class="fa-solid fa-briefcase" style="margin-right:8px;color:#60a5fa;"></i>Explore business services</span>
+                  <span><i class="fa-solid fa-briefcase text-accent" style="margin-right:8px;"></i>Explore business services</span>
                   <i class="fa-solid fa-arrow-right text-muted"></i>
                 </a>
               </div>
@@ -253,7 +253,7 @@
       <div class="container">
         <div class="section-header" style="max-width:760px;">
           <div style="margin-bottom:var(--space-3);">
-            <span class="badge" style="padding:6px 12px;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.24);">
+            <span class="badge badge-uk" style="padding:6px 12px;">
               <i class="fa-solid fa-trophy"></i>
               Top Rated
             </span>
@@ -278,7 +278,7 @@
       <div class="container">
         <div class="section-header" style="max-width:780px;">
           <div style="margin-bottom:var(--space-3);">
-            <span class="badge" style="padding:6px 12px;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.24);">
+            <span class="badge badge-uk" style="padding:6px 12px;">
               <i class="fa-solid fa-scale-balanced"></i>
               How We Score
             </span>
@@ -295,32 +295,32 @@
           <div class="card" style="padding:var(--space-6);">
             <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-4);">
               <div class="card" style="background:var(--surface-1);padding:var(--space-4);">
-                <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Compliance & Regulation</div>
-                <div class="text-sm text-secondary">Licensing, regulatory standing, industry body memberships, and legal compliance in the UK.</div>
+                <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Compliance & Regulation</div>
+                <div class="text-sm text-secondary">Licensing, regulatory standing, industry body memberships, and legal compliance in the United Kingdom.</div>
               </div>
 
               <div class="card" style="background:var(--surface-1);padding:var(--space-4);">
-                <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Customer Satisfaction</div>
+                <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Customer Satisfaction</div>
                 <div class="text-sm text-secondary">Real user feedback, review signals, complaint trends, and overall customer sentiment.</div>
               </div>
 
               <div class="card" style="background:var(--surface-1);padding:var(--space-4);">
-                <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Product Value</div>
+                <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Product Value</div>
                 <div class="text-sm text-secondary">Pricing fairness, feature depth, fee transparency, and value for money.</div>
               </div>
 
               <div class="card" style="background:var(--surface-1);padding:var(--space-4);">
-                <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Innovation</div>
+                <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Innovation</div>
                 <div class="text-sm text-secondary">Technology adoption, digital experience, differentiation, and forward-thinking delivery.</div>
               </div>
 
               <div class="card" style="background:var(--surface-1);padding:var(--space-4);">
-                <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Customer Support</div>
+                <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Customer Support</div>
                 <div class="text-sm text-secondary">Support access, responsiveness, issue resolution quality, and ease of getting help.</div>
               </div>
 
               <div class="card" style="background:var(--surface-1);padding:var(--space-4);">
-                <div style="color:#60a5fa;font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Accessibility & Security</div>
+                <div class="text-accent" style="font-weight:800;font-size:var(--text-base);margin-bottom:4px;">Accessibility & Security</div>
                 <div class="text-sm text-secondary">Platform accessibility, security standards, privacy practices, and inclusive design.</div>
               </div>
             </div>
@@ -364,7 +364,7 @@
           <div class="homepage-compare-grid" style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:var(--space-6);align-items:center;">
             <div>
               <div style="margin-bottom:var(--space-3);">
-                <span class="badge" style="padding:6px 12px;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.24);">
+                <span class="badge badge-uk" style="padding:6px 12px;">
                   <i class="fa-solid fa-code-compare"></i>
                   Compare
                 </span>
@@ -393,7 +393,7 @@
           <div class="homepage-business-grid" style="display:grid;grid-template-columns:1.2fr 0.8fr;gap:var(--space-6);align-items:center;">
             <div>
               <div style="margin-bottom:var(--space-3);">
-                <span class="badge" style="padding:6px 12px;background:rgba(59,130,246,0.12);color:#60a5fa;border:1px solid rgba(59,130,246,0.24);">
+                <span class="badge badge-uk" style="padding:6px 12px;">
                   <i class="fa-solid fa-briefcase"></i>
                   For Business
                 </span>
@@ -452,8 +452,8 @@
     };
 
     var categoryColors = {
-      'banking': '#60a5fa',
-      'mobile': '#3b82f6',
+      'banking': '#3b82f6',
+      'mobile': '#2563eb',
       'broadband-fiber': '#06b6d4',
       'insurance': '#ec4899',
       'utilities': '#f97316',
@@ -474,7 +474,7 @@
         var industryGrid = document.getElementById('industry-grid');
         industryGrid.innerHTML = categories.map(function (cat) {
           var desc = categoryDescriptions[cat.id] || (cat.brandCount + ' brands reviewed');
-          var color = categoryColors[cat.id] || '#60a5fa';
+          var color = categoryColors[cat.id] || '#3b82f6';
           return ''
             + '<a href="category.html?cat=' + cat.id + '" class="industry-card-v2">'
             +   '<div class="ic-icon" style="color:' + color + '"><i class="fa-solid ' + cat.icon + '"></i></div>'
