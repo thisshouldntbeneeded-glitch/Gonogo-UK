@@ -61,7 +61,51 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
-  <div id="nav"></div>
+  <header class="site-header">
+    <div class="container">
+      <a href="index.html" class="logo" aria-label="GoNoGo United Kingdom home">
+        <img
+          src="logos/gonogo-logo-dark.jpg"
+          alt="GoNoGo United Kingdom"
+          class="logo-icon"
+          width="40"
+          height="40"
+          style="width:40px;height:40px;object-fit:contain;border-radius:8px;"
+          onerror="this.onerror=null;this.src='logos/gonogo-hero-dark.jpg';"
+        >
+        <span>
+          <span class="go">Go</span><span class="no">NoGo</span>
+        </span>
+      </a>
+
+      <nav aria-label="Primary navigation">
+        <ul class="nav-links">
+          <li><a href="index.html" class="active"><i class="fa-solid fa-house"></i> Home</a></li>
+          <li><a href="#industries"><i class="fa-solid fa-layer-group"></i> Categories</a></li>
+          <li><a href="compare.html"><i class="fa-solid fa-code-compare"></i> Compare</a></li>
+          <li><a href="business-home-page"><i class="fa-solid fa-briefcase"></i> Business</a></li>
+        </ul>
+      </nav>
+
+      <button
+        class="hamburger"
+        type="button"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        onclick="toggleMobileNav()"
+      >
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+  </header>
+
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
+    <a href="index.html" class="active"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="#industries"><i class="fa-solid fa-layer-group"></i> Categories</a>
+    <a href="compare.html"><i class="fa-solid fa-code-compare"></i> Compare</a>
+    <a href="business-home-page"><i class="fa-solid fa-briefcase"></i> Business</a>
+  </nav>
 
   <main>
     <section class="hero">
@@ -416,8 +460,17 @@
   <script src="api.js"></script>
 
   <script>
-    document.getElementById('nav').innerHTML = Components.renderPublicNav('home');
     document.getElementById('footer').innerHTML = Components.renderFooter();
+
+    function toggleMobileNav() {
+      var nav = document.getElementById('mobile-nav');
+      var button = document.querySelector('.hamburger');
+      var isOpen = nav.classList.toggle('open');
+      button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      button.innerHTML = isOpen
+        ? '<i class="fa-solid fa-xmark"></i>'
+        : '<i class="fa-solid fa-bars"></i>';
+    }
 
     var categoryDescriptions = {
       'banking': 'Digital banks, traditional banks, credit cards.',
