@@ -61,14 +61,19 @@
     var slug = Components.getParam('cat');
     document.getElementById('footer').innerHTML = Components.renderFooter();
 
-    var STANDARD_FRAMEWORK = [
-      { name: 'Compliance', max: 15, description: 'Regulatory adherence, licensing, legal standing, and industry standard compliance.' },
-      { name: 'Customer Satisfaction', max: 25, description: 'User reviews, ratings, complaint resolution, and overall customer sentiment.' },
-      { name: 'Product Value', max: 30, description: 'Quality of products/services relative to price, features, and market competitiveness.' },
-      { name: 'Innovation', max: 10, description: 'Investment in new technology, service improvements, and forward-thinking initiatives.' },
-      { name: 'Customer Support', max: 10, description: 'Responsiveness, availability, resolution quality, and support channel accessibility.' },
-      { name: 'Accessibility & Security', max: 10, description: 'Ease of access across platforms, data protection, privacy practices, and inclusive design.' }
-    ];
+    var CATEGORY_DESCRIPTIONS = {
+      'Compliance': 'Regulatory adherence, licensing, legal standing, and industry standard compliance.',
+      'Customer Satisfaction': 'User reviews, ratings, complaint resolution, and overall customer sentiment.',
+      'Product Value': 'Quality of products/services relative to price, features, and market competitiveness.',
+      'Innovation': 'Investment in new technology, service improvements, and forward-thinking initiatives.',
+      'Customer Support': 'Responsiveness, availability, resolution quality, and support channel accessibility.',
+      'Accessibility & Security': 'Ease of access across platforms, data protection, privacy practices, and inclusive design.',
+      'Service Offering': 'Range, quality, and competitiveness of services provided to customers.',
+      'Market Presence': 'Brand visibility, market share, and reputation within the industry.',
+      'Digital Experience': 'Quality of online platforms, apps, and digital customer interactions.',
+      'Transparency': 'Clarity of pricing, terms, and communication with customers.',
+      'Sustainability': 'Environmental and social responsibility practices and commitments.'
+    };
 
     function renderFrameworkHTML(scoringCategories) {
       return (scoringCategories || []).map(function(sc) {
@@ -159,7 +164,11 @@
           });
         }
 
-        var frameworkHTML = renderFrameworkHTML(STANDARD_FRAMEWORK);
+        // Use the category's own scoring from Supabase, enriched with descriptions
+        var enrichedScoring = (catInfo.scoringCategories || []).map(function(sc) {
+          return { name: sc.name, max: sc.max, description: sc.description || CATEGORY_DESCRIPTIONS[sc.name] || '' };
+        });
+        var frameworkHTML = renderFrameworkHTML(enrichedScoring);
 
         document.getElementById('page-content').innerHTML =
           '<section class="section-sm" style="border-bottom:1px solid var(--border-primary)"><div class="container">' +
