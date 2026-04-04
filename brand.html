@@ -142,7 +142,7 @@
       ldScript.textContent = JSON.stringify(jsonLD);
       document.head.appendChild(ldScript);
 
-      var logoHTML = Components.renderLogo(brand, 'brand-logo brand-logo-lg');
+      var logoHTML = Components.renderLogo(brand, 'brand-logo brand-logo-hero');
 
       // Category score cards
       var categoryCardsHTML = Object.entries(brand.categoryScores).map(function(entry) {
@@ -198,18 +198,18 @@
 
       document.getElementById('page-content').innerHTML =
         '<section class="brand-hero"><div class="container">' +
-          '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-4)">' +
+          '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-3)">' +
             '<a href="category.html?cat=' + brand.categorySlug + '" style="color:var(--text-muted);font-size:var(--text-sm)">' +
               '<i class="fa-solid fa-arrow-left"></i> ' + brand.categoryName +
             '</a>' +
           '</div>' +
           '<div class="brand-hero-inner">' +
-            '<div class="brand-hero-score">' + Components.renderScoreCircle(brand.overallScore, 'lg') + '</div>' +
+            '<div class="brand-hero-identity">' +
+              '<div class="brand-hero-logo">' + logoHTML + '</div>' +
+              '<div class="brand-hero-score">' + Components.renderScoreCircle(brand.overallScore, 'hero') + '</div>' +
+            '</div>' +
             '<div class="brand-hero-info">' +
-              '<div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-2)">' +
-                logoHTML +
-                '<h1 class="brand-hero-name">' + brand.name + '</h1>' +
-              '</div>' +
+              '<h1 class="brand-hero-name">' + brand.name + '</h1>' +
               '<div class="brand-hero-badges">' +
                 Components.renderVerdictBadge(brand.verdict) +
                 Components.renderScoreBadge(brand.overallScore) +
@@ -217,7 +217,7 @@
                   '<i class="fa-solid ' + brand.categoryIcon + '"></i> ' + brand.categoryName +
                 '</span>' +
               '</div>' +
-              '<div style="display:flex;gap:var(--space-3);margin-top:var(--space-4);flex-wrap:wrap">' +
+              '<div style="display:flex;gap:var(--space-3);margin-top:var(--space-3);flex-wrap:wrap">' +
                 '<a href="compare.html?brands=' + brand.id + '" class="btn btn-secondary btn-sm"><i class="fa-solid fa-code-compare"></i> Compare</a>' +
                 (brand.website ? '<a href="' + brand.website + '" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Website</a>' : '') +
               '</div>' +
@@ -230,7 +230,6 @@
             '<button class="tab active" data-tab="overview" onclick="switchTab(\'overview\')">Overview</button>' +
             '<button class="tab" data-tab="pricing" onclick="switchTab(\'pricing\')">Pricing</button>' +
             '<button class="tab" data-tab="ratings" onclick="switchTab(\'ratings\')">Ratings</button>' +
-            '<button class="tab" data-tab="reviews" onclick="switchTab(\'reviews\')">Reviews</button>' +
           '</div>' +
 
           '<div class="tab-content" id="tab-overview">' +
@@ -273,6 +272,49 @@
                 '<ul class="sc-list">' + concernsHTML + '</ul>' +
               '</div>' +
             '</div>' +
+            '<div style="margin-top:var(--space-8);border-top:1px solid var(--border-primary);padding-top:var(--space-8)">' +
+              '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)"><i class="fa-solid fa-comments" style="color:var(--green)"></i> Reviews &amp; Comments</h3>' +
+              '<div id="review-summary" style="margin-bottom:var(--space-4)"></div>' +
+              '<div id="review-filters" style="display:none;margin-bottom:var(--space-4);display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center">' +
+                '<button class="btn btn-sm btn-ghost review-filter-btn active" data-filter="all" onclick="filterReviews(\'all\')">All</button>' +
+                '<button class="btn btn-sm btn-ghost review-filter-btn" data-filter="GO" onclick="filterReviews(\'GO\')"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Go</button>' +
+                '<button class="btn btn-sm btn-ghost review-filter-btn" data-filter="NOGO" onclick="filterReviews(\'NOGO\')"><i class="fa-solid fa-circle-xmark" style="color:var(--red,#e74c3c)"></i> No Go</button>' +
+                '<span class="text-xs text-muted" id="review-filter-count" style="margin-left:auto"></span>' +
+              '</div>' +
+              '<div id="review-list" style="margin-bottom:var(--space-4)"></div>' +
+              '<div id="review-pagination" style="text-align:center;margin-bottom:var(--space-6)"></div>' +
+              '<div class="card" style="max-width:600px">' +
+                '<h4 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">Rate ' + brand.name + '</h4>' +
+                '<p class="text-sm text-secondary" style="margin-bottom:var(--space-4)">Would you recommend this brand? Cast your vote and tell us why.</p>' +
+                '<div class="form-group">' +
+                  '<label class="form-label">Your Name</label>' +
+                  '<input type="text" id="review-name" placeholder="Enter your name">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label class="form-label">Your Verdict</label>' +
+                  '<div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-2)" id="verdict-buttons">' +
+                    '<button type="button" class="btn btn-sm verdict-btn" id="vbtn-GO" onclick="selectVerdict(\'GO\')" style="flex:1;border:2px solid var(--border-primary);background:transparent;color:var(--text-secondary);padding:var(--space-3)">' +
+                      '<i class="fa-solid fa-circle-check"></i><br><strong>Go</strong><br><span class="text-xs">I recommend</span>' +
+                    '</button>' +
+                    '<button type="button" class="btn btn-sm verdict-btn" id="vbtn-NOGO" onclick="selectVerdict(\'NOGO\')" style="flex:1;border:2px solid var(--border-primary);background:transparent;color:var(--text-secondary);padding:var(--space-3)">' +
+                      '<i class="fa-solid fa-circle-xmark"></i><br><strong>No Go</strong><br><span class="text-xs">I don\'t recommend</span>' +
+                    '</button>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label class="form-label">Why? <span class="text-xs text-muted">(optional but helpful)</span></label>' +
+                  '<textarea id="review-text" placeholder="Share your experience with ' + brand.name + '..." rows="3"></textarea>' +
+                '</div>' +
+                '<p class="text-sm text-muted" style="margin-bottom:var(--space-3);line-height:1.6;">' +
+                  'By submitting a review, you confirm that your name and comment may be published publicly on this website. ' +
+                  'Please do not include sensitive, confidential, defamatory, or third-party personal information. ' +
+                  'Reviews may be moderated, refused, or removed in line with our <a href="terms.html" style="color:var(--green)">Terms &amp; Conditions</a> and <a href="privacy.html" style="color:var(--green)">Privacy Policy</a>.' +
+                '</p>' +
+                '<button class="btn btn-primary" onclick="submitReview()" id="submit-review-btn" disabled style="opacity:0.5">' +
+                  '<i class="fa-solid fa-paper-plane"></i> Submit Review' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
           '</div>' +
 
           '<div class="tab-content" id="tab-pricing" style="display:none">' +
@@ -308,48 +350,6 @@
             '</div>' +
           '</div>' +
 
-          '<div class="tab-content" id="tab-reviews" style="display:none">' +
-            '<div id="review-summary" style="margin-bottom:var(--space-4)"></div>' +
-            '<div id="review-filters" style="display:none;margin-bottom:var(--space-4);display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center">' +
-              '<button class="btn btn-sm btn-ghost review-filter-btn active" data-filter="all" onclick="filterReviews(\'all\')">All</button>' +
-              '<button class="btn btn-sm btn-ghost review-filter-btn" data-filter="GO" onclick="filterReviews(\'GO\')"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Go</button>' +
-              '<button class="btn btn-sm btn-ghost review-filter-btn" data-filter="NOGO" onclick="filterReviews(\'NOGO\')"><i class="fa-solid fa-circle-xmark" style="color:var(--red,#e74c3c)"></i> No Go</button>' +
-              '<span class="text-xs text-muted" id="review-filter-count" style="margin-left:auto"></span>' +
-            '</div>' +
-            '<div id="review-list" style="margin-bottom:var(--space-4)"></div>' +
-            '<div id="review-pagination" style="text-align:center;margin-bottom:var(--space-6)"></div>' +
-            '<div class="card" style="max-width:600px">' +
-              '<h4 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">Rate ' + brand.name + '</h4>' +
-              '<p class="text-sm text-secondary" style="margin-bottom:var(--space-4)">Would you recommend this brand? Cast your vote and tell us why.</p>' +
-              '<div class="form-group">' +
-                '<label class="form-label">Your Name</label>' +
-                '<input type="text" id="review-name" placeholder="Enter your name">' +
-              '</div>' +
-              '<div class="form-group">' +
-                '<label class="form-label">Your Verdict</label>' +
-                '<div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-2)" id="verdict-buttons">' +
-                  '<button type="button" class="btn btn-sm verdict-btn" id="vbtn-GO" onclick="selectVerdict(\'GO\')" style="flex:1;border:2px solid var(--border-primary);background:transparent;color:var(--text-secondary);padding:var(--space-3)">' +
-                    '<i class="fa-solid fa-circle-check"></i><br><strong>Go</strong><br><span class="text-xs">I recommend</span>' +
-                  '</button>' +
-                  '<button type="button" class="btn btn-sm verdict-btn" id="vbtn-NOGO" onclick="selectVerdict(\'NOGO\')" style="flex:1;border:2px solid var(--border-primary);background:transparent;color:var(--text-secondary);padding:var(--space-3)">' +
-                    '<i class="fa-solid fa-circle-xmark"></i><br><strong>No Go</strong><br><span class="text-xs">I don\'t recommend</span>' +
-                  '</button>' +
-                '</div>' +
-              '</div>' +
-              '<div class="form-group">' +
-                '<label class="form-label">Why? <span class="text-xs text-muted">(optional but helpful)</span></label>' +
-                '<textarea id="review-text" placeholder="Share your experience with ' + brand.name + '..." rows="3"></textarea>' +
-              '</div>' +
-              '<p class="text-sm text-muted" style="margin-bottom:var(--space-3);line-height:1.6;">' +
-                'By submitting a review, you confirm that your name and comment may be published publicly on this website. ' +
-                'Please do not include sensitive, confidential, defamatory, or third-party personal information. ' +
-                'Reviews may be moderated, refused, or removed in line with our <a href="terms.html" style="color:var(--green)">Terms &amp; Conditions</a> and <a href="privacy.html" style="color:var(--green)">Privacy Policy</a>.' +
-              '</p>' +
-              '<button class="btn btn-primary" onclick="submitReview()" id="submit-review-btn" disabled style="opacity:0.5">' +
-                '<i class="fa-solid fa-paper-plane"></i> Submit Review' +
-              '</button>' +
-            '</div>' +
-          '</div>' +
         '</div></section>';
 
       // Init radar chart

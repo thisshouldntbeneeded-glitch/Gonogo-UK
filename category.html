@@ -61,6 +61,31 @@
     var slug = Components.getParam('cat');
     document.getElementById('footer').innerHTML = Components.renderFooter();
 
+    var STANDARD_FRAMEWORK = [
+      { name: 'Compliance', max: 15, description: 'Regulatory adherence, licensing, legal standing, and industry standard compliance.' },
+      { name: 'Customer Satisfaction', max: 25, description: 'User reviews, ratings, complaint resolution, and overall customer sentiment.' },
+      { name: 'Product Value', max: 30, description: 'Quality of products/services relative to price, features, and market competitiveness.' },
+      { name: 'Innovation', max: 10, description: 'Investment in new technology, service improvements, and forward-thinking initiatives.' },
+      { name: 'Customer Support', max: 10, description: 'Responsiveness, availability, resolution quality, and support channel accessibility.' },
+      { name: 'Accessibility & Security', max: 10, description: 'Ease of access across platforms, data protection, privacy practices, and inclusive design.' }
+    ];
+
+    function renderFrameworkHTML(scoringCategories) {
+      return (scoringCategories || []).map(function(sc) {
+        var pct = Math.round((Number(sc.max || 0) / 100) * 100);
+        return '<div style="padding:var(--space-3) 0;border-bottom:1px solid var(--border-subtle)">' +
+          '<div style="display:flex;align-items:center;gap:var(--space-3)">' +
+            '<span style="font-size:var(--text-sm);font-weight:600;min-width:180px;color:var(--text-secondary)">' + sc.name + '</span>' +
+            '<div class="score-bar" style="flex:1">' +
+              '<div class="score-bar-fill" style="width:' + pct + '%;background:var(--green)"></div>' +
+            '</div>' +
+            '<span style="font-size:var(--text-sm);font-weight:700;font-variant-numeric:tabular-nums;min-width:40px;text-align:right;color:var(--text-primary)">' + sc.max + '%</span>' +
+          '</div>' +
+          (sc.description ? '<p style="font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-1);margin-left:0;line-height:1.5">' + sc.description + '</p>' : '') +
+        '</div>';
+      }).join('');
+    }
+
     (async function() {
       if (!slug) {
         // Show all categories grid
@@ -71,12 +96,12 @@
           '<section class="section"><div class="container">' +
             '<div class="section-header">' +
               '<h1 class="section-title">All Industries</h1>' +
-              '<p class="section-subtitle">Browse ' + categories.length + ' United Kingdomn industries</p>' +
+              '<p class="section-subtitle">Browse ' + categories.length + ' United Kingdom industries</p>' +
             '</div>' +
             '<div class="industry-grid">' +
               categories.map(function(cat) {
                 return '<a href="category.html?cat=' + cat.id + '" class="industry-card ' + (cat.hasBrands ? '' : 'no-data') + '">' +
-                  '<i class="fa-solid ' + cat.icon + '"></i>' +
+                  '<i class="fa-solid ' + cat.icon + '" style="color:' + (cat.icon_color || 'var(--green)') + '"></i>' +
                   '<div class="name">' + cat.name + '</div>' +
                   '<div class="count">' + cat.brandCount + ' brand' + (cat.brandCount !== 1 ? 's' : '') + '</div>' +
                 '</a>';
@@ -106,7 +131,7 @@
         document.title = catInfo.name + ' — GoNoGo United Kingdom';
 
         // SEO meta
-        var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' brands in United Kingdom. Independent ratings on a 100-point scoring framework.';
+        var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' brands in the United Kingdom. Independent ratings on a 100-point scoring framework.';
         var metaTag = document.querySelector('meta[name="description"]');
         if (!metaTag) { metaTag = document.createElement('meta'); metaTag.name = 'description'; document.head.appendChild(metaTag); }
         metaTag.content = catDesc;
@@ -134,15 +159,7 @@
           });
         }
 
-        // Build scoring framework display
-        var frameworkHTML = (catInfo.scoringCategories || []).map(function(sc) {
-          var pct = Math.round((sc.max / 100) * 100);
-          return '<div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) 0">' +
-            '<span style="font-size:var(--text-sm);font-weight:600;min-width:180px;color:var(--text-secondary)">' + sc.name + '</span>' +
-            '<div class="score-bar" style="flex:1"><div class="score-bar-fill" style="width:' + pct + '%;background:var(--green)"></div></div>' +
-            '<span style="font-size:var(--text-sm);font-weight:700;font-variant-numeric:tabular-nums;min-width:32px;text-align:right;color:var(--text-primary)">' + sc.max + '</span>' +
-          '</div>';
-        }).join('');
+        var frameworkHTML = renderFrameworkHTML(STANDARD_FRAMEWORK);
 
         document.getElementById('page-content').innerHTML =
           '<section class="section-sm" style="border-bottom:1px solid var(--border-primary)"><div class="container">' +
@@ -151,7 +168,7 @@
             '</div>' +
             '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-4)">' +
               '<div style="width:56px;height:56px;border-radius:var(--radius-lg);background:var(--green-bg);border:1px solid var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:var(--text-xl)">' +
-                '<i class="fa-solid ' + catInfo.icon + '" style="color:var(--green)"></i>' +
+                '<i class="fa-solid ' + catInfo.icon + '" style="color:' + (catInfo.icon_color || 'var(--green)') + '"></i>' +
               '</div>' +
               '<div>' +
                 '<h1 style="font-size:var(--text-2xl);font-weight:800;letter-spacing:-0.02em">' + catInfo.name + '</h1>' +
