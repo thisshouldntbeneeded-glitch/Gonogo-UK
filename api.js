@@ -718,6 +718,38 @@ getBrandUser: function () {
       }).then(function (rows) {
         return { ok: true, reply: rows && rows[0] ? rows[0] : null };
       });
+    },
+
+    // ==========================================
+    // PASSWORD RESET
+    // ==========================================
+    requestPasswordReset: function (email) {
+      return fetch(SUPABASE_URL + '/functions/v1/send-reset-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+          'x-site-origin': window.location.origin
+        },
+        body: JSON.stringify({ email: email.toLowerCase().trim() })
+      }).then(function (r) { return r.json(); });
+    },
+
+    verifyResetToken: function (token) {
+      return supabaseRequest('rpc/verify_reset_token', {
+        method: 'POST',
+        body: { p_token: token }
+      });
+    },
+
+    resetPassword: function (token, newPassword) {
+      var self = this;
+      return self._hashPassword(newPassword).then(function (hash) {
+        return supabaseRequest('rpc/reset_brand_password', {
+          method: 'POST',
+          body: { p_token: token, p_new_hash: hash }
+        });
+      });
     }
   };
 })();

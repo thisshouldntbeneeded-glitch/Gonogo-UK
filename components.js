@@ -882,11 +882,77 @@ const Components = {
         <button class="btn btn-primary w-full" id="brand-login-btn" onclick="Components.submitBrandLogin()">
           <i class="fa-solid fa-lock"></i> Sign In
         </button>
-        <p style="margin-top:var(--space-4);font-size:var(--text-xs);color:var(--text-muted)">Contact GoNoGo to set up brand portal access</p>
+        <p style="margin-top:var(--space-3);text-align:center">
+          <a href="#" id="forgot-pw-link" onclick="Components.showForgotPassword();return false" style="font-size:var(--text-xs);color:var(--primary);">Forgot password?</a>
+        </p>
+        <p style="margin-top:var(--space-2);font-size:var(--text-xs);color:var(--text-muted)">Contact GoNoGo to set up brand portal access</p>
       </div>
     `;
     document.body.appendChild(overlay);
     setTimeout(() => document.getElementById('brand-email').focus(), 100);
+  },
+
+  showForgotPassword() {
+    var overlay = document.getElementById('brand-login-overlay');
+    overlay.querySelector('.password-box').innerHTML = `
+      <div class="logo" style="justify-content:center">
+        <img src="${LOGO_URL}" alt="GoNoGo" style="height:32px;width:auto;">
+      </div>
+      <h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-2)">Reset Password</h3>
+      <p style="color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:var(--space-5)">Enter your email and we'll send a reset link</p>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="reset-email" placeholder="brand@example.co.uk" onkeydown="if(event.key==='Enter')Components.submitResetRequest()">
+      </div>
+      <div class="password-error" id="reset-error" style="display:none"></div>
+      <div id="reset-success" style="display:none;padding:var(--space-3);background:rgba(17,165,81,0.1);border:1px solid var(--primary);border-radius:var(--radius-md);color:var(--primary);font-size:var(--text-sm);margin-bottom:var(--space-3)"></div>
+      <button class="btn btn-primary w-full" id="reset-btn" onclick="Components.submitResetRequest()">
+        <i class="fa-solid fa-paper-plane"></i> Send Reset Link
+      </button>
+      <p style="margin-top:var(--space-3);text-align:center">
+        <a href="#" onclick="Components.backToLogin();return false" style="font-size:var(--text-xs);color:var(--primary);"><i class="fa-solid fa-arrow-left"></i> Back to sign in</a>
+      </p>
+    `;
+    setTimeout(() => document.getElementById('reset-email').focus(), 100);
+  },
+
+  async submitResetRequest() {
+    var emailInput = document.getElementById('reset-email');
+    var error = document.getElementById('reset-error');
+    var success = document.getElementById('reset-success');
+    var btn = document.getElementById('reset-btn');
+    var email = emailInput.value.trim().toLowerCase();
+
+    if (!email) {
+      error.textContent = 'Please enter your email address.';
+      error.style.display = 'block';
+      success.style.display = 'none';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+    error.style.display = 'none';
+    success.style.display = 'none';
+
+    try {
+      await GoNoGoAPI.requestPasswordReset(email);
+      success.innerHTML = '<i class="fa-solid fa-check-circle"></i> If an account exists with that email, a reset link has been sent. Check your inbox (and spam folder).';
+      success.style.display = 'block';
+      emailInput.disabled = true;
+      btn.style.display = 'none';
+    } catch (e) {
+      error.textContent = 'Something went wrong. Please try again.';
+      error.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Reset Link';
+  },
+
+  backToLogin() {
+    document.getElementById('brand-login-overlay').remove();
+    this.showBrandLoginPrompt();
   },
 
   async submitBrandLogin() {
