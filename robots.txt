@@ -11,4 +11,4 @@ Disallow: /brand-dashboard.html
 Disallow: /brand-reviews.html
 Disallow: /brand-insights.html
 
-Sitemap: https://gonogo-uk.vercel.app/sitemap.xml
+Sitemap: https://www.gonogo.co.uk/api/sitemap
