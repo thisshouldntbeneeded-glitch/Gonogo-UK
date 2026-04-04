@@ -112,29 +112,34 @@
       setOG('url', window.location.href);
 
       // JSON-LD structured data
+      var starRating = Math.round((brand.overallScore / 20) * 10) / 10;
       var jsonLD = {
         '@context': 'https://schema.org',
         '@type': 'Review',
         'itemReviewed': {
-          '@type': 'Brand',
+          '@type': 'Organization',
           'name': brand.name,
-          'url': brand.website || ''
+          'url': brand.website || '',
+          'image': brand.logo || '',
+          'description': brand.overview || ''
         },
         'reviewRating': {
           '@type': 'Rating',
-          'ratingValue': brand.overallScore,
-          'bestRating': 100,
-          'worstRating': 0
+          'ratingValue': starRating,
+          'bestRating': 5,
+          'worstRating': 1
         },
         'author': {
           '@type': 'Organization',
-          'name': 'GoNoGo United Kingdom',
+          'name': 'GoNoGo Ratings and Reviews',
           'url': 'https://www.gonogo.co.uk'
         },
         'reviewBody': brand.ratingSummary || metaDesc,
         'publisher': {
           '@type': 'Organization',
-          'name': 'GoNoGo United Kingdom'
+          'name': 'GoNoGo United Kingdom',
+          'url': 'https://www.gonogo.co.uk',
+          'logo': 'https://www.gonogo.co.uk/android-chrome-512x512.png'
         }
       };
       var ldScript = document.createElement('script');
