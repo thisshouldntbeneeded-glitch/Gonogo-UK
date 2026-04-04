@@ -92,7 +92,7 @@
               <i class="fa-solid fa-code-compare"></i>
               Compare Brands
             </a>
-            <a href="business-home-page" class="btn btn-ghost btn-lg">
+            <a href="business.html" class="btn btn-ghost btn-lg">
               <i class="fa-solid fa-briefcase"></i>
               For Business
             </a>
@@ -154,7 +154,7 @@
               </div>
             </div>
           </a>
-          <a href="business-home-page" class="card card-hover" style="text-decoration:none;color:var(--text-primary);padding:var(--space-4);">
+          <a href="business.html" class="card card-hover" style="text-decoration:none;color:var(--text-primary);padding:var(--space-4);">
             <div style="display:flex;align-items:center;gap:var(--space-3);">
               <i class="fa-solid fa-briefcase text-accent" style="font-size:var(--text-lg);"></i>
               <div>
@@ -238,7 +238,7 @@
                   <span><i class="fa-solid fa-trophy text-accent" style="margin-right:8px;"></i>See top-rated brands</span>
                   <i class="fa-solid fa-arrow-right text-muted"></i>
                 </a>
-                <a href="business-home-page" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-3);border:1px solid var(--border-primary);border-radius:var(--radius-md);color:var(--text-primary);text-decoration:none;">
+                <a href="business.html" style="display:flex;align-items:center;justify-content:space-between;padding:var(--space-3);border:1px solid var(--border-primary);border-radius:var(--radius-md);color:var(--text-primary);text-decoration:none;">
                   <span><i class="fa-solid fa-briefcase text-accent" style="margin-right:8px;"></i>Explore business services</span>
                   <i class="fa-solid fa-arrow-right text-muted"></i>
                 </a>
@@ -406,7 +406,7 @@
               </p>
             </div>
             <div style="display:flex;justify-content:flex-start;align-items:center;">
-              <a href="business-home-page" class="btn btn-secondary btn-lg">
+              <a href="business.html" class="btn btn-secondary btn-lg">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i>
                 Visit Business Page
               </a>
@@ -513,7 +513,7 @@
           results.innerHTML = matches.map(function (b) {
             var scoreColor = b.overallScore >= 80 ? 'var(--green-text)' : b.overallScore >= 60 ? 'var(--orange-text)' : 'var(--red-text)';
             return ''
-              + '<a href="brand.html?id=' + b.id + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;text-decoration:none;color:var(--text-primary);border-bottom:1px solid var(--border-subtle);transition:background var(--transition-fast);" onmouseover="this.style.background=\\'var(--surface-3)\\'" onmouseout="this.style.background=\\'transparent\\'">'
+              + '<a href="brand.html?id=' + b.id + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;text-decoration:none;color:var(--text-primary);border-bottom:1px solid var(--border-subtle);transition:background var(--transition-fast);" onmouseover="this.style.background=\'var(--surface-3)\'" onmouseout="this.style.background=\'transparent\'">'
               +   Components.renderLogo(b, 'brand-logo')
               +   '<div style="flex:1;min-width:0;">'
               +     '<div style="font-weight:600;font-size:var(--text-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + b.name + '</div>'
