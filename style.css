@@ -775,6 +775,24 @@ input:focus, select:focus, textarea:focus {
   font-size: var(--text-2xl);
 }
 
+.score-circle-hero {
+  width: 120px;
+  height: 120px;
+}
+
+.score-circle-hero .score-value {
+  font-size: var(--text-2xl);
+}
+
+.score-circle-xl {
+  width: 164px;
+  height: 164px;
+}
+
+.score-circle-xl .score-value {
+  font-size: 3rem;
+}
+
 .score-bar {
   height: 6px;
   background: var(--surface-3);
@@ -1329,18 +1347,39 @@ textarea {
    BRAND DETAIL PAGE
    ============================================================ */
 .brand-hero {
-  padding: var(--space-8) 0;
+  padding: var(--space-4) 0 var(--space-5);
   border-bottom: 1px solid var(--border-primary);
 }
 
 .brand-hero-inner {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--space-5);
+}
+
+.brand-hero-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.brand-hero-logo {
+  flex-shrink: 0;
+}
+
+img.brand-logo-hero {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-primary);
+  background: var(--surface-2);
 }
 
 .brand-hero-score {
   text-align: center;
+  flex-shrink: 0;
 }
 
 .brand-hero-info {
@@ -1348,16 +1387,16 @@ textarea {
 }
 
 .brand-hero-name {
-  font-size: var(--text-2xl);
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
   margin-bottom: var(--space-2);
 }
 
 .brand-hero-badges {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
@@ -1736,12 +1775,35 @@ textarea {
   .industry-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
+  .brand-hero {
+    padding: var(--space-3) 0 var(--space-4);
+  }
   .brand-hero-inner {
     flex-direction: column;
     text-align: center;
+    gap: var(--space-3);
+  }
+  .brand-hero-identity {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .brand-hero-logo img.brand-logo-hero {
+    width: 80px;
+    height: 80px;
+  }
+  .brand-hero-score .score-circle-hero {
+    width: 100px;
+    height: 100px;
+  }
+  .brand-hero-score .score-circle-hero .score-value {
+    font-size: var(--text-xl);
+  }
+  .brand-hero-name {
+    font-size: var(--text-lg);
   }
   .brand-hero-badges {
     justify-content: center;
+    gap: var(--space-2);
   }
   .category-grid {
     grid-template-columns: 1fr;

@@ -36,6 +36,26 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
   <script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.classList.add('light-mode');}})();</script>
+<style>
+  .compare-winner { background: var(--green-bg); border: 1px solid var(--green-dim); border-radius: var(--radius-md); }
+  .compare-similar { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); }
+  .compare-category-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--space-3); align-items: center; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border-subtle); }
+  .compare-category-row:last-child { border-bottom: none; }
+  .compare-category-label { text-align: center; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); min-width: 100px; }
+  .compare-category-score { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .compare-category-score.left { justify-content: flex-end; }
+  .compare-category-score.right { justify-content: flex-start; }
+  .compare-winner-chip { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: var(--radius-sm); background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green-dim); }
+  .compare-similar-chip { font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: var(--radius-sm); background: var(--surface-3); color: var(--text-muted); }
+  .compare-verdict-banner { text-align: center; padding: var(--space-6); border-radius: var(--radius-lg); margin-bottom: var(--space-6); }
+  .compare-summary-card { padding: var(--space-5); }
+  .compare-summary-card p { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; margin: 0; }
+  @media (max-width: 640px) {
+    .compare-category-row { grid-template-columns: 1fr; gap: var(--space-1); text-align: center; }
+    .compare-category-score.left, .compare-category-score.right { justify-content: center; }
+    .compare-category-label { min-width: auto; }
+  }
+</style>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -63,22 +83,43 @@
     var allBrandsCache = [];
     var categoriesCache = [];
     var radarChart = null;
+    var selectedCategory = '';
 
     (async function() {
       allBrandsCache = await GoNoGoAPI.getAllBrands();
       categoriesCache = await GoNoGoAPI.getCategories();
 
-      function buildOptions(selectedId) {
-        var html = '<option value="">Select a brand…</option>';
+      function buildCategoryOptions() {
+        var html = '<option value="">All Categories</option>';
         categoriesCache.forEach(function(cat) {
-          var catBrands = allBrandsCache.filter(function(b) { return b.categorySlug === cat.id; });
-          if (catBrands.length === 0) return;
-          html += '<optgroup label="' + cat.name + '">';
-          catBrands.sort(function(a, b) { return a.name.localeCompare(b.name); }).forEach(function(b) {
+          var count = allBrandsCache.filter(function(b) { return b.categorySlug === cat.id; }).length;
+          if (count === 0) return;
+          html += '<option value="' + cat.id + '"' + (cat.id === selectedCategory ? ' selected' : '') + '>' + cat.name + ' (' + count + ' brands)</option>';
+        });
+        return html;
+      }
+
+      function buildBrandOptions(selectedId) {
+        var html = '<option value="">Select a brand…</option>';
+        var filteredBrands = selectedCategory
+          ? allBrandsCache.filter(function(b) { return b.categorySlug === selectedCategory; })
+          : allBrandsCache;
+
+        if (selectedCategory) {
+          filteredBrands.sort(function(a, b) { return a.name.localeCompare(b.name); }).forEach(function(b) {
             html += '<option value="' + b.id + '"' + (b.id === selectedId ? ' selected' : '') + '>' + b.name + ' (' + b.overallScore + '/100)</option>';
           });
-          html += '</optgroup>';
-        });
+        } else {
+          categoriesCache.forEach(function(cat) {
+            var catBrands = filteredBrands.filter(function(b) { return b.categorySlug === cat.id; });
+            if (catBrands.length === 0) return;
+            html += '<optgroup label="' + cat.name + '">';
+            catBrands.sort(function(a, b) { return a.name.localeCompare(b.name); }).forEach(function(b) {
+              html += '<option value="' + b.id + '"' + (b.id === selectedId ? ' selected' : '') + '>' + b.name + ' (' + b.overallScore + '/100)</option>';
+            });
+            html += '</optgroup>';
+          });
+        }
         return html;
       }
 
@@ -87,149 +128,310 @@
       var preId1 = preSelected[0] || '';
       var preId2 = preSelected[1] || '';
 
-      document.getElementById('page-content').innerHTML =
-        '<section class="section-sm" style="border-bottom:1px solid var(--border-primary)"><div class="container">' +
-          '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-2)">' +
-            '<a href="index.html" style="color:var(--text-muted);font-size:var(--text-sm)"><i class="fa-solid fa-arrow-left"></i> Back</a>' +
-          '</div>' +
-          '<h1 style="font-size:var(--text-2xl);font-weight:800;letter-spacing:-0.02em;margin-bottom:var(--space-2)">Compare Brands</h1>' +
-          '<p style="font-size:var(--text-sm);color:var(--text-secondary)">Select two brands to see a side-by-side comparison</p>' +
-        '</div></section>' +
-        '<section class="section-sm"><div class="container">' +
-          '<div class="compare-grid" style="margin-bottom:var(--space-8)">' +
-            '<div class="card"><div class="form-group"><label class="form-label">Brand 1</label><select id="brand1" onchange="updateComparison()">' + buildOptions(preId1) + '</select></div></div>' +
-            '<div class="card"><div class="form-group"><label class="form-label">Brand 2</label><select id="brand2" onchange="updateComparison()">' + buildOptions(preId2) + '</select></div></div>' +
-          '</div>' +
-          '<div id="comparison-result"></div>' +
-        '</div></section>';
+      if (preId1) {
+        var preBrand = allBrandsCache.find(function(b) { return b.id === preId1; });
+        if (preBrand) selectedCategory = preBrand.categorySlug;
+      }
 
-      // If pre-selected, trigger comparison
-      if (preId1 || preId2) updateComparison();
+      function renderPage() {
+        var id1 = document.getElementById('brand1') ? document.getElementById('brand1').value : preId1;
+        var id2 = document.getElementById('brand2') ? document.getElementById('brand2').value : preId2;
+
+        document.getElementById('page-content').innerHTML =
+          '<section class="section-sm" style="border-bottom:1px solid var(--border-primary)"><div class="container">' +
+            '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-2)">' +
+              '<a href="index.html" style="color:var(--text-muted);font-size:var(--text-sm)"><i class="fa-solid fa-arrow-left"></i> Back</a>' +
+            '</div>' +
+            '<h1 style="font-size:var(--text-2xl);font-weight:800;letter-spacing:-0.02em;margin-bottom:var(--space-2)">Compare Brands</h1>' +
+            '<p style="font-size:var(--text-sm);color:var(--text-secondary)">Select a category, then pick two brands to compare side by side</p>' +
+          '</div></section>' +
+          '<section class="section-sm"><div class="container">' +
+            '<div class="card" style="margin-bottom:var(--space-6);padding:var(--space-5)">' +
+              '<div class="form-group" style="margin-bottom:var(--space-4)">' +
+                '<label class="form-label"><i class="fa-solid fa-layer-group"></i> Category</label>' +
+                '<select id="category-filter" onchange="onCategoryChange()">' + buildCategoryOptions() + '</select>' +
+              '</div>' +
+              '<div class="compare-grid">' +
+                '<div class="form-group"><label class="form-label">Brand 1</label><select id="brand1" onchange="updateComparison()">' + buildBrandOptions(id1) + '</select></div>' +
+                '<div class="form-group"><label class="form-label">Brand 2</label><select id="brand2" onchange="updateComparison()">' + buildBrandOptions(id2) + '</select></div>' +
+              '</div>' +
+            '</div>' +
+            '<div id="comparison-result"></div>' +
+          '</div></section>';
+
+        if (id1 || id2) updateComparison();
+      }
+
+      renderPage();
+
+      window.onCategoryChange = function() {
+        selectedCategory = document.getElementById('category-filter').value;
+        var id1 = document.getElementById('brand1').value;
+        var id2 = document.getElementById('brand2').value;
+
+        if (selectedCategory) {
+          var b1InCat = allBrandsCache.find(function(b) { return b.id === id1 && b.categorySlug === selectedCategory; });
+          var b2InCat = allBrandsCache.find(function(b) { return b.id === id2 && b.categorySlug === selectedCategory; });
+          if (!b1InCat) preId1 = '';
+          else preId1 = id1;
+          if (!b2InCat) preId2 = '';
+          else preId2 = id2;
+        } else {
+          preId1 = id1;
+          preId2 = id2;
+        }
+
+        renderPage();
+      };
+
+      window.updateComparison = function() {
+        var id1 = document.getElementById('brand1').value;
+        var id2 = document.getElementById('brand2').value;
+        var resultEl = document.getElementById('comparison-result');
+
+        if (id1 || id2) {
+          var ids = [id1, id2].filter(Boolean).join(',');
+          var url = new URL(window.location);
+          url.searchParams.set('brands', ids);
+          window.history.replaceState({}, '', url);
+        }
+
+        if (!id1 || !id2) {
+          resultEl.innerHTML =
+            '<div style="text-align:center;padding:var(--space-12) 0;color:var(--text-muted)">' +
+              '<i class="fa-solid fa-code-compare" style="font-size:var(--text-3xl);margin-bottom:var(--space-4);display:block;opacity:0.3"></i>' +
+              '<p style="font-size:var(--text-sm)">Select two brands above to compare them</p>' +
+            '</div>';
+          return;
+        }
+
+        if (id1 === id2) {
+          resultEl.innerHTML =
+            '<div style="text-align:center;padding:var(--space-12) 0;color:var(--text-muted)">' +
+              '<p style="font-size:var(--text-sm)">Please select two different brands to compare</p>' +
+            '</div>';
+          return;
+        }
+
+        var b1 = null, b2 = null;
+        for (var i = 0; i < allBrandsCache.length; i++) {
+          if (allBrandsCache[i].id === id1) b1 = allBrandsCache[i];
+          if (allBrandsCache[i].id === id2) b2 = allBrandsCache[i];
+        }
+
+        if (!b1 || !b2) return;
+
+        // Verdict Banner
+        var scoreDiff = Math.abs(b1.overallScore - b2.overallScore);
+        var leader = b1.overallScore >= b2.overallScore ? b1 : b2;
+        var trailer = b1.overallScore >= b2.overallScore ? b2 : b1;
+        var verdictBannerHtml = '';
+
+        if (scoreDiff <= 2) {
+          verdictBannerHtml =
+            '<div class="compare-verdict-banner card" style="background:var(--surface-2);border:1px solid var(--border-primary)">' +
+              '<div style="font-size:var(--text-xl);font-weight:800;margin-bottom:var(--space-2)"><i class="fa-solid fa-equals" style="color:var(--text-muted)"></i></div>' +
+              '<div style="font-size:var(--text-lg);font-weight:700">Virtually Tied</div>' +
+              '<div style="font-size:var(--text-sm);color:var(--text-secondary)">Both brands score ' + b1.overallScore + '/100 — there\'s no meaningful difference in overall score.</div>' +
+            '</div>';
+        } else {
+          var leaderColor = getScoreColor(leader.overallScore);
+          verdictBannerHtml =
+            '<div class="compare-verdict-banner card" style="border:2px solid ' + leaderColor + '">' +
+              '<div style="font-size:var(--text-xl);font-weight:800;margin-bottom:var(--space-2);color:' + leaderColor + '"><i class="fa-solid fa-trophy"></i></div>' +
+              '<div style="font-size:var(--text-lg);font-weight:700">' + Components.escapeHTML(leader.name) + ' scores higher by ' + scoreDiff + ' points</div>' +
+              '<div style="font-size:var(--text-sm);color:var(--text-secondary);margin-top:var(--space-1)">' +
+                Components.escapeHTML(leader.name) + ': <strong style="color:' + leaderColor + '">' + leader.overallScore + '/100</strong> vs ' +
+                Components.escapeHTML(trailer.name) + ': <strong style="color:' + getScoreColor(trailer.overallScore) + '">' + trailer.overallScore + '/100</strong>' +
+              '</div>' +
+            '</div>';
+        }
+
+        // Brand Cards
+        var brandCardsHtml =
+          '<div class="compare-grid" style="margin-bottom:var(--space-6)">' +
+            '<div class="card" style="text-align:center">' +
+              '<div style="display:flex;align-items:center;justify-content:center;gap:var(--space-3);margin-bottom:var(--space-3)">' +
+                Components.renderLogo(b1, 'brand-logo brand-logo-lg') +
+                '<h3 style="font-size:var(--text-lg);font-weight:700">' + b1.name + '</h3>' +
+              '</div>' +
+              Components.renderScoreCircle(b1.overallScore, 'md') +
+              '<div style="margin-top:var(--space-2);display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap">' +
+                Components.renderVerdictBadge(b1.verdict) + Components.renderScoreBadge(b1.overallScore) +
+              '</div>' +
+              '<a href="brand.html?id=' + b1.id + '" style="font-size:var(--text-xs);margin-top:var(--space-3);display:block">View full profile →</a>' +
+            '</div>' +
+            '<div class="card" style="text-align:center">' +
+              '<div style="display:flex;align-items:center;justify-content:center;gap:var(--space-3);margin-bottom:var(--space-3)">' +
+                Components.renderLogo(b2, 'brand-logo brand-logo-lg') +
+                '<h3 style="font-size:var(--text-lg);font-weight:700">' + b2.name + '</h3>' +
+              '</div>' +
+              Components.renderScoreCircle(b2.overallScore, 'md') +
+              '<div style="margin-top:var(--space-2);display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap">' +
+                Components.renderVerdictBadge(b2.verdict) + Components.renderScoreBadge(b2.overallScore) +
+              '</div>' +
+              '<a href="brand.html?id=' + b2.id + '" style="font-size:var(--text-xs);margin-top:var(--space-3);display:block">View full profile →</a>' +
+            '</div>' +
+          '</div>';
+
+        // Rating Summaries
+        var ratingSummaryHtml = '';
+        if (b1.ratingSummary || b2.ratingSummary) {
+          ratingSummaryHtml =
+            '<div class="compare-grid" style="margin-bottom:var(--space-6)">' +
+              '<div class="card compare-summary-card">' +
+                '<h4 style="font-size:var(--text-sm);font-weight:700;margin-bottom:var(--space-3)">' +
+                  '<i class="fa-solid fa-file-lines" style="color:var(--text-muted)"></i> ' + Components.escapeHTML(b1.name) + ' — Rating Summary</h4>' +
+                '<p>' + (b1.ratingSummary ? Components.escapeHTML(b1.ratingSummary) : '<em style="color:var(--text-muted)">No rating summary available.</em>') + '</p>' +
+              '</div>' +
+              '<div class="card compare-summary-card">' +
+                '<h4 style="font-size:var(--text-sm);font-weight:700;margin-bottom:var(--space-3)">' +
+                  '<i class="fa-solid fa-file-lines" style="color:var(--text-muted)"></i> ' + Components.escapeHTML(b2.name) + ' — Rating Summary</h4>' +
+                '<p>' + (b2.ratingSummary ? Components.escapeHTML(b2.ratingSummary) : '<em style="color:var(--text-muted)">No rating summary available.</em>') + '</p>' +
+              '</div>' +
+            '</div>';
+        }
+
+        // Radar Chart
+        var radarHtml =
+          '<div class="card" style="margin-bottom:var(--space-6)">' +
+            '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);text-align:center">Score Overlay</h3>' +
+            '<div style="height:340px;position:relative;max-width:500px;margin:0 auto"><canvas id="compare-radar"></canvas></div>' +
+          '</div>';
+
+        // Key Differences
+        var allLabels = Object.keys(b1.categoryScores);
+        var differences = [];
+        allLabels.forEach(function(label) {
+          var s1 = b1.categoryScores[label];
+          var s2 = b2.categoryScores[label];
+          var pct1 = s1 ? Math.round((s1.score / s1.max) * 100) : 0;
+          var pct2 = s2 ? Math.round((s2.score / s2.max) * 100) : 0;
+          var diff = Math.abs(pct1 - pct2);
+          var winner = diff <= 5 ? 'similar' : (pct1 > pct2 ? 'b1' : 'b2');
+          differences.push({ label: label, pct1: pct1, pct2: pct2, diff: diff, winner: winner, s1: s1, s2: s2 });
+        });
+
+        var sortedDiffs = differences.slice().sort(function(a, b) { return b.diff - a.diff; });
+
+        var keyDiffsHtml =
+          '<div class="card" style="margin-bottom:var(--space-6)">' +
+            '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);text-align:center"><i class="fa-solid fa-arrows-left-right"></i> Key Differences</h3>' +
+            '<div style="display:flex;justify-content:space-between;padding:0 var(--space-4) var(--space-2);border-bottom:2px solid var(--border-primary);margin-bottom:var(--space-1)">' +
+              '<span style="font-size:var(--text-xs);font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.04em">' + Components.escapeHTML(b1.name) + '</span>' +
+              '<span style="font-size:var(--text-xs);font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.04em">' + Components.escapeHTML(b2.name) + '</span>' +
+            '</div>';
+
+        sortedDiffs.forEach(function(d) {
+          var b1Color = getScoreColor(d.pct1);
+          var b2Color = getScoreColor(d.pct2);
+          var winnerChip = '';
+
+          if (d.winner === 'similar') {
+            winnerChip = '<span class="compare-similar-chip">Similar</span>';
+          } else if (d.winner === 'b1') {
+            winnerChip = '<span class="compare-winner-chip"><i class="fa-solid fa-arrow-left" style="font-size:8px"></i> +' + d.diff + '</span>';
+          } else {
+            winnerChip = '<span class="compare-winner-chip">+' + d.diff + ' <i class="fa-solid fa-arrow-right" style="font-size:8px"></i></span>';
+          }
+
+          var b1Highlight = d.winner === 'b1' ? 'compare-winner' : '';
+          var b2Highlight = d.winner === 'b2' ? 'compare-winner' : '';
+
+          keyDiffsHtml +=
+            '<div class="compare-category-row">' +
+              '<div class="compare-category-score left">' +
+                '<span style="padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);' + (b1Highlight ? 'background:var(--green-bg);' : '') + '">' +
+                  '<span style="color:' + b1Color + '">' + (d.s1 ? d.s1.score + '/' + d.s1.max : 'N/A') + '</span>' +
+                  ' <span style="color:var(--text-muted);font-size:var(--text-xs)">(' + d.pct1 + '%)</span>' +
+                '</span>' +
+              '</div>' +
+              '<div class="compare-category-label">' + d.label + '<br>' + winnerChip + '</div>' +
+              '<div class="compare-category-score right">' +
+                '<span style="padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);' + (b2Highlight ? 'background:var(--green-bg);' : '') + '">' +
+                  '<span style="color:' + b2Color + '">' + (d.s2 ? d.s2.score + '/' + d.s2.max : 'N/A') + '</span>' +
+                  ' <span style="color:var(--text-muted);font-size:var(--text-xs)">(' + d.pct2 + '%)</span>' +
+                '</span>' +
+              '</div>' +
+            '</div>';
+        });
+
+        var overallB1Color = getScoreColor(b1.overallScore);
+        var overallB2Color = getScoreColor(b2.overallScore);
+        keyDiffsHtml +=
+          '<div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-4);border-top:2px solid var(--border-primary);margin-top:var(--space-1)">' +
+            '<span style="font-size:var(--text-lg);font-weight:800;color:' + overallB1Color + '">' + b1.overallScore + '/100</span>' +
+            '<span style="font-size:var(--text-xs);font-weight:700;color:var(--text-secondary);text-transform:uppercase">OVERALL</span>' +
+            '<span style="font-size:var(--text-lg);font-weight:800;color:' + overallB2Color + '">' + b2.overallScore + '/100</span>' +
+          '</div>' +
+          '</div>';
+
+        // Category Comparison Bars
+        var scoreRows = allLabels.map(function(label) {
+          var s1 = b1.categoryScores[label];
+          var s2 = b2.categoryScores[label];
+          var pct1 = s1 ? Math.round((s1.score / s1.max) * 100) : 0;
+          var pct2 = s2 ? Math.round((s2.score / s2.max) * 100) : 0;
+          var score1 = s1 ? s1.score + '/' + s1.max : 'N/A';
+          var score2 = s2 ? s2.score + '/' + s2.max : 'N/A';
+          var c1 = getScoreColor(pct1);
+          var c2 = getScoreColor(pct2);
+          return '<div class="compare-row">' +
+            '<div class="compare-bar left">' +
+              '<span style="font-size:var(--text-sm);font-weight:700;font-variant-numeric:tabular-nums;color:' + c1 + '">' + score1 + '</span>' +
+              '<div class="compare-bar-track"><div class="compare-bar-fill" style="width:' + pct1 + '%;background:' + c1 + '"></div></div>' +
+            '</div>' +
+            '<div class="label">' + label + '</div>' +
+            '<div class="compare-bar right">' +
+              '<div class="compare-bar-track"><div class="compare-bar-fill" style="width:' + pct2 + '%;background:' + c2 + '"></div></div>' +
+              '<span style="font-size:var(--text-sm);font-weight:700;font-variant-numeric:tabular-nums;color:' + c2 + '">' + score2 + '</span>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        var barComparisonHtml =
+          '<div class="card" style="margin-bottom:var(--space-6)">' +
+            '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);text-align:center">Category Comparison</h3>' +
+            '<div style="display:flex;justify-content:space-between;padding:0 0 var(--space-2);border-bottom:1px solid var(--border-primary);margin-bottom:var(--space-2)">' +
+              '<span style="font-size:var(--text-xs);font-weight:600;color:' + overallB1Color + ';text-transform:uppercase;letter-spacing:0.04em">' + Components.escapeHTML(b1.name) + '</span>' +
+              '<span style="font-size:var(--text-xs);font-weight:600;color:' + overallB2Color + ';text-transform:uppercase;letter-spacing:0.04em">' + Components.escapeHTML(b2.name) + '</span>' +
+            '</div>' +
+            scoreRows +
+            '<div class="compare-row" style="border-bottom:none;padding-top:var(--space-4)">' +
+              '<div class="compare-bar left"><span style="font-size:var(--text-lg);font-weight:800;color:' + overallB1Color + '">' + b1.overallScore + '/100</span></div>' +
+              '<div class="label" style="font-weight:700;color:var(--text-primary)">OVERALL</div>' +
+              '<div class="compare-bar right"><span style="font-size:var(--text-lg);font-weight:800;color:' + overallB2Color + '">' + b2.overallScore + '/100</span></div>' +
+            '</div>' +
+          '</div>';
+
+        // Strengths & Concerns
+        var b1Strengths = b1.strengths.map(function(s) { return '<li><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> ' + s + '</li>'; }).join('');
+        var b2Strengths = b2.strengths.map(function(s) { return '<li><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> ' + s + '</li>'; }).join('');
+        var b1Concerns = b1.concerns.map(function(c) { return '<li><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange)"></i> ' + c + '</li>'; }).join('');
+        var b2Concerns = b2.concerns.map(function(c) { return '<li><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange)"></i> ' + c + '</li>'; }).join('');
+
+        var strengthsHtml =
+          '<div class="compare-grid">' +
+            '<div class="card">' +
+              '<h4 style="font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-3);color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> ' + Components.escapeHTML(b1.name) + ' Strengths</h4>' +
+              '<ul class="sc-list">' + b1Strengths + '</ul>' +
+              '<h4 style="font-size:var(--text-sm);font-weight:600;margin-top:var(--space-5);margin-bottom:var(--space-3);color:var(--orange-text)"><i class="fa-solid fa-triangle-exclamation"></i> Concerns</h4>' +
+              '<ul class="sc-list">' + b1Concerns + '</ul>' +
+            '</div>' +
+            '<div class="card">' +
+              '<h4 style="font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-3);color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> ' + Components.escapeHTML(b2.name) + ' Strengths</h4>' +
+              '<ul class="sc-list">' + b2Strengths + '</ul>' +
+              '<h4 style="font-size:var(--text-sm);font-weight:600;margin-top:var(--space-5);margin-bottom:var(--space-3);color:var(--orange-text)"><i class="fa-solid fa-triangle-exclamation"></i> Concerns</h4>' +
+              '<ul class="sc-list">' + b2Concerns + '</ul>' +
+            '</div>' +
+          '</div>';
+
+        resultEl.innerHTML = verdictBannerHtml + brandCardsHtml + ratingSummaryHtml + radarHtml + keyDiffsHtml + barComparisonHtml + strengthsHtml;
+
+        if (radarChart) radarChart.destroy();
+        radarChart = Components.createCompareRadarChart('compare-radar', b1, b2);
+      };
     })();
-
-    window.updateComparison = function() {
-      var id1 = document.getElementById('brand1').value;
-      var id2 = document.getElementById('brand2').value;
-      var resultEl = document.getElementById('comparison-result');
-
-      if (id1 || id2) {
-        var ids = [id1, id2].filter(Boolean).join(',');
-        var url = new URL(window.location);
-        url.searchParams.set('brands', ids);
-        window.history.replaceState({}, '', url);
-      }
-
-      if (!id1 || !id2) {
-        resultEl.innerHTML =
-          '<div style="text-align:center;padding:var(--space-12) 0;color:var(--text-muted)">' +
-            '<i class="fa-solid fa-code-compare" style="font-size:var(--text-3xl);margin-bottom:var(--space-4);display:block;opacity:0.3"></i>' +
-            '<p style="font-size:var(--text-sm)">Select two brands above to compare them</p>' +
-          '</div>';
-        return;
-      }
-
-      if (id1 === id2) {
-        resultEl.innerHTML =
-          '<div style="text-align:center;padding:var(--space-12) 0;color:var(--text-muted)">' +
-            '<p style="font-size:var(--text-sm)">Please select two different brands to compare</p>' +
-          '</div>';
-        return;
-      }
-
-      var b1 = null, b2 = null;
-      for (var i = 0; i < allBrandsCache.length; i++) {
-        if (allBrandsCache[i].id === id1) b1 = allBrandsCache[i];
-        if (allBrandsCache[i].id === id2) b2 = allBrandsCache[i];
-      }
-
-      if (!b1 || !b2) return;
-
-      var allLabels = Object.keys(b1.categoryScores);
-      var scoreRows = allLabels.map(function(label) {
-        var s1 = b1.categoryScores[label];
-        var s2 = b2.categoryScores[label];
-        var pct1 = s1 ? Math.round((s1.score / s1.max) * 100) : 0;
-        var pct2 = s2 ? Math.round((s2.score / s2.max) * 100) : 0;
-        var score1 = s1 ? s1.score + '/' + s1.max : 'N/A';
-        var score2 = s2 ? s2.score + '/' + s2.max : 'N/A';
-        return '<div class="compare-row">' +
-          '<div class="compare-bar left">' +
-            '<span style="font-size:var(--text-sm);font-weight:700;font-variant-numeric:tabular-nums;color:#11a551">' + score1 + '</span>' +
-            '<div class="compare-bar-track"><div class="compare-bar-fill" style="width:' + pct1 + '%;background:#11a551"></div></div>' +
-          '</div>' +
-          '<div class="label">' + label + '</div>' +
-          '<div class="compare-bar right">' +
-            '<div class="compare-bar-track"><div class="compare-bar-fill" style="width:' + pct2 + '%;background:#ff9800"></div></div>' +
-            '<span style="font-size:var(--text-sm);font-weight:700;font-variant-numeric:tabular-nums;color:#ff9800">' + score2 + '</span>' +
-          '</div>' +
-        '</div>';
-      }).join('');
-
-      var b1Strengths = b1.strengths.map(function(s) { return '<li><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> ' + s + '</li>'; }).join('');
-      var b2Strengths = b2.strengths.map(function(s) { return '<li><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> ' + s + '</li>'; }).join('');
-      var b1Concerns = b1.concerns.map(function(c) { return '<li><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange)"></i> ' + c + '</li>'; }).join('');
-      var b2Concerns = b2.concerns.map(function(c) { return '<li><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange)"></i> ' + c + '</li>'; }).join('');
-
-      resultEl.innerHTML =
-        '<div class="compare-grid" style="margin-bottom:var(--space-6)">' +
-          '<div class="card" style="text-align:center">' +
-            '<div style="display:flex;align-items:center;justify-content:center;gap:var(--space-3);margin-bottom:var(--space-3)">' +
-              Components.renderLogo(b1, 'brand-logo brand-logo-lg') +
-              '<h3 style="font-size:var(--text-lg);font-weight:700">' + b1.name + '</h3>' +
-            '</div>' +
-            Components.renderScoreCircle(b1.overallScore, 'md') +
-            '<div style="margin-top:var(--space-2);display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap">' +
-              Components.renderVerdictBadge(b1.verdict) + Components.renderScoreBadge(b1.overallScore) +
-            '</div>' +
-            '<a href="brand.html?id=' + b1.id + '" style="font-size:var(--text-xs);margin-top:var(--space-3);display:block">View full profile →</a>' +
-          '</div>' +
-          '<div class="card" style="text-align:center">' +
-            '<div style="display:flex;align-items:center;justify-content:center;gap:var(--space-3);margin-bottom:var(--space-3)">' +
-              Components.renderLogo(b2, 'brand-logo brand-logo-lg') +
-              '<h3 style="font-size:var(--text-lg);font-weight:700">' + b2.name + '</h3>' +
-            '</div>' +
-            Components.renderScoreCircle(b2.overallScore, 'md') +
-            '<div style="margin-top:var(--space-2);display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap">' +
-              Components.renderVerdictBadge(b2.verdict) + Components.renderScoreBadge(b2.overallScore) +
-            '</div>' +
-            '<a href="brand.html?id=' + b2.id + '" style="font-size:var(--text-xs);margin-top:var(--space-3);display:block">View full profile →</a>' +
-          '</div>' +
-        '</div>' +
-        '<div class="card" style="margin-bottom:var(--space-6)">' +
-          '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);text-align:center">Score Overlay</h3>' +
-          '<div style="height:340px;position:relative;max-width:500px;margin:0 auto"><canvas id="compare-radar"></canvas></div>' +
-        '</div>' +
-        '<div class="card" style="margin-bottom:var(--space-6)">' +
-          '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);text-align:center">Category Comparison</h3>' +
-          '<div style="display:flex;justify-content:space-between;padding:0 0 var(--space-2);border-bottom:1px solid var(--border-primary);margin-bottom:var(--space-2)">' +
-            '<span style="font-size:var(--text-xs);font-weight:600;color:#11a551;text-transform:uppercase;letter-spacing:0.04em">' + b1.name + '</span>' +
-            '<span style="font-size:var(--text-xs);font-weight:600;color:#ff9800;text-transform:uppercase;letter-spacing:0.04em">' + b2.name + '</span>' +
-          '</div>' +
-          scoreRows +
-          '<div class="compare-row" style="border-bottom:none;padding-top:var(--space-4)">' +
-            '<div class="compare-bar left"><span style="font-size:var(--text-lg);font-weight:800;color:#11a551">' + b1.overallScore + '/100</span></div>' +
-            '<div class="label" style="font-weight:700;color:var(--text-primary)">OVERALL</div>' +
-            '<div class="compare-bar right"><span style="font-size:var(--text-lg);font-weight:800;color:#ff9800">' + b2.overallScore + '/100</span></div>' +
-          '</div>' +
-        '</div>' +
-        '<div class="compare-grid">' +
-          '<div class="card">' +
-            '<h4 style="font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-3);color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> ' + b1.name + ' Strengths</h4>' +
-            '<ul class="sc-list">' + b1Strengths + '</ul>' +
-            '<h4 style="font-size:var(--text-sm);font-weight:600;margin-top:var(--space-5);margin-bottom:var(--space-3);color:var(--orange-text)"><i class="fa-solid fa-triangle-exclamation"></i> Concerns</h4>' +
-            '<ul class="sc-list">' + b1Concerns + '</ul>' +
-          '</div>' +
-          '<div class="card">' +
-            '<h4 style="font-size:var(--text-sm);font-weight:600;margin-bottom:var(--space-3);color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> ' + b2.name + ' Strengths</h4>' +
-            '<ul class="sc-list">' + b2Strengths + '</ul>' +
-            '<h4 style="font-size:var(--text-sm);font-weight:600;margin-top:var(--space-5);margin-bottom:var(--space-3);color:var(--orange-text)"><i class="fa-solid fa-triangle-exclamation"></i> Concerns</h4>' +
-            '<ul class="sc-list">' + b2Concerns + '</ul>' +
-          '</div>' +
-        '</div>';
-
-      if (radarChart) radarChart.destroy();
-      radarChart = Components.createCompareRadarChart('compare-radar', b1, b2);
-    };
   </script>
 </body>
 </html>
