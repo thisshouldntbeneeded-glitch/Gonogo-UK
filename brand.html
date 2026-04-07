@@ -179,8 +179,16 @@
               ? p.features.split(',').map(function(f) { return f.trim(); }).filter(Boolean)
               : (Array.isArray(p.features) ? p.features : []);
             return '<div class="pricing-card">' +
-              '<div class="pricing-card-name">' + p.name + '</div>' +
-              '<div class="pricing-card-price">' + p.cost + '</div>' +
+              '<div class="pricing-card-name">' + (p.name && p.name !== 'Pricing' ? p.name : 'Pricing') + '</div>' +
+              (function(){
+                var rc = (p.cost||'').replace(/^Pricing:\s*/i,'').trim();
+                var parts = rc.indexOf(' | ') !== -1 ? rc.split(' | ') : [rc];
+                var cls = parts[0].length > 25 ? ' is-text' : '';
+                var html = parts.length > 1
+                  ? parts.map(function(pt){return '<span style="display:block;margin-bottom:4px;">'+pt+'</span>';}).join('')
+                  : parts[0];
+                return '<div class="pricing-card-price' + cls + '">' + html + '</div>';
+              })() +
               (features.length > 0
                 ? '<ul class="pricing-card-features">' + features.map(function(f) { return '<li>' + f + '</li>'; }).join('') + '</ul>'
                 : '') +
