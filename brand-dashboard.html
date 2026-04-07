@@ -698,10 +698,7 @@
           <a href="brand-reviews.html" class="btn btn-sm" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">
             <i class="fa-solid fa-comments"></i> Reviews
           </a>
-          <a href="brand-insights.html" class="btn btn-sm" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">
-            <i class="fa-solid fa-chart-line"></i> Insights
-          </a>
-          <a href="#api-embed-section" class="btn btn-primary btn-sm">
+          <a href="brand-badge.html" class="btn btn-primary btn-sm">
             <i class="fa-solid fa-code"></i> Embed Score
           </a>
         </div>
@@ -753,12 +750,12 @@
             <ul id="improvement-list" class="priority-list"></ul>
           </div>
 
-          <div class="card">
+          <div class="card" style="display:flex;flex-direction:column;">
             <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
               <i class="fa-solid fa-spider" style="color:var(--green);margin-right:var(--space-2);"></i>
               Scoring Radar
             </h3>
-            <div style="height:320px;"><canvas id="radar-chart"></canvas></div>
+            <div style="flex:1;min-height:280px;"><canvas id="radar-chart"></canvas></div>
             <p class="text-xs text-muted" id="radar-note" style="margin-top:var(--space-3);">Your strongest and weakest scoring dimensions relative to the 100-point framework.</p>
           </div>
         </div>
@@ -870,171 +867,29 @@
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:var(--space-8);" id="api-embed-section">
-        <div class="section-header-row">
-          <div class="section-header-copy">
-            <h3 class="text-sm font-semibold" style="margin-bottom:6px;">
-              <i class="fa-solid fa-code" style="color:var(--green);margin-right:var(--space-2);"></i>
-              Display Your GoNoGo Score on Your Website
-            </h3>
-            <p class="text-sm text-secondary">Publish your live score badge and reinforce trust wherever UK customers compare brands.</p>
-          </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8);">
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+            <i class="fa-solid fa-chart-line" style="color:var(--green);margin-right:var(--space-2);"></i>
+            Score History
+          </h3>
+          <div style="height:240px;"><canvas id="score-history-chart"></canvas></div>
         </div>
-
-        <div class="embed-grid">
-          <div>
-            <div style="margin-bottom:var(--space-4);">
-              <label class="form-label">Badge Style</label>
-              <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap;">
-                <button class="btn btn-sm" id="badge-style-full" onclick="setBadgeStyle('full')" style="background:var(--green);color:#fff;">Full Badge</button>
-                <button class="btn btn-sm" id="badge-style-compact" onclick="setBadgeStyle('compact')" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">Compact</button>
-                <button class="btn btn-sm" id="badge-style-score" onclick="setBadgeStyle('score')" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">Score Only</button>
-              </div>
-            </div>
-
-            <div style="margin-bottom:var(--space-4);">
-              <label class="form-label">Preview</label>
-              <div class="embed-preview-shell">
-                <div id="badge-preview" style="display:flex;justify-content:center;width:100%;"></div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="embed-tips" style="margin-bottom:var(--space-4);">
-              <div class="embed-tip">
-                <div class="embed-tip-title">Where to place it</div>
-                <div class="embed-tip-copy">Best-performing placements are your homepage trust section, UK pricing pages, and About or compliance content.</div>
-              </div>
-              <div class="embed-tip">
-                <div class="embed-tip-title">What it signals</div>
-                <div class="embed-tip-copy">A live badge works best when paired with clear service promises, transparent fees, and visible support routes for UK customers.</div>
-              </div>
-              <div class="embed-tip">
-                <div class="embed-tip-title">How to improve conversion value</div>
-                <div class="embed-tip-copy">If your score is below 80, improve the weakest categories first, then embed the badge once your strengths match the message on your site.</div>
-              </div>
-            </div>
-
-            <div style="margin-bottom:var(--space-4);">
-              <label class="form-label">Embed Code (HTML)</label>
-              <div style="position:relative;">
-                <pre id="embed-code" style="background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);font-size:var(--text-xs);overflow-x:auto;white-space:pre-wrap;word-break:break-all;color:var(--text-secondary);margin:0;"></pre>
-                <button class="btn btn-sm" onclick="copyEmbedCode()" style="position:absolute;top:8px;right:8px;background:var(--green);color:#fff;font-size:11px;padding:4px 10px;">
-                  <i class="fa-solid fa-copy"></i> Copy
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label class="form-label">API Endpoint (JSON)</label>
-              <div style="position:relative;">
-                <pre id="api-endpoint" style="background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);font-size:var(--text-xs);overflow-x:auto;color:var(--text-secondary);margin:0;"></pre>
-                <button class="btn btn-sm" onclick="copyApiEndpoint()" style="position:absolute;top:8px;right:8px;background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);font-size:11px;padding:4px 10px;">
-                  <i class="fa-solid fa-copy"></i> Copy
-                </button>
-              </div>
-              <p class="text-xs text-muted" style="margin-top:var(--space-2);">Use this endpoint to power custom widgets or internal reporting dashboards.</p>
-            </div>
-          </div>
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+            <i class="fa-solid fa-chart-bar" style="color:var(--blue);margin-right:var(--space-2);"></i>
+            Industry Comparison
+          </h3>
+          <div style="height:240px;"><canvas id="industry-chart"></canvas></div>
         </div>
+      </div>
 
-        <div class="trust-toolkit-grid">
-          <div>
-            <div class="section-header-row" style="margin-bottom:var(--space-4);">
-              <div class="section-header-copy">
-                <h3 class="text-sm font-semibold" style="margin-bottom:6px;">
-                  <i class="fa-solid fa-qrcode" style="color:var(--blue);margin-right:var(--space-2);"></i>
-                  Review Collection Toolkit
-                </h3>
-                <p class="text-sm text-secondary">Drive customers straight to your public GoNoGo review page with a shareable link and downloadable QR code.</p>
-              </div>
-            </div>
-
-            <div class="review-tool-grid">
-              <div>
-                <label class="form-label">QR Code</label>
-                <div class="embed-preview-shell">
-                  <div class="review-qr-frame">
-                    <div id="review-qr-code"></div>
-                    <div class="review-qr-caption">Scan to open your live review page instantly.</div>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <div class="review-link-shell">
-                  <label class="form-label">Review Page Link</label>
-                  <pre id="review-link"></pre>
-                  <button class="btn btn-sm" onclick="copyReviewLink()" style="position:absolute;top:34px;right:8px;background:var(--green);color:#fff;font-size:11px;padding:4px 10px;">
-                    <i class="fa-solid fa-copy"></i> Copy
-                  </button>
-                </div>
-
-                <div class="tool-actions">
-                  <button class="btn btn-primary btn-sm" onclick="openReviewPage()">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Review Page
-                  </button>
-                  <button class="btn btn-sm" onclick="downloadReviewQR()" style="background:var(--surface-3);color:var(--text-secondary);border:1px solid var(--border-primary);">
-                    <i class="fa-solid fa-download"></i> Download QR
-                  </button>
-                </div>
-
-                <div class="status-chip-row" id="review-toolkit-status"></div>
-
-                <div class="embed-tips" style="margin-top:var(--space-4);">
-                  <div class="embed-tip">
-                    <div class="embed-tip-title">Best uses</div>
-                    <div class="embed-tip-copy">Add the QR to receipts, invoices, post-service follow-ups, support signatures, in-store cards, and packaging inserts.</div>
-                  </div>
-                  <div class="embed-tip">
-                    <div class="embed-tip-title">Best timing</div>
-                    <div class="embed-tip-copy">Ask after a successful interaction, completed job, resolved complaint, or positive delivery moment.</div>
-                  </div>
-                  <div class="embed-tip">
-                    <div class="embed-tip-title">Conversion principle</div>
-                    <div class="embed-tip-copy">One scan and one click is better than making customers search for your page or review form themselves.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="section-header-row" style="margin-bottom:var(--space-4);">
-              <div class="section-header-copy">
-                <h3 class="text-sm font-semibold" style="margin-bottom:6px;">
-                  <i class="fa-solid fa-bolt" style="color:var(--orange);margin-right:var(--space-2);"></i>
-                  Review Action Centre
-                </h3>
-                <p class="text-sm text-secondary">A compact view of where reviews are helping, where they are hurting, and what to do next.</p>
-              </div>
-            </div>
-
-            <div class="review-metrics-grid" id="review-funnel-grid">
-              <div class="review-mini-box">
-                <div class="review-mini-label">Review Readiness</div>
-                <div class="review-mini-value">0%</div>
-                <div class="review-mini-note">Loading toolkit status...</div>
-              </div>
-            </div>
-
-            <div class="coach-box" style="margin-bottom:var(--space-4);">
-              <div class="coach-label">Next best action</div>
-              <div class="coach-copy" id="next-best-action-box">Loading action guidance...</div>
-            </div>
-
-            <div class="coach-box" style="margin-bottom:var(--space-4);">
-              <div class="coach-label">Live alerts</div>
-              <div id="review-alert-list" class="alert-list"></div>
-            </div>
-
-            <div class="coach-box">
-              <div class="coach-label">Suggested outreach copy</div>
-              <div id="review-outreach-copy" class="reply-list"></div>
-            </div>
-          </div>
-        </div>
+      <div class="card" style="margin-bottom:var(--space-8);">
+        <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">
+          <i class="fa-solid fa-ranking-star" style="color:var(--orange);margin-right:var(--space-2);"></i>
+          Industry Rankings
+        </h3>
+        <div id="industry-table" style="overflow-x:auto;"></div>
       </div>
 
       <div style="padding:var(--space-6) 0;text-align:center;">
@@ -1934,6 +1789,94 @@
       navigator.clipboard.writeText(url).then(function() {
         Components.showToast('API endpoint copied to clipboard');
       });
+    }
+
+
+    function renderScoreHistory(brand) {
+      var canvas = document.getElementById('score-history-chart');
+      if (!canvas) return;
+      var tc = getChartThemeColors();
+      var today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      new Chart(canvas, {
+        type: 'line',
+        data: {
+          labels: [today],
+          datasets: [{
+            label: (brand.name || 'Brand') + ' Score',
+            data: [brand.overallScore || 0],
+            borderColor: '#11a551',
+            backgroundColor: 'rgba(17,165,81,0.1)',
+            borderWidth: 3,
+            pointBackgroundColor: '#11a551',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 8,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          scales: {
+            y: { min: 0, max: 100, grid: { color: tc.gridColor }, ticks: { color: tc.tickColor, font: { family: 'Inter', size: 11 }, stepSize: 20 } },
+            x: { grid: { display: false }, ticks: { color: tc.tickColor, font: { family: 'Inter', size: 11 } } }
+          },
+          plugins: {
+            legend: { display: false },
+            tooltip: { backgroundColor: tc.tooltipBg, titleColor: tc.tooltipTitle, bodyColor: tc.tooltipBody, borderColor: tc.tooltipBorder, borderWidth: 1, cornerRadius: 8, padding: 10, callbacks: { label: function(ctx) { return 'Score: ' + ctx.raw + '/100'; } } }
+          }
+        }
+      });
+    }
+
+    function renderIndustryComparison(peers, brandSlug) {
+      var canvas = document.getElementById('industry-chart');
+      if (!canvas || !peers.length) return;
+      var tc = getChartThemeColors();
+      var barColors = peers.map(function(p) { return p.slug === brandSlug ? '#11a551' : 'rgba(59,130,246,0.5)'; });
+      var barBorders = peers.map(function(p) { return p.slug === brandSlug ? '#11a551' : 'rgba(59,130,246,0.7)'; });
+      new Chart(canvas, {
+        type: 'bar',
+        data: {
+          labels: peers.map(function(p) { return p.name; }),
+          datasets: [{ label: 'GoNoGo Score', data: peers.map(function(p) { return p.gonogo_score; }), backgroundColor: barColors, borderColor: barBorders, borderWidth: 1, borderRadius: 6, borderSkipped: false }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          indexAxis: peers.length > 8 ? 'y' : 'x',
+          scales: {
+            x: { grid: { color: peers.length > 8 ? tc.gridColor : 'transparent' }, ticks: { color: tc.tickColor, font: { family: 'Inter', size: 10 }, maxRotation: 45 }, max: peers.length > 8 ? 100 : undefined },
+            y: { grid: { color: peers.length > 8 ? 'transparent' : tc.gridColor }, ticks: { color: tc.tickColor, font: { family: 'Inter', size: 10 }, stepSize: 20 }, max: peers.length > 8 ? undefined : 100, min: 0 }
+          },
+          plugins: { legend: { display: false }, tooltip: { backgroundColor: tc.tooltipBg, titleColor: tc.tooltipTitle, bodyColor: tc.tooltipBody, borderColor: tc.tooltipBorder, borderWidth: 1, cornerRadius: 8, padding: 10, callbacks: { label: function(ctx) { var suffix = peers[ctx.dataIndex] && peers[ctx.dataIndex].slug === brandSlug ? ' (You)' : ''; return 'Score: ' + ctx.raw + '/100' + suffix; } } } }
+        }
+      });
+    }
+
+    function renderIndustryTable(peers, brandSlug) {
+      var el = document.getElementById('industry-table');
+      if (!el || !peers.length) return;
+      var html = '<table class="data-table" style="width:100%;"><thead><tr>' +
+        '<th style="text-align:center;width:40px;">#</th>' +
+        '<th style="text-align:left;">Brand</th>' +
+        '<th style="text-align:center;">Score</th>' +
+        '<th style="text-align:center;">Verdict</th>' +
+        '</tr></thead><tbody>';
+      peers.forEach(function(p, idx) {
+        var isThis = p.slug === brandSlug;
+        var rowStyle = isThis ? 'background:var(--green-bg);' : '';
+        var nameStyle = isThis ? 'font-weight:700;color:var(--green-text);' : 'font-weight:500;';
+        var verdictLabel = p.verdict || getVerdictFromScore(p.gonogo_score);
+        var color = getScoreColor(p.gonogo_score);
+        html += '<tr style="' + rowStyle + '">' +
+          '<td style="text-align:center;font-weight:700;font-size:var(--text-sm);color:var(--text-muted);">' + (idx + 1) + '</td>' +
+          '<td style="' + nameStyle + 'font-size:var(--text-sm);">' + Components.escapeHTML(p.name) + (isThis ? ' <span style="font-size:10px;background:var(--green-dim);color:var(--green-text);padding:1px 6px;border-radius:999px;">You</span>' : '') + '</td>' +
+          '<td style="text-align:center;"><span style="display:inline-block;padding:2px 10px;border-radius:var(--radius-sm);background:' + color + '18;color:' + color + ';font-weight:700;font-size:var(--text-xs);">' + (p.gonogo_score || 0) + '/100</span></td>' +
+          '<td style="text-align:center;">' + Components.renderVerdictBadge(verdictLabel) + '</td>' +
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      el.innerHTML = html;
     }
 
     function analyseFramework(frameworkBreakdown, overallScore) {
