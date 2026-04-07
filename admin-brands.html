@@ -1354,6 +1354,8 @@
         if (colMap.keyFeatures !== -1 && cols[colMap.keyFeatures]) brandData.keyFeatures = cols[colMap.keyFeatures].split(',').map(function(s){return s.trim();}).filter(Boolean);
         if (colMap.keyStrengths !== -1 && cols[colMap.keyStrengths]) brandData.strengths = cols[colMap.keyStrengths].split(',').map(function(s){return s.trim();}).filter(Boolean);
         if (colMap.keyConcerns !== -1 && cols[colMap.keyConcerns]) brandData.concerns = cols[colMap.keyConcerns].split(',').map(function(s){return s.trim();}).filter(Boolean);
+        if (colMap.score !== -1 && cols[colMap.score]) brandData.gonogo_score = parseFloat(cols[colMap.score]) || 0;
+        if (colMap.verdict !== -1 && cols[colMap.verdict]) brandData.verdict = cols[colMap.verdict].trim();
         if (colMap.pricing !== -1 && cols[colMap.pricing]) {
           var _pRaw = cols[colMap.pricing].trim();
           brandData.pricing = _pRaw.split('||').map(function(t) {
