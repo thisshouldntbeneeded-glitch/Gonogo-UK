@@ -972,8 +972,9 @@
       renderSentiment(reviewAnalysis);
       renderReviewThemes(reviewAnalysis, frameworkAnalysis);
       renderReplyCoach(brand, reviewAnalysis, frameworkAnalysis);
-      setupEmbed(brandSlug, brand.name, brand.overallScore, brand.verdict);
-      setupReviewCollection(brandSlug, brand.name, reviewAnalysis, frameworkAnalysis, brand);
+      renderScoreHistory(brand);
+      renderIndustryComparison(peers, brandSlug);
+      renderIndustryTable(peers, brandSlug);
       renderReviewToolkit(reviewAnalysis, frameworkAnalysis, brand);
     }
 
