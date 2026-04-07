@@ -1280,7 +1280,7 @@
           '<span class="priority-icon ' + iconClass + '"><i class="fa-solid ' + getPriorityIcon(item.category) + '"></i></span>' +
           '<div class="priority-meta">' +
             '<div class="priority-title">' + Components.escapeHTML(title) + '</div>' +
-            '<div class="priority-desc">' + Components.escapeHTML(description) + '</div>' +
+            '<div class="priority-desc">' + description + '</div>' +
           '</div>' +
         '</li>';
       });
@@ -2033,37 +2033,78 @@
     function buildPriorityDescription(item, reviewAnalysis) {
       var theme = reviewAnalysis.topNegativeTheme ? reviewAnalysis.topNegativeTheme.label : '';
       var prefix = item.pct < 40
-        ? 'This is a critical weakness.'
-        : (item.pct < 70 ? 'This is one of your most important improvement areas.' : 'This is a refinement opportunity.');
-
-      var action = getCategoryAction(item.category, theme);
-      return prefix + ' You have ' + item.missing + ' point' + (item.missing === 1 ? '' : 's') + ' available in this category. ' + action;
+        ? 'Critical weakness &mdash; act now.'
+        : (item.pct < 70 ? 'Important improvement area.' : 'Refinement opportunity.');
+      var pts = item.missing + ' point' + (item.missing === 1 ? '' : 's') + ' available.';
+      var steps = getCategoryAction(item.category, theme);
+      var stepsHtml = '<ol class="priority-steps">' +
+        steps.map(function(s) { return '<li>' + s + '</li>'; }).join('') +
+        '</ol>';
+      return '<span class="priority-prefix">' + prefix + ' ' + pts + '</span>' + stepsHtml;
     }
 
     function getCategoryAction(category, theme) {
       var name = String(category || '').toLowerCase();
       if (name.indexOf('support') !== -1) {
-        return 'Reduce response times, make support channels easier to find, and close the loop on complaints faster.';
+        return [
+          'Set a visible reply SLA (e.g. "We respond within 4 hours") and honour it every day.',
+          'Add a live chat or WhatsApp contact option &mdash; phone-only support scores lower on digital accessibility.',
+          'Publish a FAQ page that answers your 5 most common queries to cut inbound volume.',
+          'Follow up within 48 hours after closing a complaint to confirm the customer is satisfied.'
+        ];
       }
       if (name.indexOf('satisfaction') !== -1) {
-        return 'Resolve repeat complaints and ask satisfied customers for reviews after successful service interactions.';
+        return [
+          'Review your last 20 negative reviews &mdash; find the single most repeated complaint and fix it this week.',
+          'Set up an automated post-purchase review request (email or SMS) triggered 7 days after fulfilment.',
+          'Reply to every public review &mdash; positive and negative &mdash; within 3 business days.',
+          'Set an internal target: reach a 4.0+ star average before the end of next quarter.'
+        ];
       }
       if (name.indexOf('product') !== -1 || name.indexOf('value') !== -1) {
-        return 'Clarify pricing, simplify the offer, and make the value-for-money case more obvious on your website and sales pages.';
+        return [
+          'Update your pricing page: add a comparison table or a clear "what's included" breakdown.',
+          'Add 3 proof points to your homepage (e.g. "10,000 customers", "92% satisfaction", a trusted partner logo).',
+          'Remove hidden fees and make your refund or returns policy clearly visible before checkout.',
+          'Publish a short "why us vs alternatives" section or FAQ entry on your site.'
+        ];
       }
       if (name.indexOf('innovation') !== -1) {
-        return 'Improve your digital journey and communicate product upgrades more clearly so customers can see progress.';
+        return [
+          'Create a "What's New" or changelog page so customers can see that your product is actively improving.',
+          'Launch one self-service feature (online booking, order tracking, or account portal) if you don't have one yet.',
+          'Announce product updates on social media and your email list &mdash; innovation only scores if it is visible.',
+          'Ask 5 customers what one improvement they most want, then make it your next development priority.'
+        ];
       }
       if (name.indexOf('compliance') !== -1) {
-        return 'Make policies, accreditations, and compliance signals easier to verify and easier for customers to understand.';
+        return [
+          'Display your regulatory registration or accreditation number visibly on your homepage or footer.',
+          'Publish a plain-English privacy policy and terms page &mdash; link both from your site footer.',
+          'If you hold certificates (ISO, FCA, etc.), show the badge and link to the official document.',
+          'Add a trust section showing affiliations, partner logos, or regulatory body membership.'
+        ];
       }
       if (name.indexOf('accessibility') !== -1 || name.indexOf('security') !== -1) {
-        return 'Strengthen visible trust markers around accessibility, reliability, and data handling.';
+        return [
+          'Confirm your entire site loads via HTTPS &mdash; fix any mixed-content or certificate warnings immediately.',
+          'Add a visible "Secure" or "Your data is protected" trust badge near all forms and payment flows.',
+          'Publish a clear cookie and data policy &mdash; explain what you collect, why, and how customers can opt out.',
+          'Run a free accessibility check (WAVE or Google Lighthouse) and resolve the top 3 flagged issues.'
+        ];
       }
       if (theme) {
-        return 'Start by fixing the repeated customer issue around ' + theme + ', then make the change visible in your customer journey.';
+        return [
+          'Address the repeated customer complaint around ' + theme + ' &mdash; this is your highest-leverage starting point.',
+          'Make the fix visible in your customer journey (website copy, emails, or support responses).',
+          'Track whether complaints about ' + theme + ' fall over the next 30 days as your success metric.'
+        ];
       }
-      return 'Review the underlying criteria in this category and address the easiest high-impact gaps first.';
+      return [
+        'List every gap in this category's underlying criteria and rank them by ease of fixing.',
+        'Complete the highest-impact fix within the next 2 weeks.',
+        'Make the improvement visible to customers where possible to reinforce trust.'
+      ];
     }
 
     function buildReplyTemplates(brandName, negativeTheme) {
