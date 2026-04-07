@@ -821,7 +821,10 @@
       document.getElementById('f-features').value = (b.keyFeatures || []).join(', ');
       document.getElementById('f-strengths').value = (b.strengths || []).join(', ');
       document.getElementById('f-concerns').value = (b.concerns || []).join(', ');
-      document.getElementById('f-pricing').value = (b.pricing || []).map(function(p) { return p.cost || p.name || ''; }).join('; ');
+      document.getElementById('pricing-tiers-list').innerHTML = '';
+      var _pricingItems = b.pricing || [];
+      if (_pricingItems.length === 0) { addPricingTier('','',''); }
+      else { _pricingItems.forEach(function(p) { addPricingTier(p.name||'', p.cost||'', Array.isArray(p.features)?p.features.join(', '):(p.features||'')); }); }
       var ss = b.socialSentiment || {};
       document.getElementById('f-sentiment-summary').value = ss.summary || '';
       document.getElementById('f-sentiment-positive').value = (ss.positive_themes || []).join(', ');
@@ -845,7 +848,20 @@
       document.getElementById('brand-modal').classList.remove('open');
     }
 
-    async function saveBrand(e) {
+    function _eAttr(s) { return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;'); }
+  function addPricingTier(name, cost, features) {
+    var row = document.createElement('div');
+    row.className = 'pricing-tier-row';
+    row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr 2fr auto;gap:6px;align-items:center;';
+    row.innerHTML =
+      '<input class="pt-name" type="text" placeholder="e.g. Basic" value="' + _eAttr(name) + '" style="padding:6px 8px;border:1px solid var(--border-primary);border-radius:var(--radius-md);background:var(--surface-2);color:var(--text-primary);font-size:var(--text-xs);width:100%;">' +
+      '<input class="pt-cost" type="text" placeholder="e.g. R250/mo" value="' + _eAttr(cost) + '" style="padding:6px 8px;border:1px solid var(--border-primary);border-radius:var(--radius-md);background:var(--surface-2);color:var(--text-primary);font-size:var(--text-xs);width:100%;">' +
+      '<input class="pt-features" type="text" placeholder="feature1, feature2" value="' + _eAttr(features) + '" style="padding:6px 8px;border:1px solid var(--border-primary);border-radius:var(--radius-md);background:var(--surface-2);color:var(--text-primary);font-size:var(--text-xs);width:100%;">' +
+      '<button type="button" onclick="this.closest(\'.pricing-tier-row\').remove()" style="padding:6px 8px;background:rgba(231,76,60,0.1);color:#e74c3c;border:1px solid rgba(231,76,60,0.2);border-radius:var(--radius-md);cursor:pointer;font-size:var(--text-xs);">✕</button>';
+    document.getElementById('pricing-tiers-list').appendChild(row);
+  }
+
+  async function saveBrand(e) {
       e.preventDefault();
       var saveBtn = document.getElementById('save-btn');
       saveBtn.disabled = true;
@@ -920,8 +936,13 @@
         return val ? val.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : [];
       }
 
-      var pricingText = document.getElementById('f-pricing').value.trim();
-      var pricingArr = pricingText ? [{ name: 'Pricing', cost: pricingText, features: '' }] : [];
+      var pricingArr = [];
+      document.querySelectorAll('#pricing-tiers-list .pricing-tier-row').forEach(function(row) {
+        var nm = row.querySelector('.pt-name').value.trim();
+        var co = row.querySelector('.pt-cost').value.trim();
+        var ft = row.querySelector('.pt-features').value.trim();
+        if (nm || co) pricingArr.push({ name: nm||'Pricing', cost: co, features: ft });
+      });
 
       var brandData = {
         name: document.getElementById('f-name').value.trim(),
@@ -1151,7 +1172,7 @@
           KeyFeatures: (b.keyFeatures || []).join(', '),
           KeyStrengths: (b.strengths || []).join(', '),
           KeyConcerns: (b.concerns || []).join(', '),
-          Pricing: (b.pricing || []).map(function(p) { return p.cost || ''; }).join('; '),
+          Pricing: (b.pricing || []).map(function(p) { return [p.name||'',p.cost||'',Array.isArray(p.features)?p.features.join(','):(p.features||'')].join(' | ').replace(/\s*\|\s*$/, '').replace(/^\s*\|\s*/, ''); }).join(' || '),
           SocialSentiment_Summary: ss.summary || '',
           SocialSentiment_Positive: (ss.positive_themes || []).join(', '),
           SocialSentiment_Concerns: (ss.common_concerns || []).join(', ')
@@ -1318,7 +1339,14 @@
         if (colMap.keyFeatures !== -1 && cols[colMap.keyFeatures]) brandData.keyFeatures = cols[colMap.keyFeatures].split(',').map(function(s){return s.trim();}).filter(Boolean);
         if (colMap.keyStrengths !== -1 && cols[colMap.keyStrengths]) brandData.strengths = cols[colMap.keyStrengths].split(',').map(function(s){return s.trim();}).filter(Boolean);
         if (colMap.keyConcerns !== -1 && cols[colMap.keyConcerns]) brandData.concerns = cols[colMap.keyConcerns].split(',').map(function(s){return s.trim();}).filter(Boolean);
-        if (colMap.pricing !== -1 && cols[colMap.pricing]) brandData.pricing = [{ name: 'Pricing', cost: cols[colMap.pricing].trim(), features: '' }];
+        if (colMap.pricing !== -1 && cols[colMap.pricing]) {
+          var _pRaw = cols[colMap.pricing].trim();
+          brandData.pricing = _pRaw.split('||').map(function(t) {
+            var pts = t.trim().split('|').map(function(s){return s.trim();});
+            return { name: pts[0]||'Pricing', cost: pts[1]||pts[0]||'', features: pts[2]||'' };
+          }).filter(function(p){return p.cost||p.name;});
+          if (!brandData.pricing.length) brandData.pricing = [{ name: 'Pricing', cost: _pRaw, features: '' }];
+        }
 
         var hasSentiment = false;
         var sentObj = {};
