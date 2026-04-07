@@ -1068,7 +1068,8 @@ const Components = {
     const links = [
       { href: 'brand-dashboard.html', label: 'Dashboard', icon: 'fa-gauge', id: 'dashboard' },
       { href: 'brand-reviews.html', label: 'Reviews', icon: 'fa-comments', id: 'reviews' },
-      { href: 'brand-insights.html', label: 'Insights', icon: 'fa-chart-line', id: 'insights' }
+      { href: 'brand-badge.html', label: 'Score Badge', icon: 'fa-code', id: 'badge' },
+      { href: 'brand-qr.html', label: 'Review QR', icon: 'fa-qrcode', id: 'qr' }
     ];
 
     return `
