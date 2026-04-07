@@ -160,25 +160,97 @@
       var verdict = window.brandVerdict || 'NOGO';
       var slug = window.brandSlug || '';
       var siteUrl = window.siteUrl || LIVE_PUBLIC_BASE_URL;
-      var verdictColor = verdict === 'GO' ? '#11a551' : verdict === 'NOGO' ? '#e74c3c' : '#ff9800';
+      var vc = verdict === 'GO' ? '#11a551' : verdict === 'NOGO' ? '#e74c3c' : '#ff9800';
+      var vcDim = verdict === 'GO' ? 'rgba(17,165,81,0.15)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.15)' : 'rgba(255,152,0,0.15)';
+      var vcBorder = verdict === 'GO' ? 'rgba(17,165,81,0.35)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.35)' : 'rgba(255,152,0,0.35)';
       var brandUrl = siteUrl + '/brand.html?id=' + encodeURIComponent(slug);
+      var verdictLabel = verdict.replace(/_/g,' ');
+      var circ = 150.796;
+      var offset = circ * (1 - Math.min(100, Math.max(0, score)) / 100);
+      var nameShort = escapeInline(name.length > 22 ? name.substring(0, 21) + '\u2026' : name);
+
       var badgeHtml = '';
+
       if (currentBadgeStyle === 'full') {
-        badgeHtml = '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-flex;align-items:center;gap:12px;padding:10px 16px;background:#111;border-radius:10px;border:1px solid #2a2a2a;">' +
-          '<div style="text-align:center;"><div style="font-size:28px;font-weight:800;color:' + verdictColor + ';">' + score + '</div><div style="font-size:9px;color:#666;">/100</div></div>' +
-          '<div style="width:1px;height:40px;background:#2a2a2a;"></div>' +
-          '<div><div style="font-size:13px;font-weight:600;color:#fff;">' + escapeInline(name) + '</div>' +
-          '<div style="font-size:11px;font-weight:700;color:' + verdictColor + ';">' + verdict.replace(/_/g,' ') + '</div>' +
-          '<div style="font-size:9px;color:#666;margin-top:2px;">Rated by GoNoGo</div></div></a>';
+        // Full badge: SVG ring + brand name + verdict pill + GoNoGo credit
+        badgeHtml =
+          '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" ' +
+          'style="text-decoration:none;display:inline-flex;align-items:center;gap:16px;padding:14px 20px;' +
+          'background:#0d0d0d;border-radius:14px;border:1px solid rgba(255,255,255,0.09);' +
+          'box-shadow:0 4px 20px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.04);' +
+          'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;">' +
+
+            // Score ring
+            '<div style="position:relative;width:60px;height:60px;flex-shrink:0;">' +
+              '<svg width="60" height="60" style="position:absolute;top:0;left:0;" viewBox="0 0 60 60">' +
+                '<circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="3.5"/>' +
+                '<circle cx="30" cy="30" r="26" fill="none" stroke="' + vc + '" stroke-width="3.5" ' +
+                  'stroke-dasharray="163.4" stroke-dashoffset="' + (163.4 * (1 - score/100)).toFixed(1) + '" ' +
+                  'stroke-linecap="round" transform="rotate(-90 30 30)"/>' +
+              '</svg>' +
+              '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;">' +
+                '<span style="font-size:19px;font-weight:800;color:' + vc + ';line-height:1;letter-spacing:-0.02em;">' + score + '</span>' +
+                '<span style="font-size:8px;color:rgba(255,255,255,0.28);font-weight:600;letter-spacing:0.04em;">/100</span>' +
+              '</div>' +
+            '</div>' +
+
+            // Divider
+            '<div style="width:1px;height:46px;background:rgba(255,255,255,0.08);flex-shrink:0;"></div>' +
+
+            // Info
+            '<div style="min-width:0;">' +
+              '<div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;">' + nameShort + '</div>' +
+              '<div style="display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;' +
+                'background:' + vcDim + ';border:1px solid ' + vcBorder + ';margin-bottom:5px;">' +
+                '<span style="width:5px;height:5px;border-radius:50%;background:' + vc + ';flex-shrink:0;"></span>' +
+                '<span style="font-size:10px;font-weight:700;color:' + vc + ';letter-spacing:0.06em;text-transform:uppercase;">' + verdictLabel + '</span>' +
+              '</div>' +
+              '<div style="font-size:8.5px;color:rgba(255,255,255,0.25);letter-spacing:0.05em;text-transform:uppercase;">Rated by GoNoGo</div>' +
+            '</div>' +
+
+          '</a>';
+
       } else if (currentBadgeStyle === 'compact') {
-        badgeHtml = '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:#111;border-radius:8px;border:1px solid #2a2a2a;">' +
-          '<span style="font-size:18px;font-weight:800;color:' + verdictColor + ';">' + score + '</span>' +
-          '<span style="font-size:11px;color:#fff;font-weight:600;">' + verdict.replace(/_/g,' ') + '</span>' +
-          '<span style="font-size:9px;color:#666;">GoNoGo</span></a>';
+        // Compact: horizontal pill with score + verdict
+        badgeHtml =
+          '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" ' +
+          'style="text-decoration:none;display:inline-flex;align-items:center;gap:10px;padding:9px 14px;' +
+          'background:#0d0d0d;border-radius:99px;border:1px solid rgba(255,255,255,0.09);' +
+          'box-shadow:0 2px 12px rgba(0,0,0,0.4);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;">' +
+
+            '<div style="display:flex;align-items:baseline;gap:1px;">' +
+              '<span style="font-size:20px;font-weight:800;color:' + vc + ';line-height:1;letter-spacing:-0.03em;">' + score + '</span>' +
+              '<span style="font-size:9px;color:rgba(255,255,255,0.28);font-weight:600;">/100</span>' +
+            '</div>' +
+
+            '<div style="width:1px;height:22px;background:rgba(255,255,255,0.1);"></div>' +
+
+            '<div>' +
+              '<div style="font-size:10px;font-weight:700;color:' + vc + ';letter-spacing:0.06em;text-transform:uppercase;line-height:1.2;">' + verdictLabel + '</div>' +
+              '<div style="font-size:8px;color:rgba(255,255,255,0.28);letter-spacing:0.05em;text-transform:uppercase;margin-top:1px;">GoNoGo</div>' +
+            '</div>' +
+
+          '</a>';
+
       } else {
-        badgeHtml = '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;background:#111;border-radius:10px;border:1px solid #2a2a2a;">' +
-          '<div style="text-align:center;"><div style="font-size:22px;font-weight:800;color:' + verdictColor + ';">' + score + '</div><div style="font-size:8px;color:#666;">GoNoGo</div></div></a>';
+        // Score-only: square tile with ring accent
+        badgeHtml =
+          '<a href="' + brandUrl + '" target="_blank" rel="noopener noreferrer" ' +
+          'style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;' +
+          'width:76px;height:76px;background:#0d0d0d;border-radius:14px;' +
+          'border:1px solid rgba(255,255,255,0.09);box-shadow:0 4px 16px rgba(0,0,0,0.5);' +
+          'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;position:relative;overflow:hidden;">' +
+
+            '<div style="position:absolute;inset:0;border-radius:14px;border:2px solid ' + vc + ';opacity:0.25;"></div>' +
+            '<div style="text-align:center;position:relative;z-index:1;">' +
+              '<div style="font-size:26px;font-weight:800;color:' + vc + ';line-height:1;letter-spacing:-0.03em;">' + score + '</div>' +
+              '<div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.28);letter-spacing:0.08em;text-transform:uppercase;margin-top:3px;">GoNoGo</div>' +
+            '</div>' +
+            '<div style="position:absolute;top:-18px;right:-18px;width:52px;height:52px;border-radius:50%;background:' + vc + ';opacity:0.1;"></div>' +
+
+          '</a>';
       }
+
       document.getElementById('badge-preview').innerHTML = badgeHtml;
       document.getElementById('embed-code').textContent = badgeHtml;
     }
