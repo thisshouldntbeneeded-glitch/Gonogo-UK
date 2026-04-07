@@ -173,28 +173,32 @@
       }).join('');
 
       // Pricing
-      var pricingHTML = brand.pricing.length > 0
-        ? brand.pricing.map(function(p) {
-            var features = typeof p.features === 'string' && p.features
-              ? p.features.split(',').map(function(f) { return f.trim(); }).filter(Boolean)
-              : (Array.isArray(p.features) ? p.features : []);
-            return '<div class="pricing-card">' +
-              '<div class="pricing-card-name">' + (p.name && p.name !== 'Pricing' ? p.name : 'Pricing') + '</div>' +
-              (function(){
-                var rc = (p.cost||'').replace(/^Pricing:\s*/i,'').trim();
-                var parts = rc.indexOf(' | ') !== -1 ? rc.split(' | ') : [rc];
-                var cls = parts[0].length > 25 ? ' is-text' : '';
-                var html = parts.length > 1
-                  ? parts.map(function(pt){return '<span style="display:block;margin-bottom:4px;">'+pt+'</span>';}).join('')
-                  : parts[0];
-                return '<div class="pricing-card-price' + cls + '">' + html + '</div>';
-              })() +
-              (features.length > 0
-                ? '<ul class="pricing-card-features">' + features.map(function(f) { return '<li>' + f + '</li>'; }).join('') + '</ul>'
-                : '') +
-            '</div>';
-          }).join('')
-        : '<p style="color:var(--text-muted);font-size:var(--text-sm)">No pricing information available.</p>';
+      var pricingHTML = (function() {
+        if (!brand.pricing.length) return '<p style="color:var(--text-muted);font-size:var(--text-sm)">No pricing information available.</p>';
+        var cards = [];
+        brand.pricing.forEach(function(p) {
+          var features = typeof p.features === 'string' && p.features
+            ? p.features.split(',').map(function(f){ return f.trim(); }).filter(Boolean)
+            : (Array.isArray(p.features) ? p.features : []);
+          var rawCost = (p.cost||'').replace(/^Pricing:\s*/i,'').trim();
+          var baseName = (p.name && p.name !== 'Pricing') ? p.name : '';
+          var segments = rawCost.indexOf(' | ') !== -1 ? rawCost.split(' | ') : [rawCost];
+          segments.forEach(function(seg, idx) {
+            seg = seg.trim();
+            if (!seg) return;
+            var isText = seg.length > 25;
+            var cardName = (baseName && idx === 0) ? baseName : ('Option ' + (cards.length + 1));
+            var featHtml = (idx === 0 && features.length > 0)
+              ? '<ul class="pricing-card-features">' + features.map(function(f){ return '<li>'+f+'</li>'; }).join('') + '</ul>'
+              : '';
+            cards.push('<div class="pricing-card">' +
+              '<div class="pricing-card-name">' + cardName + '</div>' +
+              '<div class="pricing-card-price' + (isText ? ' is-text' : '') + '">' + seg + '</div>' +
+              featHtml + '</div>');
+          });
+        });
+        return cards.join('');
+      })();
 
       // App ratings
       var gpStars = renderStars(brand.appRatings.googlePlayScore);
