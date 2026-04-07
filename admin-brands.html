@@ -823,8 +823,23 @@
       document.getElementById('f-concerns').value = (b.concerns || []).join(', ');
       document.getElementById('pricing-tiers-list').innerHTML = '';
       var _pricingItems = b.pricing || [];
-      if (_pricingItems.length === 0) { addPricingTier('','',''); }
-      else { _pricingItems.forEach(function(p) { addPricingTier(p.name||'', p.cost||'', Array.isArray(p.features)?p.features.join(', '):(p.features||'')); }); }
+      if (_pricingItems.length === 0) {
+        addPricingTier('','','');
+      } else {
+        _pricingItems.forEach(function(p) {
+          var _cost = (p.cost || '').replace(/^Pricing:\s*/i, '').trim();
+          var _name = (p.name === 'Pricing' ? '' : (p.name || ''));
+          var _feat = Array.isArray(p.features) ? p.features.join(', ') : (p.features || '');
+          // Auto-split legacy | separated text into separate tier rows
+          if (_cost.indexOf(' | ') !== -1) {
+            _cost.split(' | ').forEach(function(chunk, idx) {
+              addPricingTier(idx === 0 ? _name : '', chunk.trim(), idx === 0 ? _feat : '');
+            });
+          } else {
+            addPricingTier(_name, _cost, _feat);
+          }
+        });
+      }
       var ss = b.socialSentiment || {};
       document.getElementById('f-sentiment-summary').value = ss.summary || '';
       document.getElementById('f-sentiment-positive').value = (ss.positive_themes || []).join(', ');
