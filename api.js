@@ -435,8 +435,10 @@ var GoNoGoAPI = (function () {
         });
       }
       // GoNoGo score = percentage of points earned vs max possible
-      var overallScore = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
-      var verdict = overallScore >= 80 ? 'GO' : overallScore >= 60 ? 'GO WITH CAUTION' : 'NOGO';
+      var overallScore = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : (brandData.gonogo_score || 0);
+      var verdict = totalMax > 0
+        ? (overallScore >= 80 ? 'GO' : overallScore >= 60 ? 'GO WITH CAUTION' : 'NOGO')
+        : (brandData.verdict || (overallScore >= 80 ? 'GO' : overallScore >= 60 ? 'GO WITH CAUTION' : 'NOGO'));
       var slug = brandData.id || brandData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
       // Build the update record — only include fields that were actually provided
