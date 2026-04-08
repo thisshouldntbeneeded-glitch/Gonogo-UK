@@ -776,7 +776,7 @@
     function deleteSelected() {
       var ids = Array.from(document.querySelectorAll('.brand-select-cb:checked')).map(function(c) { return c.dataset.id; });
       if (!ids.length) return;
-      showConfirm('Delete Brands', 'Delete ' + ids.length + ' brand' + (ids.length > 1 ? 's' : '') + '? This cannot be undone.', 'Delete', async function() {
+      showConfirm('Delete Brands', 'Delete ' + ids.length + ' brand' + (ids.length > 1 ? 's' : '') + '? This cannot be undone.', 'Delete', 'danger', async function() {
         for (var i = 0; i < ids.length; i++) {
           try { await GoNoGoAPI.deleteBrand(ids[i]); } catch(e) {}
         }
