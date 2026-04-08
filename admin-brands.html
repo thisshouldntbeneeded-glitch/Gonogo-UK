@@ -1247,7 +1247,8 @@
         sentimentSummary: findCol(headers, ['socialsentiment_summary', 'sentiment_summary']),
         sentimentPositive: findCol(headers, ['socialsentiment_positive', 'sentiment_positive']),
         sentimentConcerns: findCol(headers, ['socialsentiment_concerns', 'sentiment_concerns']),
-        categoryIcon: findCol(headers, ['categoryicon', 'category_icon', 'icon'])
+        categoryIcon: findCol(headers, ['categoryicon', 'category_icon', 'icon']),
+        scoringBreakdown: findCol(headers, ['scoringbreakdown', 'scoring_breakdown'])
       };
 
       var created = 0, errors = 0, catsCreated = 0;
@@ -1329,6 +1330,11 @@
         if (colMap.sentimentConcerns !== -1 && cols[colMap.sentimentConcerns]) { sentObj.common_concerns = cols[colMap.sentimentConcerns].split(',').map(function(s){return s.trim();}).filter(Boolean); hasSentiment = true; }
         if (hasSentiment) brandData.socialSentiment = sentObj;
 
+        if (colMap.scoringBreakdown !== -1 && cols[colMap.scoringBreakdown]) {
+          var parsedBreakdown = parseScoringBreakdownCSV(cols[colMap.scoringBreakdown].trim());
+          if (parsedBreakdown) brandData.scoring_breakdown = parsedBreakdown;
+        }
+
         try {
           await GoNoGoAPI.saveBrand(brandData);
           csvLog('Row ' + i + ': ' + brandName + ' — saved', 'success');
@@ -1346,6 +1352,31 @@
       await refreshDashboardData();
       populateIndustryDropdowns();
       filterBrands();
+    }
+
+    function parseScoringBreakdownCSV(value) {
+      if (!value) return null;
+      if (typeof value === 'object') return value;
+      try { return JSON.parse(value); } catch (e) {}
+      try {
+        var catMap = {
+          'compliance': 'Compliance', 'customersatisfaction': 'Customer Satisfaction',
+          'productvalue': 'Product Value', 'innovation': 'Innovation',
+          'customersupport': 'Customer Support', 'accessibilitysecurity': 'Accessibility & Security'
+        };
+        var result = {};
+        value.split(';').forEach(function(entry) {
+          entry = entry.trim();
+          var cm = entry.match(/^category([^,]+)/i);
+          if (!cm) return;
+          var catName = catMap[cm[1].trim().toLowerCase()] || cm[1].trim();
+          var sm = entry.match(/,score(\d+(?:\.\d+)?)/i);
+          var mm = entry.match(/,max(\d+(?:\.\d+)?)/i);
+          var dm = entry.match(/,description(.+)$/i);
+          if (sm) result[catName] = { score: parseFloat(sm[1]) || 0, max: parseFloat(mm ? mm[1] : 0) || 0, description: dm ? dm[1].trim() : '' };
+        });
+        return Object.keys(result).length > 0 ? result : null;
+      } catch (e) { return null; }
     }
 
     function findCol(headers, names) {
