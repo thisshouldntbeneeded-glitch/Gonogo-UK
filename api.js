@@ -435,6 +435,14 @@ var GoNoGoAPI = (function () {
         });
       }
       // GoNoGo score = percentage of points earned vs max possible
+      if (frameworkBreakdown.length === 0 && brandData.scoring_breakdown && typeof brandData.scoring_breakdown === 'object') {
+        Object.keys(brandData.scoring_breakdown).forEach(function(k) {
+          var s = brandData.scoring_breakdown[k] || {};
+          totalScore += s.score || 0;
+          totalMax += s.max || 0;
+          frameworkBreakdown.push({ category: k, score: (s.score || 0) + '/' + (s.max || 0), description: s.description || '' });
+        });
+      }
       var overallScore = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : (brandData.gonogo_score || 0);
       var verdict = totalMax > 0
         ? (overallScore >= 80 ? 'GO' : overallScore >= 60 ? 'GO WITH CAUTION' : 'NOGO')
