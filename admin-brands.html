@@ -163,11 +163,13 @@
             </select>
           </div>
           <span class="text-xs text-muted" id="brand-count"></span>
+          <button id="delete-selected-btn" class="btn btn-sm" style="display:none;background:var(--red-text);color:#fff;margin-left:var(--space-2);" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Delete selected (<span id="selected-count">0</span>)</button>
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table" id="brands-table">
             <thead>
               <tr>
+                <th style="width:32px;"><input type="checkbox" id="select-all-brands" onchange="toggleSelectAll(this)" title="Select all"></th>
                 <th onclick="sortTable('name')">Brand <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th onclick="sortTable('categoryName')">Industry <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th onclick="sortTable('overallScore')">Score <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
@@ -178,7 +180,7 @@
               </tr>
             </thead>
             <tbody id="brands-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">Loading brands...</td></tr>
+              <tr><td colspan="8" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">Loading brands...</td></tr>
             </tbody>
           </table>
         </div>
@@ -718,7 +720,7 @@
       var tbody = document.getElementById('brands-tbody');
 
       if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">No UK brands found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">No UK brands found</td></tr>';
         return;
       }
 
@@ -728,6 +730,7 @@
         var ios = (b.appRatings && (b.appRatings.ios || b.appRatings.iosScore)) || '';
 
         return '<tr>' +
+          '<td style="width:32px;"><input type="checkbox" class="brand-select-cb" data-id="' + b.id + '" onchange="updateDeleteBtn()"></td>' +
           '<td>' +
             '<div class="brand-cell">' +
               logoHtml +
@@ -758,6 +761,29 @@
       }).join('');
     }
 
+    function toggleSelectAll(cb) {
+      document.querySelectorAll('.brand-select-cb').forEach(function(c) { c.checked = cb.checked; });
+      updateDeleteBtn();
+    }
+    function updateDeleteBtn() {
+      var sel = document.querySelectorAll('.brand-select-cb:checked');
+      var btn = document.getElementById('delete-selected-btn');
+      document.getElementById('selected-count').textContent = sel.length;
+      btn.style.display = sel.length > 0 ? '' : 'none';
+      var sa = document.getElementById('select-all-brands');
+      if (sa) sa.indeterminate = sel.length > 0 && sel.length < document.querySelectorAll('.brand-select-cb').length;
+    }
+    function deleteSelected() {
+      var ids = Array.from(document.querySelectorAll('.brand-select-cb:checked')).map(function(c) { return c.dataset.id; });
+      if (!ids.length) return;
+      showConfirm('Delete Brands', 'Delete ' + ids.length + ' brand' + (ids.length > 1 ? 's' : '') + '? This cannot be undone.', 'Delete', async function() {
+        for (var i = 0; i < ids.length; i++) {
+          try { await GoNoGoAPI.deleteBrand(ids[i]); } catch(e) {}
+        }
+        Components.showToast(ids.length + ' brand' + (ids.length > 1 ? 's' : '') + ' deleted');
+        await refreshDashboardData(); populateIndustryDropdowns(); filterBrands();
+      });
+    }
     function deleteBrand(id, name) {
       showConfirm(
         'Delete Brand',
