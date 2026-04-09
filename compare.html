@@ -92,7 +92,7 @@
     var categoriesCache = [];
     var radarChart = null;
     var selectedCategory = '';
-    var activeScoreFilters = new Set();
+    var spotlightCategory = '';
     var allScoreLabels = [];
 
     (async function() {
@@ -148,19 +148,14 @@
 
       function buildScoreFilterPills() {
         if (allScoreLabels.length === 0) return '';
-        var isFiltering = activeScoreFilters.size > 0 && activeScoreFilters.size < allScoreLabels.length;
         var pillsHtml = allScoreLabels.map(function(label) {
-          var isActive = activeScoreFilters.size === 0 || activeScoreFilters.has(label);
-          var safeLabel = label.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-          return '<button class="score-pill' + (isActive ? ' active' : '') + '" onclick="toggleScoreFilter(\'' + safeLabel + '\')">' + Components.escapeHTML(label) + '</button>';
+          var isActive = spotlightCategory === label;
+          var safeLabel = label.replace(/\/g, '\\').replace(/'/g, "\'");
+          return '<button class=\"score-pill' + (isActive ? ' active' : '') + '\" onclick=\"setSpotlightCategory(\'' + safeLabel + '\')\">'+  Components.escapeHTML(label) + '</button>';
         }).join('');
-        var resetHtml = isFiltering ? ' <button class="score-pill-reset" onclick="resetScoreFilters()">&#10005; Reset</button>' : '';
-        return '<div style="margin-top:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--border-subtle)">'
-          + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2)">'
-          + '<span style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em"><i class="fa-solid fa-sliders"></i> Focus on</span>'
-          + resetHtml
-          + '</div>'
-          + '<div class="score-filter-pills">' + pillsHtml + '</div>'
+        return '<div style=\"margin-top:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--border-subtle)\">'
+          + '<div style=\"font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-2)\"><i class=\"fa-solid fa-crosshairs\"></i> Spotlight a category</div>'
+          + '<div class=\"score-filter-pills\">' + pillsHtml + '</div>'
           + '</div>';
       }
 
@@ -169,23 +164,8 @@
         if (container) container.innerHTML = buildScoreFilterPills();
       }
 
-      window.toggleScoreFilter = function(label) {
-        if (activeScoreFilters.size === 0) {
-          // All active — deactivate just this one (activate all others)
-          allScoreLabels.forEach(function(l) { if (l !== label) activeScoreFilters.add(l); });
-        } else if (activeScoreFilters.has(label)) {
-          activeScoreFilters.delete(label);
-          if (activeScoreFilters.size === 0) activeScoreFilters.clear();
-        } else {
-          activeScoreFilters.add(label);
-          if (activeScoreFilters.size === allScoreLabels.length) activeScoreFilters.clear();
-        }
-        updatePillsUI();
-        updateComparison();
-      };
-
-      window.resetScoreFilters = function() {
-        activeScoreFilters.clear();
+      window.setSpotlightCategory = function(label) {
+        spotlightCategory = (spotlightCategory === label) ? \'\' : label;
         updatePillsUI();
         updateComparison();
       };
@@ -359,12 +339,8 @@
 
         // Key Differences
         var allLabels = Object.keys(b1.categoryScores);
-        var isFiltering = activeScoreFilters.size > 0 && activeScoreFilters.size < allLabels.length;
-        var activeLabels = isFiltering
-          ? allLabels.filter(function(l) { return activeScoreFilters.has(l); })
-          : allLabels;
         var differences = [];
-        activeLabels.forEach(function(label) {
+        allLabels.forEach(function(label) {
           var s1 = b1.categoryScores[label];
           var s2 = b2.categoryScores[label];
           var pct1 = s1 ? Math.round((s1.score / s1.max) * 100) : 0;
@@ -421,16 +397,15 @@
         var overallB1Color = getScoreColor(b1.overallScore);
         var overallB2Color = getScoreColor(b2.overallScore);
         keyDiffsHtml +=
-          (isFiltering ? '' :
           '<div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-4);border-top:2px solid var(--border-primary);margin-top:var(--space-1)">' +
             '<span style="font-size:var(--text-lg);font-weight:800;color:' + overallB1Color + '">' + b1.overallScore + '/100</span>' +
             '<span style="font-size:var(--text-xs);font-weight:700;color:var(--text-secondary);text-transform:uppercase">OVERALL</span>' +
             '<span style="font-size:var(--text-lg);font-weight:800;color:' + overallB2Color + '">' + b2.overallScore + '/100</span>' +
-          '</div>') +
+          '</div>' +
           '</div>';
 
         // Category Comparison Bars
-        var scoreRows = activeLabels.map(function(label) {
+        var scoreRows = allLabels.map(function(label) {
           var s1 = b1.categoryScores[label];
           var s2 = b2.categoryScores[label];
           var pct1 = s1 ? Math.round((s1.score / s1.max) * 100) : 0;
@@ -460,12 +435,11 @@
               '<span style="font-size:var(--text-xs);font-weight:600;color:' + overallB2Color + ';text-transform:uppercase;letter-spacing:0.04em">' + Components.escapeHTML(b2.name) + '</span>' +
             '</div>' +
             scoreRows +
-            (isFiltering ? '' :
             '<div class="compare-row" style="border-bottom:none;padding-top:var(--space-4)">' +
               '<div class="compare-bar left"><span style="font-size:var(--text-lg);font-weight:800;color:' + overallB1Color + '">' + b1.overallScore + '/100</span></div>' +
               '<div class="label" style="font-weight:700;color:var(--text-primary)">OVERALL</div>' +
               '<div class="compare-bar right"><span style="font-size:var(--text-lg);font-weight:800;color:' + overallB2Color + '">' + b2.overallScore + '/100</span></div>' +
-            '</div>') +
+            '</div>' +
           '</div>';
 
         // Strengths & Concerns
@@ -490,13 +464,45 @@
             '</div>' +
           '</div>';
 
-        var filterNoticeHtml = isFiltering
-          ? '<div class="filter-notice"><i class="fa-solid fa-filter"></i> Filtered view — overall scores hidden. <button class="score-pill-reset" onclick="resetScoreFilters()" style="margin-left:4px">Show all</button></div>'
-          : '';
-        resultEl.innerHTML = filterNoticeHtml + (isFiltering ? '' : verdictBannerHtml) + brandCardsHtml + (isFiltering ? '' : ratingSummaryHtml) + radarHtml + keyDiffsHtml + barComparisonHtml + strengthsHtml;
+        // ========== Spotlight Card ==========
+        var spotlightHtml = '';
+        if (spotlightCategory && b1.categoryScores[spotlightCategory] && b2.categoryScores[spotlightCategory]) {
+          var sl1 = b1.categoryScores[spotlightCategory];
+          var sl2 = b2.categoryScores[spotlightCategory];
+          var spct1 = sl1.max > 0 ? Math.round((sl1.score / sl1.max) * 100) : 0;
+          var spct2 = sl2.max > 0 ? Math.round((sl2.score / sl2.max) * 100) : 0;
+          var sdiff = Math.abs(spct1 - spct2);
+          var sc1 = getScoreColor(spct1);
+          var sc2 = getScoreColor(spct2);
+          var swinner = spct1 > spct2 ? b1.name : (spct2 > spct1 ? b2.name : null);
+          var swinnerColor = spct1 > spct2 ? sc1 : sc2;
+          var midHtml = swinner
+            ? '<div style="text-align:center"><div style="font-size:var(--text-xl);font-weight:800;color:' + swinnerColor + '"><i class="fa-solid fa-trophy"></i></div><div style="font-size:var(--text-xs);font-weight:700;color:' + swinnerColor + ';margin-top:var(--space-1)">+' + sdiff + ' pts</div><div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px">' + Components.escapeHTML(swinner) + ' wins</div></div>'
+            : '<div style="text-align:center;font-size:var(--text-sm);color:var(--text-muted)"><i class="fa-solid fa-equals"></i><br>Tied</div>';
+          spotlightHtml =
+            '<div class="card" style="margin-bottom:var(--space-6);border:2px solid var(--border-primary)">' +
+              '<div style="text-align:center;margin-bottom:var(--space-5)">' +
+                '<span style="font-size:var(--text-xs);font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted)"><i class="fa-solid fa-crosshairs"></i> ' + Components.escapeHTML(spotlightCategory) + '</span>' +
+              '</div>' +
+              '<div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--space-4)">' +
+                '<div style="text-align:center">' +
+                  '<div style="font-size:var(--text-3xl);font-weight:800;color:' + sc1 + ';font-variant-numeric:tabular-nums">' + sl1.score + '<span style="font-size:var(--text-lg);color:var(--text-muted)">/' + sl1.max + '</span></div>' +
+                  '<div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px">' + spct1 + '%</div>' +
+                  '<div style="font-size:var(--text-sm);font-weight:700;margin-top:var(--space-2)">' + Components.escapeHTML(b1.name) + '</div>' +
+                '</div>' +
+                midHtml +
+                '<div style="text-align:center">' +
+                  '<div style="font-size:var(--text-3xl);font-weight:800;color:' + sc2 + ';font-variant-numeric:tabular-nums">' + sl2.score + '<span style="font-size:var(--text-lg);color:var(--text-muted)">/' + sl2.max + '</span></div>' +
+                  '<div style="font-size:var(--text-xs);color:var(--text-muted);margin-top:2px">' + spct2 + '%</div>' +
+                  '<div style="font-size:var(--text-sm);font-weight:700;margin-top:var(--space-2)">' + Components.escapeHTML(b2.name) + '</div>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+        }
+        resultEl.innerHTML = verdictBannerHtml + brandCardsHtml + ratingSummaryHtml + spotlightHtml + radarHtml + keyDiffsHtml + barComparisonHtml + strengthsHtml;
 
         if (radarChart) radarChart.destroy();
-        radarChart = Components.createCompareRadarChart('compare-radar', b1, b2, isFiltering ? activeLabels : null);
+        radarChart = Components.createCompareRadarChart('compare-radar', b1, b2);
       };
     })();
   </script>
