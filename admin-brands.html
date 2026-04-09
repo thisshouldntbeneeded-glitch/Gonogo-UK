@@ -163,11 +163,13 @@
             </select>
           </div>
           <span class="text-xs text-muted" id="brand-count"></span>
+          <button id="delete-selected-btn" class="btn btn-sm" style="display:none;background:var(--red-text);color:#fff;margin-left:var(--space-2);" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Delete selected (<span id="selected-count">0</span>)</button>
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table" id="brands-table">
             <thead>
               <tr>
+                <th style="width:32px;"><input type="checkbox" id="select-all-brands" onchange="toggleSelectAll(this)" title="Select all"></th>
                 <th onclick="sortTable('name')">Brand <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th onclick="sortTable('categoryName')">Industry <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th onclick="sortTable('overallScore')">Score <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
@@ -178,7 +180,7 @@
               </tr>
             </thead>
             <tbody id="brands-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">Loading brands...</td></tr>
+              <tr><td colspan="8" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">Loading brands...</td></tr>
             </tbody>
           </table>
         </div>
@@ -512,7 +514,7 @@
       rawBrandsData = await GoNoGoAPI.getAllBrands();
       rawCategoriesData = await GoNoGoAPI.getCategories();
 
-      allBrandsData = (rawBrandsData || []).filter(isUKBrand);
+      allBrandsData = rawBrandsData || [];
       allCategoriesData = buildUKCategoryList(allBrandsData, rawCategoriesData);
     }
 
@@ -718,7 +720,7 @@
       var tbody = document.getElementById('brands-tbody');
 
       if (!data.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">No UK brands found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">No UK brands found</td></tr>';
         return;
       }
 
@@ -728,6 +730,7 @@
         var ios = (b.appRatings && (b.appRatings.ios || b.appRatings.iosScore)) || '';
 
         return '<tr>' +
+          '<td style="width:32px;"><input type="checkbox" class="brand-select-cb" data-id="' + b.id + '" onchange="updateDeleteBtn()"></td>' +
           '<td>' +
             '<div class="brand-cell">' +
               logoHtml +
@@ -758,6 +761,29 @@
       }).join('');
     }
 
+    function toggleSelectAll(cb) {
+      document.querySelectorAll('.brand-select-cb').forEach(function(c) { c.checked = cb.checked; });
+      updateDeleteBtn();
+    }
+    function updateDeleteBtn() {
+      var sel = document.querySelectorAll('.brand-select-cb:checked');
+      var btn = document.getElementById('delete-selected-btn');
+      document.getElementById('selected-count').textContent = sel.length;
+      btn.style.display = sel.length > 0 ? '' : 'none';
+      var sa = document.getElementById('select-all-brands');
+      if (sa) sa.indeterminate = sel.length > 0 && sel.length < document.querySelectorAll('.brand-select-cb').length;
+    }
+    function deleteSelected() {
+      var ids = Array.from(document.querySelectorAll('.brand-select-cb:checked')).map(function(c) { return c.dataset.id; });
+      if (!ids.length) return;
+      showConfirm('Delete Brands', 'Delete ' + ids.length + ' brand' + (ids.length > 1 ? 's' : '') + '? This cannot be undone.', 'Delete', 'danger', async function() {
+        for (var i = 0; i < ids.length; i++) {
+          try { await GoNoGoAPI.deleteBrand(ids[i]); } catch(e) {}
+        }
+        Components.showToast(ids.length + ' brand' + (ids.length > 1 ? 's' : '') + ' deleted');
+        await refreshDashboardData(); populateIndustryDropdowns(); filterBrands();
+      });
+    }
     function deleteBrand(id, name) {
       showConfirm(
         'Delete Brand',
@@ -805,6 +831,8 @@
         if (allBrandsData[i].id === id) { b = allBrandsData[i]; break; }
       }
       if (!b) return;
+
+      document.getElementById('brand-form').reset();
 
       editingBrandId = id;
       editingBrandData = b;
@@ -1026,6 +1054,7 @@
             description: description,
             icon_color: iconColor
           });
+          await GoNoGoAPI.updateBrandFrameworkDescriptions(editingSlug, name, description || '');
           Components.showToast('Category "' + name + '" updated');
         } else {
           var slug = slugify(name);
@@ -1160,8 +1189,8 @@
         cats.forEach(function(cat) {
           var key = cat.replace(/ /g, '').replace(/&/g, '');
           var d = cs[cat] || {};
-          row[key + '_Score'] = d.score || '';
-          row[key + '_Max'] = d.max || '';
+          row[key + '_Score'] = typeof d.score === 'number' ? d.score : '';
+          row[key + '_Max'] = typeof d.max === 'number' ? d.max : '';
           row[key + '_Description'] = d.description || '';
         });
         row.LastUpdated = b.lastUpdated || '';
@@ -1192,7 +1221,7 @@
       document.getElementById('csv-modal').classList.add('open');
 
       var text = await file.text();
-      var lines = text.split('\n').filter(function(l) { return l.trim(); });
+      var lines = splitCSVLines(text);
       if (lines.length < 2) {
         csvLog('Error: CSV must have a header row and at least one data row', 'error');
         document.getElementById('csv-status').innerHTML = '<span class="text-sm" style="color:var(--red-text)">Import failed</span>';
@@ -1247,7 +1276,8 @@
         sentimentSummary: findCol(headers, ['socialsentiment_summary', 'sentiment_summary']),
         sentimentPositive: findCol(headers, ['socialsentiment_positive', 'sentiment_positive']),
         sentimentConcerns: findCol(headers, ['socialsentiment_concerns', 'sentiment_concerns']),
-        categoryIcon: findCol(headers, ['categoryicon', 'category_icon', 'icon'])
+        categoryIcon: findCol(headers, ['categoryicon', 'category_icon', 'icon']),
+        scoringBreakdown: findCol(headers, ['scoringbreakdown', 'scoring_breakdown'])
       };
 
       var created = 0, errors = 0, catsCreated = 0;
@@ -1287,7 +1317,7 @@
 
         var scores = {};
         function addScore(label, sIdx, mIdx, dIdx) {
-          if (sIdx !== -1 && cols[sIdx]) {
+          if (sIdx !== -1) {
             scores[label] = {
               score: parseFloat(cols[sIdx]) || 0,
               max: mIdx !== -1 && cols[mIdx] ? parseFloat(cols[mIdx]) || 0 : 0,
@@ -1318,6 +1348,8 @@
         if (colMap.keyFeatures !== -1 && cols[colMap.keyFeatures]) brandData.keyFeatures = cols[colMap.keyFeatures].split(',').map(function(s){return s.trim();}).filter(Boolean);
         if (colMap.keyStrengths !== -1 && cols[colMap.keyStrengths]) brandData.strengths = cols[colMap.keyStrengths].split(',').map(function(s){return s.trim();}).filter(Boolean);
         if (colMap.keyConcerns !== -1 && cols[colMap.keyConcerns]) brandData.concerns = cols[colMap.keyConcerns].split(',').map(function(s){return s.trim();}).filter(Boolean);
+        if (colMap.score !== -1 && cols[colMap.score]) brandData.gonogo_score = parseFloat(cols[colMap.score]) || 0;
+        if (colMap.verdict !== -1 && cols[colMap.verdict]) brandData.verdict = cols[colMap.verdict].trim();
         if (colMap.pricing !== -1 && cols[colMap.pricing]) brandData.pricing = [{ name: 'Pricing', cost: cols[colMap.pricing].trim(), features: '' }];
 
         var hasSentiment = false;
@@ -1326,6 +1358,11 @@
         if (colMap.sentimentPositive !== -1 && cols[colMap.sentimentPositive]) { sentObj.positive_themes = cols[colMap.sentimentPositive].split(',').map(function(s){return s.trim();}).filter(Boolean); hasSentiment = true; }
         if (colMap.sentimentConcerns !== -1 && cols[colMap.sentimentConcerns]) { sentObj.common_concerns = cols[colMap.sentimentConcerns].split(',').map(function(s){return s.trim();}).filter(Boolean); hasSentiment = true; }
         if (hasSentiment) brandData.socialSentiment = sentObj;
+
+        if (colMap.scoringBreakdown !== -1 && cols[colMap.scoringBreakdown]) {
+          var parsedBreakdown = parseScoringBreakdownCSV(cols[colMap.scoringBreakdown].trim());
+          if (parsedBreakdown) brandData.scoring_breakdown = parsedBreakdown;
+        }
 
         try {
           await GoNoGoAPI.saveBrand(brandData);
@@ -1346,12 +1383,64 @@
       filterBrands();
     }
 
+    function parseScoringBreakdownCSV(value) {
+      if (!value) return null;
+      if (typeof value === 'object') return value;
+      try { return JSON.parse(value); } catch (e) {}
+      try {
+        var catMap = {
+          'compliance': 'Compliance', 'customersatisfaction': 'Customer Satisfaction',
+          'productvalue': 'Product Value', 'innovation': 'Innovation',
+          'customersupport': 'Customer Support', 'accessibilitysecurity': 'Accessibility & Security'
+        };
+        var result = {};
+        value.split(';').forEach(function(entry) {
+          entry = entry.trim();
+          var cm = entry.match(/^category([^,]+)/i);
+          if (!cm) return;
+          var catName = catMap[cm[1].trim().toLowerCase()] || cm[1].trim();
+          var sm = entry.match(/,score(\d+(?:\.\d+)?)/i);
+          var mm = entry.match(/,max(\d+(?:\.\d+)?)/i);
+          var dm = entry.match(/,description(.+)$/i);
+          if (sm) result[catName] = { score: parseFloat(sm[1]) || 0, max: parseFloat(mm ? mm[1] : 0) || 0, description: dm ? dm[1].trim() : '' };
+        });
+        return Object.keys(result).length > 0 ? result : null;
+      } catch (e) { return null; }
+    }
+
     function findCol(headers, names) {
       for (var i = 0; i < names.length; i++) {
         var idx = headers.indexOf(names[i]);
         if (idx !== -1) return idx;
       }
       return -1;
+    }
+
+    function splitCSVLines(text) {
+      var lines = [];
+      var current = '';
+      var inQuotes = false;
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        if (ch === '"') {
+          if (inQuotes && i + 1 < text.length && text[i + 1] === '"') {
+            current += '""';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+            current += ch;
+          }
+        } else if (ch === '\r') {
+          // skip carriage returns (handles \r\n Windows line endings)
+        } else if (ch === '\n' && !inQuotes) {
+          if (current.trim()) lines.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      if (current.trim()) lines.push(current);
+      return lines;
     }
 
     function parseCSVLine(line) {
