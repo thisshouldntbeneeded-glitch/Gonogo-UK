@@ -2459,6 +2459,8 @@
       var icon = document.getElementById('ai-refresh-icon');
       if (!btn) return;
 
+      var isAdmin = !!Components.getAdminUser();
+
       if (!updatedAt) {
         label.textContent = 'Refresh';
         btn.disabled = false;
@@ -2470,8 +2472,14 @@
       var sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
       var nextRefreshMs = updatedMs + sevenDaysMs;
       var now = Date.now();
+      var lastUpdatedLabel = 'Last updated ' + new Date(updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
-      if (now < nextRefreshMs) {
+      if (isAdmin) {
+        btn.disabled = false;
+        label.textContent = 'Refresh';
+        icon.className = 'fa-solid fa-rotate';
+        meta.textContent = lastUpdatedLabel;
+      } else if (now < nextRefreshMs) {
         btn.disabled = true;
         label.textContent = 'Refresh';
         icon.className = 'fa-solid fa-rotate';
@@ -2482,7 +2490,7 @@
         btn.disabled = false;
         label.textContent = 'Refresh';
         icon.className = 'fa-solid fa-rotate';
-        meta.textContent = 'Last updated ' + new Date(updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        meta.textContent = lastUpdatedLabel;
       }
     }
 
@@ -2521,7 +2529,8 @@
           keyStrengths: brand.strengths || raw.key_strengths || [],
           topNegativeTheme: reviewAnalysis && reviewAnalysis.topNegativeTheme
             ? reviewAnalysis.topNegativeTheme.label
-            : ''
+            : '',
+          forceRefresh: !!Components.getAdminUser()
         };
 
         var response = await fetch('/api/suggestions', {

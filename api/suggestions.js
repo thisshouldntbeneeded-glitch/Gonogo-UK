@@ -25,27 +25,30 @@ export default async function handler(req, res) {
     frameworkBreakdown,
     keyConcerns,
     keyStrengths,
-    topNegativeTheme
+    topNegativeTheme,
+    forceRefresh
   } = req.body || {};
 
   if (!brandSlug || !brandName) {
     return res.status(400).json({ error: 'brandSlug and brandName required' });
   }
 
-  // Check 7-day gate — return cached if still fresh
-  const existing = await fetchExisting(brandSlug);
-  if (existing && existing.ai_suggestions && existing.ai_suggestions_updated_at) {
-    const updatedAt = new Date(existing.ai_suggestions_updated_at).getTime();
-    if (Date.now() - updatedAt < SEVEN_DAYS_MS) {
-      const nextRefresh = new Date(updatedAt + SEVEN_DAYS_MS).toISOString();
-      return res.status(200).json({
-        ok: true,
-        cached: true,
-        suggestions: existing.ai_suggestions,
-        last_updated: existing.ai_suggestions_updated_at,
-        can_refresh: false,
-        next_refresh: nextRefresh
-      });
+  // Check 7-day gate — skipped when forceRefresh is true (admin users)
+  if (!forceRefresh) {
+    const existing = await fetchExisting(brandSlug);
+    if (existing && existing.ai_suggestions && existing.ai_suggestions_updated_at) {
+      const updatedAt = new Date(existing.ai_suggestions_updated_at).getTime();
+      if (Date.now() - updatedAt < SEVEN_DAYS_MS) {
+        const nextRefresh = new Date(updatedAt + SEVEN_DAYS_MS).toISOString();
+        return res.status(200).json({
+          ok: true,
+          cached: true,
+          suggestions: existing.ai_suggestions,
+          last_updated: existing.ai_suggestions_updated_at,
+          can_refresh: false,
+          next_refresh: nextRefresh
+        });
+      }
     }
   }
 
