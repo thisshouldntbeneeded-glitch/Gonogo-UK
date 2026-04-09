@@ -492,12 +492,12 @@ const Components = {
     });
   },
 
-  createCompareRadarChart(canvasId, brand1, brand2) {
+  createCompareRadarChart(canvasId, brand1, brand2, filteredLabels) {
     const canvas = document.getElementById(canvasId);
     if (!canvas) return null;
 
-    // Use union of scoring categories
-    const allLabels = Object.keys(brand1.categoryScores);
+    // Use union of scoring categories (or a filtered subset)
+    const allLabels = filteredLabels || Object.keys(brand1.categoryScores);
     const data1 = allLabels.map(key => {
       const cs = brand1.categoryScores[key];
       return cs ? (cs.max > 0 ? Math.round((cs.score / cs.max) * 100) : Math.min(100, Math.round(cs.score || 0))) : 0;
