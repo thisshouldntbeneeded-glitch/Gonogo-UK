@@ -629,6 +629,27 @@ addCategory: function (categoryData) {
       });
     },
 
+    // Propagate a category description change into every brand's framework_breakdown
+    updateBrandFrameworkDescriptions: function (categorySlug, categoryName, description) {
+      return supabaseRequest(
+        'brands?region=eq.' + SITE_REGION + '&category_slug=eq.' + encodeURIComponent(categorySlug) + '&select=slug,framework_breakdown'
+      ).then(function (brands) {
+        if (!brands || !brands.length) return;
+        return Promise.all(brands.map(function (brand) {
+          var fb = (brand.framework_breakdown || []).map(function (entry) {
+            if (entry.category === categoryName) {
+              return { category: entry.category, score: entry.score, description: description };
+            }
+            return entry;
+          });
+          return supabaseRequest(
+            'brands?region=eq.' + SITE_REGION + '&slug=eq.' + encodeURIComponent(brand.slug),
+            { method: 'PATCH', body: { framework_breakdown: fb } }
+          );
+        }));
+      });
+    },
+
     // Delete a category (only if no brands reference it)
     deleteCategory: function (slug) {
       _categoryCache = null; // bust cache

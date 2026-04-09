@@ -514,7 +514,7 @@
       rawBrandsData = await GoNoGoAPI.getAllBrands();
       rawCategoriesData = await GoNoGoAPI.getCategories();
 
-      allBrandsData = (rawBrandsData || []).filter(isUKBrand);
+      allBrandsData = rawBrandsData || [];
       allCategoriesData = buildUKCategoryList(allBrandsData, rawCategoriesData);
     }
 
@@ -832,6 +832,8 @@
       }
       if (!b) return;
 
+      document.getElementById('brand-form').reset();
+
       editingBrandId = id;
       editingBrandData = b;
       document.getElementById('modal-title').textContent = 'Edit: ' + b.name;
@@ -1052,6 +1054,7 @@
             description: description,
             icon_color: iconColor
           });
+          await GoNoGoAPI.updateBrandFrameworkDescriptions(editingSlug, name, description || '');
           Components.showToast('Category "' + name + '" updated');
         } else {
           var slug = slugify(name);
@@ -1186,8 +1189,8 @@
         cats.forEach(function(cat) {
           var key = cat.replace(/ /g, '').replace(/&/g, '');
           var d = cs[cat] || {};
-          row[key + '_Score'] = d.score || '';
-          row[key + '_Max'] = d.max || '';
+          row[key + '_Score'] = typeof d.score === 'number' ? d.score : '';
+          row[key + '_Max'] = typeof d.max === 'number' ? d.max : '';
           row[key + '_Description'] = d.description || '';
         });
         row.LastUpdated = b.lastUpdated || '';
@@ -1218,7 +1221,7 @@
       document.getElementById('csv-modal').classList.add('open');
 
       var text = await file.text();
-      var lines = text.split('\n').filter(function(l) { return l.trim(); });
+      var lines = splitCSVLines(text);
       if (lines.length < 2) {
         csvLog('Error: CSV must have a header row and at least one data row', 'error');
         document.getElementById('csv-status').innerHTML = '<span class="text-sm" style="color:var(--red-text)">Import failed</span>';
@@ -1314,7 +1317,7 @@
 
         var scores = {};
         function addScore(label, sIdx, mIdx, dIdx) {
-          if (sIdx !== -1 && cols[sIdx]) {
+          if (sIdx !== -1) {
             scores[label] = {
               score: parseFloat(cols[sIdx]) || 0,
               max: mIdx !== -1 && cols[mIdx] ? parseFloat(cols[mIdx]) || 0 : 0,
@@ -1411,6 +1414,33 @@
         if (idx !== -1) return idx;
       }
       return -1;
+    }
+
+    function splitCSVLines(text) {
+      var lines = [];
+      var current = '';
+      var inQuotes = false;
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        if (ch === '"') {
+          if (inQuotes && i + 1 < text.length && text[i + 1] === '"') {
+            current += '""';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+            current += ch;
+          }
+        } else if (ch === '\r') {
+          // skip carriage returns (handles \r\n Windows line endings)
+        } else if (ch === '\n' && !inQuotes) {
+          if (current.trim()) lines.push(current);
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      if (current.trim()) lines.push(current);
+      return lines;
     }
 
     function parseCSVLine(line) {

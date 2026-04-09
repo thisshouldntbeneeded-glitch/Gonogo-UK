@@ -922,6 +922,7 @@
       initBrandPage();
     }
 
+    var LIVE_PUBLIC_BASE_URL = 'https://www.gonogo.co.uk';
     var currentBadgeStyle = 'full';
     var reviewReplyTemplates = [];
 
@@ -1468,10 +1469,10 @@
       window._brandName = brandName;
       window._brandScore = brandScore;
       window._brandVerdict = brandVerdict;
-      window._siteUrl = window.location.origin;
+      window._siteUrl = LIVE_PUBLIC_BASE_URL;
       setBadgeStyle('full');
 
-      var apiUrl = 'https://fnpxaneextqidbessnej.supabase.co/rest/v1/brands?slug=eq.' + encodeURIComponent(brandSlug) + '&select=name,gonogo_score,verdict,framework_breakdown,key_strengths,key_concerns,last_updated';
+      var apiUrl = 'https://fnpxaneextqidbessnej.supabase.co/rest/v1/brands?slug=eq.' + encodeURIComponent(brandSlug) + '&region=eq.uk&select=name,gonogo_score,verdict,framework_breakdown,key_strengths,key_concerns,last_updated';
       document.getElementById('api-endpoint').textContent = apiUrl;
     }
 
@@ -1530,7 +1531,7 @@
     }
 
     function setupReviewCollection(brandSlug, brandName, reviewAnalysis, frameworkAnalysis, brand) {
-      var reviewUrl = window.location.origin + '/brand.html?id=' + encodeURIComponent(brandSlug) + '#leave-review';
+      var reviewUrl = LIVE_PUBLIC_BASE_URL + '/brand.html?id=' + encodeURIComponent(brandSlug) + '#leave-review';
       window._reviewUrl = reviewUrl;
       window._reviewQrFilename = (brandSlug || 'brand') + '-review-qr.png';
       window._reviewBrandName = brandName || 'Brand';
