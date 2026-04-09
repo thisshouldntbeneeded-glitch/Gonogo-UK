@@ -55,6 +55,14 @@
     .compare-category-score.left, .compare-category-score.right { justify-content: center; }
     .compare-category-label { min-width: auto; }
   }
+  /* ── Score filter pills ── */
+  .score-filter-pills { display:flex; flex-wrap:wrap; gap:var(--space-2); align-items:center; }
+  .score-pill { font-size:var(--text-xs); font-weight:600; padding:4px 12px; border-radius:20px; border:1.5px solid var(--border-primary); background:transparent; color:var(--text-secondary); cursor:pointer; transition:background 0.15s,color 0.15s,border-color 0.15s; user-select:none; line-height:1.4; }
+  .score-pill.active { background:var(--green); border-color:var(--green); color:#fff; }
+  .score-pill:hover:not(.active) { border-color:var(--text-muted); color:var(--text-primary); }
+  .score-pill-reset { font-size:var(--text-xs); font-weight:600; color:var(--text-muted); background:none; border:none; cursor:pointer; padding:4px 6px; text-decoration:underline; line-height:1.4; }
+  .score-pill-reset:hover { color:var(--text-primary); }
+  .filter-notice { display:flex; align-items:center; gap:var(--space-2); justify-content:center; padding:var(--space-2) var(--space-4); background:var(--surface-2); border:1px solid var(--border-subtle); border-radius:var(--radius-md); font-size:var(--text-xs); color:var(--text-muted); margin-bottom:var(--space-5); }
 </style>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -84,10 +92,15 @@
     var categoriesCache = [];
     var radarChart = null;
     var selectedCategory = '';
+    var activeScoreFilters = new Set();
+    var allScoreLabels = [];
 
     (async function() {
       allBrandsCache = await GoNoGoAPI.getAllBrands();
       categoriesCache = await GoNoGoAPI.getCategories();
+      if (allBrandsCache.length > 0) {
+        allScoreLabels = Object.keys(allBrandsCache[0].categoryScores || {});
+      }
 
       function buildCategoryOptions() {
         var html = '<option value="">All Categories</option>';
@@ -133,6 +146,50 @@
         if (preBrand) selectedCategory = preBrand.categorySlug;
       }
 
+      function buildScoreFilterPills() {
+        if (allScoreLabels.length === 0) return '';
+        var isFiltering = activeScoreFilters.size > 0 && activeScoreFilters.size < allScoreLabels.length;
+        var pillsHtml = allScoreLabels.map(function(label) {
+          var isActive = activeScoreFilters.size === 0 || activeScoreFilters.has(label);
+          var safeLabel = label.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+          return '<button class="score-pill' + (isActive ? ' active' : '') + '" onclick="toggleScoreFilter(\'' + safeLabel + '\')">' + Components.escapeHTML(label) + '</button>';
+        }).join('');
+        var resetHtml = isFiltering ? ' <button class="score-pill-reset" onclick="resetScoreFilters()">&#10005; Reset</button>' : '';
+        return '<div style="margin-top:var(--space-4);padding-top:var(--space-4);border-top:1px solid var(--border-subtle)">'
+          + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2)">'
+          + '<span style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em"><i class="fa-solid fa-sliders"></i> Focus on</span>'
+          + resetHtml
+          + '</div>'
+          + '<div class="score-filter-pills">' + pillsHtml + '</div>'
+          + '</div>';
+      }
+
+      function updatePillsUI() {
+        var container = document.getElementById('score-filter-container');
+        if (container) container.innerHTML = buildScoreFilterPills();
+      }
+
+      window.toggleScoreFilter = function(label) {
+        if (activeScoreFilters.size === 0) {
+          // All active — deactivate just this one (activate all others)
+          allScoreLabels.forEach(function(l) { if (l !== label) activeScoreFilters.add(l); });
+        } else if (activeScoreFilters.has(label)) {
+          activeScoreFilters.delete(label);
+          if (activeScoreFilters.size === 0) activeScoreFilters.clear();
+        } else {
+          activeScoreFilters.add(label);
+          if (activeScoreFilters.size === allScoreLabels.length) activeScoreFilters.clear();
+        }
+        updatePillsUI();
+        updateComparison();
+      };
+
+      window.resetScoreFilters = function() {
+        activeScoreFilters.clear();
+        updatePillsUI();
+        updateComparison();
+      };
+
       function renderPage() {
         var id1 = document.getElementById('brand1') ? document.getElementById('brand1').value : preId1;
         var id2 = document.getElementById('brand2') ? document.getElementById('brand2').value : preId2;
@@ -155,6 +212,7 @@
                 '<div class="form-group"><label class="form-label">Brand 1</label><select id="brand1" onchange="updateComparison()">' + buildBrandOptions(id1) + '</select></div>' +
                 '<div class="form-group"><label class="form-label">Brand 2</label><select id="brand2" onchange="updateComparison()">' + buildBrandOptions(id2) + '</select></div>' +
               '</div>' +
+              '<div id="score-filter-container">' + buildScoreFilterPills() + '</div>' +
             '</div>' +
             '<div id="comparison-result"></div>' +
           '</div></section>';
@@ -301,8 +359,12 @@
 
         // Key Differences
         var allLabels = Object.keys(b1.categoryScores);
+        var isFiltering = activeScoreFilters.size > 0 && activeScoreFilters.size < allLabels.length;
+        var activeLabels = isFiltering
+          ? allLabels.filter(function(l) { return activeScoreFilters.has(l); })
+          : allLabels;
         var differences = [];
-        allLabels.forEach(function(label) {
+        activeLabels.forEach(function(label) {
           var s1 = b1.categoryScores[label];
           var s2 = b2.categoryScores[label];
           var pct1 = s1 ? Math.round((s1.score / s1.max) * 100) : 0;
@@ -359,15 +421,16 @@
         var overallB1Color = getScoreColor(b1.overallScore);
         var overallB2Color = getScoreColor(b2.overallScore);
         keyDiffsHtml +=
+          (isFiltering ? '' :
           '<div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-4);border-top:2px solid var(--border-primary);margin-top:var(--space-1)">' +
             '<span style="font-size:var(--text-lg);font-weight:800;color:' + overallB1Color + '">' + b1.overallScore + '/100</span>' +
             '<span style="font-size:var(--text-xs);font-weight:700;color:var(--text-secondary);text-transform:uppercase">OVERALL</span>' +
             '<span style="font-size:var(--text-lg);font-weight:800;color:' + overallB2Color + '">' + b2.overallScore + '/100</span>' +
-          '</div>' +
+          '</div>') +
           '</div>';
 
         // Category Comparison Bars
-        var scoreRows = allLabels.map(function(label) {
+        var scoreRows = activeLabels.map(function(label) {
           var s1 = b1.categoryScores[label];
           var s2 = b2.categoryScores[label];
           var pct1 = s1 ? Math.round((s1.score / s1.max) * 100) : 0;
@@ -397,11 +460,12 @@
               '<span style="font-size:var(--text-xs);font-weight:600;color:' + overallB2Color + ';text-transform:uppercase;letter-spacing:0.04em">' + Components.escapeHTML(b2.name) + '</span>' +
             '</div>' +
             scoreRows +
+            (isFiltering ? '' :
             '<div class="compare-row" style="border-bottom:none;padding-top:var(--space-4)">' +
               '<div class="compare-bar left"><span style="font-size:var(--text-lg);font-weight:800;color:' + overallB1Color + '">' + b1.overallScore + '/100</span></div>' +
               '<div class="label" style="font-weight:700;color:var(--text-primary)">OVERALL</div>' +
               '<div class="compare-bar right"><span style="font-size:var(--text-lg);font-weight:800;color:' + overallB2Color + '">' + b2.overallScore + '/100</span></div>' +
-            '</div>' +
+            '</div>') +
           '</div>';
 
         // Strengths & Concerns
@@ -426,10 +490,13 @@
             '</div>' +
           '</div>';
 
-        resultEl.innerHTML = verdictBannerHtml + brandCardsHtml + ratingSummaryHtml + radarHtml + keyDiffsHtml + barComparisonHtml + strengthsHtml;
+        var filterNoticeHtml = isFiltering
+          ? '<div class="filter-notice"><i class="fa-solid fa-filter"></i> Filtered view — overall scores hidden. <button class="score-pill-reset" onclick="resetScoreFilters()" style="margin-left:4px">Show all</button></div>'
+          : '';
+        resultEl.innerHTML = filterNoticeHtml + (isFiltering ? '' : verdictBannerHtml) + brandCardsHtml + (isFiltering ? '' : ratingSummaryHtml) + radarHtml + keyDiffsHtml + barComparisonHtml + strengthsHtml;
 
         if (radarChart) radarChart.destroy();
-        radarChart = Components.createCompareRadarChart('compare-radar', b1, b2);
+        radarChart = Components.createCompareRadarChart('compare-radar', b1, b2, isFiltering ? activeLabels : null);
       };
     })();
   </script>
