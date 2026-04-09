@@ -679,6 +679,159 @@
       grid-template-columns: 1fr !important;
     }
   }
+
+  /* AI Suggestions Section */
+  .ai-suggestions-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .ai-suggestions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+
+  .ai-suggestion-card {
+    border: 1px solid var(--border-primary);
+    background: var(--surface-2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .ai-suggestion-cat-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1);
+  }
+
+  .ai-suggestion-cat-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: rgba(17,165,81,0.10);
+    color: var(--green);
+    flex-shrink: 0;
+  }
+
+  .ai-suggestion-cat-name {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
+
+  .ai-step {
+    display: flex;
+    gap: var(--space-3);
+    align-items: flex-start;
+    padding: var(--space-3);
+    background: var(--surface-1);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-md);
+  }
+
+  .ai-step-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: rgba(17,165,81,0.12);
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .ai-step-body { flex: 1; min-width: 0; }
+
+  .ai-step-title {
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+    line-height: 1.35;
+  }
+
+  .ai-step-how {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    line-height: 1.55;
+    max-width: none;
+  }
+
+  .ai-refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border-primary);
+    background: var(--surface-3);
+    color: var(--text-secondary);
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+
+  .ai-refresh-btn:hover:not(:disabled) {
+    background: rgba(17,165,81,0.12);
+    color: var(--green);
+    border-color: rgba(17,165,81,0.3);
+  }
+
+  .ai-refresh-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .ai-refresh-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 5px;
+    text-align: right;
+  }
+
+  .ai-suggestions-empty {
+    padding: var(--space-8);
+    text-align: center;
+    color: var(--text-muted);
+  }
+
+  .ai-suggestions-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-8);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+  }
+
+  @media (max-width: 1200px) {
+    .ai-suggestions-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    .ai-suggestions-grid { grid-template-columns: 1fr; }
+    .ai-suggestions-header { flex-direction: column; align-items: flex-start; }
+  }
 </style>
 </head>
 <body>
@@ -799,6 +952,32 @@
             </h3>
             <div style="height:300px;"><canvas id="peer-position-chart"></canvas></div>
             <p class="text-xs text-muted" id="peer-position-note" style="margin-top:var(--space-3);">How your score compares with other UK brands in your category.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Action Plan Section -->
+      <div class="card" style="margin-bottom:var(--space-8);" id="ai-suggestions-card">
+        <div class="ai-suggestions-header">
+          <div>
+            <h3 class="text-sm font-semibold" style="margin-bottom:6px;">
+              <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--green);margin-right:var(--space-2);"></i>
+              AI Action Plan
+            </h3>
+            <p class="text-xs text-muted">Personalised improvement steps generated from your scores, concerns and review data.</p>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <button class="ai-refresh-btn" id="ai-refresh-btn" onclick="refreshSuggestions()">
+              <i class="fa-solid fa-rotate" id="ai-refresh-icon"></i>
+              <span id="ai-refresh-label">Generate</span>
+            </button>
+            <div class="ai-refresh-meta" id="ai-refresh-meta"></div>
+          </div>
+        </div>
+        <div id="ai-suggestions-body">
+          <div class="ai-suggestions-empty">
+            <i class="fa-solid fa-wand-magic-sparkles" style="font-size:32px;margin-bottom:var(--space-3);display:block;opacity:0.3;"></i>
+            <div>Generate your first personalised action plan.</div>
           </div>
         </div>
       </div>
@@ -980,6 +1159,7 @@
       renderIndustryComparison(peers, brandSlug);
       renderIndustryTable(peers, brandSlug);
       renderReviewToolkit(reviewAnalysis, frameworkAnalysis, brand);
+      initAISuggestions(brand, raw, reviewAnalysis);
     }
 
     function renderHeader(brand) {
@@ -2195,6 +2375,182 @@
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
     }
+
+    // ── AI Action Plan ──────────────────────────────────────────────
+
+    var _aiSuggestionsBrand = null;
+    var _aiSuggestionsRaw = null;
+    var _aiSuggestionsReviewAnalysis = null;
+
+    var AI_CAT_ICONS = {
+      'Compliance': 'fa-shield-halved',
+      'Customer Satisfaction': 'fa-star',
+      'Product Value': 'fa-tag',
+      'Innovation': 'fa-lightbulb',
+      'Customer Support': 'fa-headset',
+      'Accessibility & Security': 'fa-lock'
+    };
+
+    function initAISuggestions(brand, raw, reviewAnalysis) {
+      _aiSuggestionsBrand = brand;
+      _aiSuggestionsRaw = raw;
+      _aiSuggestionsReviewAnalysis = reviewAnalysis;
+
+      var existing = raw.ai_suggestions;
+      var updatedAt = raw.ai_suggestions_updated_at;
+
+      if (existing && existing.categories && existing.categories.length) {
+        renderAISuggestions(existing);
+        updateAIRefreshButton(updatedAt);
+      } else {
+        document.getElementById('ai-suggestions-body').innerHTML =
+          '<div class="ai-suggestions-empty">' +
+          '<i class="fa-solid fa-wand-magic-sparkles" style="font-size:32px;margin-bottom:var(--space-3);display:block;opacity:0.3;"></i>' +
+          '<div style="margin-bottom:var(--space-3);">No action plan generated yet.</div>' +
+          '<button class="ai-refresh-btn" onclick="refreshSuggestions()" style="margin:0 auto;">' +
+          '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate Action Plan' +
+          '</button>' +
+          '</div>';
+        document.getElementById('ai-refresh-btn').style.display = 'none';
+        document.getElementById('ai-refresh-meta').textContent = '';
+      }
+    }
+
+    function renderAISuggestions(suggestions) {
+      var cats = (suggestions && suggestions.categories) ? suggestions.categories : [];
+      if (!cats.length) {
+        document.getElementById('ai-suggestions-body').innerHTML =
+          '<div class="empty-soft">No suggestions available.</div>';
+        return;
+      }
+
+      var html = '<div class="ai-suggestions-grid">';
+
+      cats.forEach(function(cat) {
+        var icon = AI_CAT_ICONS[cat.name] || 'fa-circle-check';
+        html += '<div class="ai-suggestion-card">';
+        html += '<div class="ai-suggestion-cat-header">';
+        html += '<span class="ai-suggestion-cat-icon"><i class="fa-solid ' + icon + '"></i></span>';
+        html += '<span class="ai-suggestion-cat-name">' + Components.escapeHTML(cat.name) + '</span>';
+        html += '</div>';
+
+        (cat.steps || []).forEach(function(step, idx) {
+          html += '<div class="ai-step">';
+          html += '<span class="ai-step-num">' + (idx + 1) + '</span>';
+          html += '<div class="ai-step-body">';
+          html += '<div class="ai-step-title">' + Components.escapeHTML(step.title || '') + '</div>';
+          html += '<div class="ai-step-how">' + Components.escapeHTML(step.how || '') + '</div>';
+          html += '</div>';
+          html += '</div>';
+        });
+
+        html += '</div>';
+      });
+
+      html += '</div>';
+      document.getElementById('ai-suggestions-body').innerHTML = html;
+      document.getElementById('ai-refresh-btn').style.display = '';
+    }
+
+    function updateAIRefreshButton(updatedAt) {
+      var btn = document.getElementById('ai-refresh-btn');
+      var meta = document.getElementById('ai-refresh-meta');
+      var label = document.getElementById('ai-refresh-label');
+      var icon = document.getElementById('ai-refresh-icon');
+      if (!btn) return;
+
+      if (!updatedAt) {
+        label.textContent = 'Refresh';
+        btn.disabled = false;
+        meta.textContent = '';
+        return;
+      }
+
+      var updatedMs = new Date(updatedAt).getTime();
+      var sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
+      var nextRefreshMs = updatedMs + sevenDaysMs;
+      var now = Date.now();
+
+      if (now < nextRefreshMs) {
+        btn.disabled = true;
+        label.textContent = 'Refresh';
+        icon.className = 'fa-solid fa-rotate';
+        var daysLeft = Math.ceil((nextRefreshMs - now) / (24 * 60 * 60 * 1000));
+        var nextDate = new Date(nextRefreshMs).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        meta.textContent = 'Next refresh available ' + nextDate + ' (' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ')';
+      } else {
+        btn.disabled = false;
+        label.textContent = 'Refresh';
+        icon.className = 'fa-solid fa-rotate';
+        meta.textContent = 'Last updated ' + new Date(updatedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      }
+    }
+
+    async function refreshSuggestions() {
+      var brand = _aiSuggestionsBrand;
+      var raw = _aiSuggestionsRaw;
+      var reviewAnalysis = _aiSuggestionsReviewAnalysis;
+      if (!brand) return;
+
+      var btn = document.getElementById('ai-refresh-btn');
+      var label = document.getElementById('ai-refresh-label');
+      var icon = document.getElementById('ai-refresh-icon');
+      var meta = document.getElementById('ai-refresh-meta');
+
+      btn.disabled = true;
+      icon.className = 'fa-solid fa-rotate fa-spin';
+      label.textContent = 'Generating…';
+      meta.textContent = '';
+
+      document.getElementById('ai-suggestions-body').innerHTML =
+        '<div class="ai-suggestions-loading">' +
+        '<i class="fa-solid fa-rotate fa-spin" style="font-size:18px;color:var(--green);"></i>' +
+        'Generating personalised suggestions… this takes about 10 seconds.' +
+        '</div>';
+
+      try {
+        var fb = raw.framework_breakdown || raw.frameworkbreakdown || [];
+        var payload = {
+          brandSlug: brand.id || raw.slug || '',
+          brandName: brand.name || '',
+          categoryName: brand.categoryName || '',
+          score: brand.overallScore || 0,
+          verdict: brand.verdict || '',
+          frameworkBreakdown: fb,
+          keyConcerns: brand.concerns || raw.key_concerns || [],
+          keyStrengths: brand.strengths || raw.key_strengths || [],
+          topNegativeTheme: reviewAnalysis && reviewAnalysis.topNegativeTheme
+            ? reviewAnalysis.topNegativeTheme.label
+            : ''
+        };
+
+        var response = await fetch('/api/suggestions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        var data = await response.json();
+
+        if (!response.ok || !data.ok) {
+          throw new Error(data.error || 'Suggestions API returned an error');
+        }
+
+        renderAISuggestions(data.suggestions);
+        updateAIRefreshButton(data.last_updated);
+
+        raw.ai_suggestions = data.suggestions;
+        raw.ai_suggestions_updated_at = data.last_updated;
+
+      } catch (err) {
+        document.getElementById('ai-suggestions-body').innerHTML =
+          '<div class="empty-soft">Could not generate suggestions: ' + Components.escapeHTML(err.message) + '</div>';
+        btn.disabled = false;
+        icon.className = 'fa-solid fa-rotate';
+        label.textContent = 'Retry';
+      }
+    }
+
   </script>
 </body>
 </html>
