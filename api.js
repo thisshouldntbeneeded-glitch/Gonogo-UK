@@ -843,15 +843,22 @@ getBrandUser: function () {
     // PASSWORD RESET
     // ==========================================
     requestPasswordReset: function (email) {
+      var origin = window.location.origin;
       return fetch(SUPABASE_URL + '/functions/v1/send-reset-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
-          'x-site-origin': window.location.origin
+          'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
         },
-        body: JSON.stringify({ email: email.toLowerCase().trim() })
-      }).then(function (r) { return r.json(); });
+        body: JSON.stringify({ email: email.toLowerCase().trim(), site_origin: origin })
+      }).then(function (r) { return r.json(); })
+      .catch(function () {
+        // Fallback: call the RPC directly (token is generated but email won't send)
+        return supabaseRequest('rpc/request_brand_password_reset', {
+          method: 'POST',
+          body: { p_email: email.toLowerCase().trim() }
+        });
+      });
     },
 
     verifyResetToken: function (token) {
