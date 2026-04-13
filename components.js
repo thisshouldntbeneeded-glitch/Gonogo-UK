@@ -123,6 +123,7 @@ const Components = {
           ${links.map(l => `
             <a href="${l.href}" class="admin-sidebar-link ${activePage === l.id ? 'active' : ''}">
               <i class="fa-solid ${l.icon}"></i> ${l.label}
+              ${l.id === 'comments' ? '<span id="pending-review-badge" class="pending-badge" style="display:none"></span>' : ''}
             </a>
           `).join('')}
           <div style="flex:1"></div>
@@ -138,6 +139,20 @@ const Components = {
         <i class="fa-solid fa-bars"></i>
       </button>
     `;
+  },
+
+  loadPendingReviewBadge() {
+    if (typeof GoNoGoAPI === 'undefined' || !GoNoGoAPI.getPendingReviewCount) return;
+    GoNoGoAPI.getPendingReviewCount().then(function (count) {
+      var badge = document.getElementById('pending-review-badge');
+      if (!badge) return;
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    });
   },
 
   toggleMobileNav() {
@@ -169,6 +184,16 @@ const Components = {
     }
     this.updateThemeIcon();
     this.initCookieConsent();
+    this.loadPendingReviewBadge();
+    this.injectPendingBadgeStyles();
+  },
+
+  injectPendingBadgeStyles() {
+    if (document.getElementById('pending-badge-css')) return;
+    var style = document.createElement('style');
+    style.id = 'pending-badge-css';
+    style.textContent = '.pending-badge{background:#ef4444;color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;padding:0 5px;margin-left:auto;line-height:1;}';
+    document.head.appendChild(style);
   },
 
   // ============================================================
