@@ -161,8 +161,19 @@
               <option value="GO WITH CAUTION">Go with Caution</option>
               <option value="NOGO">NOGO</option>
             </select>
+            <select id="status-filter" style="width:auto;max-width:140px;" onchange="filterBrands()">
+              <option value="">All Statuses</option>
+              <option value="draft">Draft (pending QA)</option>
+              <option value="live">Live</option>
+            </select>
+            <select id="active-filter" style="width:auto;max-width:140px;" onchange="filterBrands()">
+              <option value="">Active &amp; Inactive</option>
+              <option value="true">Active only</option>
+              <option value="false">Inactive only</option>
+            </select>
           </div>
           <span class="text-xs text-muted" id="brand-count"></span>
+          <button id="approve-selected-btn" class="btn btn-sm" style="display:none;background:var(--green);color:#fff;margin-left:var(--space-2);" onclick="approveSelected()"><i class="fa-solid fa-circle-check"></i> Approve selected (<span id="approve-count">0</span>)</button>
           <button id="delete-selected-btn" class="btn btn-sm" style="display:none;background:var(--red-text);color:#fff;margin-left:var(--space-2);" onclick="deleteSelected()"><i class="fa-solid fa-trash"></i> Delete selected (<span id="selected-count">0</span>)</button>
         </div>
         <div style="overflow-x:auto;">
@@ -174,7 +185,7 @@
                 <th onclick="sortTable('categoryName')">Industry <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th onclick="sortTable('overallScore')">Score <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th>Verdict</th>
-                <th>App Ratings</th>
+                <th>Status</th>
                 <th onclick="sortTable('lastUpdated')">Updated <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th>Actions</th>
               </tr>
@@ -511,7 +522,7 @@
     }
 
     async function refreshDashboardData() {
-      rawBrandsData = await GoNoGoAPI.getAllBrands();
+      rawBrandsData = await GoNoGoAPI.getAllBrandsAdmin();
       rawCategoriesData = await GoNoGoAPI.getCategories();
 
       allBrandsData = rawBrandsData || [];
@@ -688,6 +699,8 @@
       var search = document.getElementById('search-input').value.toLowerCase().trim();
       var industry = document.getElementById('industry-filter').value.toLowerCase().trim();
       var verdict = document.getElementById('verdict-filter').value.toLowerCase().trim();
+      var statusFilter = document.getElementById('status-filter').value.toLowerCase().trim();
+      var activeFilter = document.getElementById('active-filter').value;
 
       var filtered = allBrandsData.filter(function(b) {
         var name = (b.name || '').toLowerCase();
@@ -698,7 +711,9 @@
         var matchSearch = !search || name.indexOf(search) !== -1 || categoryName.indexOf(search) !== -1;
         var matchIndustry = !industry || categorySlug === industry;
         var matchVerdict = !verdict || brandVerdict === verdict;
-        return matchSearch && matchIndustry && matchVerdict;
+        var matchStatus = !statusFilter || (b.status || 'live') === statusFilter;
+        var matchActive = !activeFilter || String(b.is_active !== false) === activeFilter;
+        return matchSearch && matchIndustry && matchVerdict && matchStatus && matchActive;
       });
 
       filtered = Components.sortData(filtered, currentSort.key, currentSort.dir);
@@ -726,11 +741,25 @@
 
       tbody.innerHTML = data.map(function(b) {
         var logoHtml = Components.renderLogo(b, 'brand-logo');
-        var gp = (b.appRatings && (b.appRatings.googlePlay || b.appRatings.googlePlayScore)) || '';
-        var ios = (b.appRatings && (b.appRatings.ios || b.appRatings.iosScore)) || '';
+        var brandStatus = b.status || 'live';
+        var brandActive = b.is_active !== false;
+        var statusBadge = brandStatus === 'draft'
+          ? '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(245,158,11,0.15);color:#f59e0b;"><i class="fa-solid fa-clock" style="font-size:9px;"></i> Draft</span>'
+          : '<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(16,185,129,0.15);color:#10b981;"><i class="fa-solid fa-circle-check" style="font-size:9px;"></i> Live</span>';
+        if (!brandActive) {
+          statusBadge += ' <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(239,68,68,0.15);color:#ef4444;"><i class="fa-solid fa-eye-slash" style="font-size:9px;"></i> Inactive</span>';
+        }
+        var rowStyle = (!brandActive || brandStatus === 'draft') ? ' style="opacity:0.65;"' : '';
 
-        return '<tr>' +
-          '<td style="width:32px;"><input type="checkbox" class="brand-select-cb" data-id="' + b.id + '" onchange="updateDeleteBtn()"></td>' +
+        var toggleActiveBtn = brandActive
+          ? '<button class="btn btn-ghost btn-sm" title="Deactivate" style="color:var(--red-text);opacity:0.7;" onclick="toggleActive(\'' + b.id + '\', false)"><i class="fa-solid fa-eye-slash"></i></button>'
+          : '<button class="btn btn-ghost btn-sm" title="Reactivate" style="color:var(--green);" onclick="toggleActive(\'' + b.id + '\', true)"><i class="fa-solid fa-eye"></i></button>';
+        var approveBtn = brandStatus === 'draft'
+          ? '<button class="btn btn-ghost btn-sm" title="Approve (go live)" style="color:var(--green);" onclick="approveBrand(\'' + b.id + '\')"><i class="fa-solid fa-circle-check"></i></button>'
+          : '<button class="btn btn-ghost btn-sm" title="Revert to draft" style="color:#f59e0b;opacity:0.7;" onclick="revertBrand(\'' + b.id + '\')"><i class="fa-solid fa-rotate-left"></i></button>';
+
+        return '<tr' + rowStyle + '>' +
+          '<td style="width:32px;"><input type="checkbox" class="brand-select-cb" data-id="' + b.id + '" data-status="' + brandStatus + '" onchange="updateDeleteBtn()"></td>' +
           '<td>' +
             '<div class="brand-cell">' +
               logoHtml +
@@ -743,15 +772,12 @@
           '<td><span class="text-sm">' + Components.escapeHTML(b.categoryName || '') + '</span></td>' +
           '<td>' + Components.renderScoreBadge(b.overallScore) + '</td>' +
           '<td>' + Components.renderVerdictBadge(b.verdict) + '</td>' +
-          '<td>' +
-            '<div style="display:flex;flex-direction:column;gap:2px;font-size:var(--text-xs)">' +
-              '<span><i class="fa-brands fa-google-play" style="width:14px;opacity:0.5"></i> ' + gp + '</span>' +
-              '<span><i class="fa-brands fa-apple" style="width:14px;opacity:0.5"></i> ' + ios + '</span>' +
-            '</div>' +
-          '</td>' +
+          '<td>' + statusBadge + '</td>' +
           '<td><span class="text-xs text-muted">' + Components.formatRelativeDate(b.lastUpdated) + '</span></td>' +
           '<td>' +
             '<div style="display:flex;gap:var(--space-1);">' +
+              approveBtn +
+              toggleActiveBtn +
               '<a href="brand.html?id=' + b.id + '" class="btn btn-ghost btn-sm" title="View"><i class="fa-solid fa-eye"></i></a>' +
               '<button class="btn btn-ghost btn-sm" title="Edit" onclick="editBrand(\'' + b.id + '\')"><i class="fa-solid fa-pen"></i></button>' +
               '<button class="btn btn-ghost btn-sm" title="Delete" style="color:var(--red-text);opacity:0.7;" onclick="deleteBrand(\'' + b.id + '\', \'' + Components.escapeHTML(b.name || '').replace(/'/g, "\\'") + '\')"><i class="fa-solid fa-trash"></i></button>' +
@@ -770,6 +796,11 @@
       var btn = document.getElementById('delete-selected-btn');
       document.getElementById('selected-count').textContent = sel.length;
       btn.style.display = sel.length > 0 ? '' : 'none';
+      // Show approve button if any selected are drafts
+      var draftCount = Array.from(sel).filter(function(c) { return c.dataset.status === 'draft'; }).length;
+      var approveBtn = document.getElementById('approve-selected-btn');
+      document.getElementById('approve-count').textContent = draftCount;
+      approveBtn.style.display = draftCount > 0 ? '' : 'none';
       var sa = document.getElementById('select-all-brands');
       if (sa) sa.indeterminate = sel.length > 0 && sel.length < document.querySelectorAll('.brand-select-cb').length;
     }
@@ -784,6 +815,42 @@
         await refreshDashboardData(); populateIndustryDropdowns(); filterBrands();
       });
     }
+    // ===== QA WORKFLOW & ACTIVE TOGGLE =====
+    async function approveBrand(slug) {
+      try {
+        await GoNoGoAPI.setBrandStatus(slug, 'live');
+        Components.showToast('Brand approved and now live');
+        await refreshDashboardData(); filterBrands();
+      } catch(e) { Components.showToast('Error: ' + e.message, 'error'); }
+    }
+    async function revertBrand(slug) {
+      try {
+        await GoNoGoAPI.setBrandStatus(slug, 'draft');
+        Components.showToast('Brand reverted to draft');
+        await refreshDashboardData(); filterBrands();
+      } catch(e) { Components.showToast('Error: ' + e.message, 'error'); }
+    }
+    async function toggleActive(slug, active) {
+      try {
+        await GoNoGoAPI.setBrandActive(slug, active);
+        Components.showToast(active ? 'Brand reactivated' : 'Brand deactivated');
+        await refreshDashboardData(); filterBrands();
+      } catch(e) { Components.showToast('Error: ' + e.message, 'error'); }
+    }
+    function approveSelected() {
+      var ids = Array.from(document.querySelectorAll('.brand-select-cb:checked'))
+        .filter(function(c) { return c.dataset.status === 'draft'; })
+        .map(function(c) { return c.dataset.id; });
+      if (!ids.length) return;
+      showConfirm('Approve Brands', 'Approve ' + ids.length + ' draft brand' + (ids.length > 1 ? 's' : '') + '? They will go live on the site.', 'Approve', 'primary', async function() {
+        try {
+          await GoNoGoAPI.approveBrands(ids);
+          Components.showToast(ids.length + ' brand' + (ids.length > 1 ? 's' : '') + ' approved');
+          await refreshDashboardData(); filterBrands();
+        } catch(e) { Components.showToast('Error: ' + e.message, 'error'); }
+      });
+    }
+
     function deleteBrand(id, name) {
       showConfirm(
         'Delete Brand',
@@ -1364,9 +1431,10 @@
           if (parsedBreakdown) brandData.scoring_breakdown = parsedBreakdown;
         }
 
+        brandData._csvImport = true; // QA: CSV imports land as draft
         try {
           await GoNoGoAPI.saveBrand(brandData);
-          csvLog('Row ' + i + ': ' + brandName + ' — saved', 'success');
+          csvLog('Row ' + i + ': ' + brandName + ' — saved as draft (pending review)', 'success');
           created++;
         } catch (err) {
           csvLog('Row ' + i + ': ' + brandName + ' — ERROR: ' + err.message, 'error');

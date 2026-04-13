@@ -67,6 +67,9 @@ var GoNoGoAPI = (function () {
     });
   }
 
+  // Filter appended to public-facing brand queries (hides inactive / draft brands)
+  var LIVE_FILTER = '&is_active=eq.true&status=eq.live';
+
   // Normalize a Supabase brand row to match the format the UI expects
   function normalizeSBBrand(row, categoryName, categoryIcon, scoringCategories) {
     var categoryScores = {};
@@ -96,7 +99,9 @@ var GoNoGoAPI = (function () {
       socialSentiment: row.social_sentiment || {},
       overview: row.overview || '',
       ratingSummary: row.rating_summary || '',
-      lastUpdated: row.last_updated || '2026-03-01'
+      lastUpdated: row.last_updated || '2026-03-01',
+      is_active: row.is_active !== false,
+      status: row.status || 'live'
     };
   }
 
@@ -132,7 +137,7 @@ var GoNoGoAPI = (function () {
           // Get categories with brand counts from Supabase
           return Promise.all([
             supabaseRequest('categories?select=*&order=name.asc'),
-            supabaseRequest('brands?region=eq.' + SITE_REGION + '&select=slug,category_slug')
+            supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&select=slug,category_slug')
           ]).then(function (results) {
             var cats = results[0], brands = results[1];
             var counts = {};
@@ -165,7 +170,7 @@ var GoNoGoAPI = (function () {
       return checkSupabaseBrands().then(function (hasSB) {
         if (hasSB) {
           return Promise.all([
-            supabaseRequest('brands?region=eq.' + SITE_REGION + '&select=*&order=gonogo_score.desc&limit=' + (count || 6)),
+            supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&select=*&order=gonogo_score.desc&limit=' + (count || 6)),
             loadCategoryCache()
           ]).then(function (results) {
             var rows = results[0], cats = results[1];
@@ -181,6 +186,26 @@ var GoNoGoAPI = (function () {
     },
 
     getAllBrands: function () {
+      return checkSupabaseBrands().then(function (hasSB) {
+        if (hasSB) {
+          return Promise.all([
+            supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&select=*&order=gonogo_score.desc'),
+            loadCategoryCache()
+          ]).then(function (results) {
+            var rows = results[0], cats = results[1];
+            return rows.map(function (r) {
+              var c = cats[r.category_slug] || {};
+              return normalizeSBBrand(r, c.name, c.icon, c.scoring_categories);
+            });
+          });
+        }
+        if (typeof getAllBrands === 'function') return getAllBrands();
+        throw new Error('No data source available');
+      });
+    },
+
+    // Admin: returns ALL brands regardless of status or is_active
+    getAllBrandsAdmin: function () {
       return checkSupabaseBrands().then(function (hasSB) {
         if (hasSB) {
           return Promise.all([
@@ -203,7 +228,7 @@ var GoNoGoAPI = (function () {
       return checkSupabaseBrands().then(function (hasSB) {
         if (hasSB) {
           return Promise.all([
-            supabaseRequest('brands?region=eq.' + SITE_REGION + '&category_slug=eq.' + encodeURIComponent(slug) + '&select=*&order=gonogo_score.desc'),
+            supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&category_slug=eq.' + encodeURIComponent(slug) + '&select=*&order=gonogo_score.desc'),
             loadCategoryCache()
           ]).then(function (results) {
             var rows = results[0], cats = results[1];
@@ -222,7 +247,7 @@ var GoNoGoAPI = (function () {
       return checkSupabaseBrands().then(function (hasSB) {
         if (hasSB) {
           return Promise.all([
-            supabaseRequest('brands?region=eq.' + SITE_REGION + '&slug=eq.' + encodeURIComponent(id) + '&select=*&limit=1'),
+            supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&slug=eq.' + encodeURIComponent(id) + '&select=*&limit=1'),
             loadCategoryCache()
           ]).then(function (results) {
             var rows = results[0], cats = results[1];
@@ -240,7 +265,7 @@ var GoNoGoAPI = (function () {
       return checkSupabaseBrands().then(function (hasSB) {
         if (hasSB) {
           return Promise.all([
-            supabaseRequest('brands?region=eq.' + SITE_REGION + '&select=gonogo_score,verdict,category_slug'),
+            supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&select=gonogo_score,verdict,category_slug'),
             supabaseRequest('categories?select=slug')
           ]).then(function (results) {
             var brands = results[0], cats = results[1];
@@ -457,6 +482,15 @@ var GoNoGoAPI = (function () {
         framework_breakdown: frameworkBreakdown,
         last_updated: new Date().toISOString().split('T')[0]
       };
+
+      // QA workflow: if _csvImport flag is set, new brands land as draft
+      if (brandData._csvImport) {
+        record.status = 'draft';
+      }
+      // Allow explicit overrides
+      if ('is_active' in brandData) record.is_active = brandData.is_active;
+      if ('status' in brandData && brandData.status) record.status = brandData.status;
+
       // Always include these basic fields
       if (brandData.name) record.name = brandData.name;
       if (brandData.categorySlug) record.category_slug = brandData.categorySlug;
@@ -512,6 +546,35 @@ var GoNoGoAPI = (function () {
         }
         throw new Error('Cannot delete brands without Supabase');
       });
+    },
+
+    // Set brand active/inactive (hides from site without deleting)
+    setBrandActive: function (slug, isActive) {
+      return supabaseRequest('brands?region=eq.' + SITE_REGION + '&slug=eq.' + encodeURIComponent(slug), {
+        method: 'PATCH',
+        body: { is_active: isActive },
+        prefer: 'return=representation'
+      });
+    },
+
+    // Set brand workflow status: 'draft' or 'live'
+    setBrandStatus: function (slug, status) {
+      return supabaseRequest('brands?region=eq.' + SITE_REGION + '&slug=eq.' + encodeURIComponent(slug), {
+        method: 'PATCH',
+        body: { status: status },
+        prefer: 'return=representation'
+      });
+    },
+
+    // Bulk approve: set multiple brands to live
+    approveBrands: function (slugs) {
+      return Promise.all(slugs.map(function (slug) {
+        return supabaseRequest('brands?region=eq.' + SITE_REGION + '&slug=eq.' + encodeURIComponent(slug), {
+          method: 'PATCH',
+          body: { status: 'live' },
+          prefer: 'return=representation'
+        });
+      }));
     },
 
     // ==========================================
@@ -708,7 +771,7 @@ addCategory: function (categoryData) {
 
     // Get all brands (for admin brand picker)
     getAllBrandSlugs: function () {
-      return supabaseRequest('brands?region=eq.' + SITE_REGION + '&select=slug,name,gonogo_score,verdict&order=name.asc')
+      return supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&select=slug,name,gonogo_score,verdict&order=name.asc')
         .then(function (rows) { return rows || []; })
         .catch(function () { return []; });
     },
@@ -775,7 +838,7 @@ getBrandUser: function () {
     // ==========================================
     getBrandData: function (slug) {
       return Promise.all([
-        supabaseRequest('brands?region=eq.' + SITE_REGION + '&slug=eq.' + encodeURIComponent(slug) + '&select=*&limit=1'),
+        supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&slug=eq.' + encodeURIComponent(slug) + '&select=*&limit=1'),
         loadCategoryCache()
       ]).then(function (results) {
         var rows = results[0], cats = results[1];
@@ -809,7 +872,7 @@ getBrandUser: function () {
     },
 
     getBrandsInCategory: function (categorySlug) {
-      return supabaseRequest('brands?region=eq.' + SITE_REGION + '&category_slug=eq.' + encodeURIComponent(categorySlug) + '&select=name,slug,gonogo_score,verdict&order=gonogo_score.desc')
+      return supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&category_slug=eq.' + encodeURIComponent(categorySlug) + '&select=name,slug,gonogo_score,verdict&order=gonogo_score.desc')
         .then(function (rows) { return rows || []; })
         .catch(function () { return []; });
     },
