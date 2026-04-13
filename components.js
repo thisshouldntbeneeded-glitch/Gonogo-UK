@@ -308,6 +308,21 @@ const Components = {
     document.getElementById('admin-sidebar').classList.toggle('mobile-open');
   },
 
+  togglePasswordVisibility(inputId, btn) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var icon = btn.querySelector('i');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'fa-solid fa-eye-slash';
+      btn.setAttribute('aria-label', 'Hide password');
+    } else {
+      input.type = 'password';
+      icon.className = 'fa-solid fa-eye';
+      btn.setAttribute('aria-label', 'Show password');
+    }
+  },
+
   // ============================================================
   // FOOTER
   // ============================================================
@@ -726,7 +741,10 @@ const Components = {
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input type="password" id="admin-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')Components.submitLogin()">
+          <div style="position:relative">
+            <input type="password" id="admin-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')Components.submitLogin()" style="padding-right:40px">
+            <button type="button" onclick="Components.togglePasswordVisibility('admin-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;font-size:var(--text-sm)" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
+          </div>
           <div class="password-error" id="password-error">Incorrect credentials. Try again.</div>
         </div>
         <button class="btn btn-primary w-full" id="login-btn" onclick="Components.submitLogin()">
@@ -877,7 +895,10 @@ const Components = {
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
-          <input type="password" id="brand-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')Components.submitBrandLogin()">
+          <div style="position:relative">
+            <input type="password" id="brand-password" placeholder="Enter password" onkeydown="if(event.key==='Enter')Components.submitBrandLogin()" style="padding-right:40px">
+            <button type="button" onclick="Components.togglePasswordVisibility('brand-password',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);padding:4px;font-size:var(--text-sm)" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>
+          </div>
           <div class="password-error" id="brand-login-error">Incorrect credentials. Try again.</div>
         </div>
         <button class="btn btn-primary w-full" id="brand-login-btn" onclick="Components.submitBrandLogin()">
