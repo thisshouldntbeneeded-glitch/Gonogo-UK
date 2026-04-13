@@ -10,6 +10,7 @@
     { "source": "/compare", "destination": "/compare.html" },
     { "source": "/about", "destination": "/about.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/cookies", "destination": "/cookies.html" },
     { "source": "/terms", "destination": "/terms.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/admin-brands", "destination": "/admin-brands.html" },

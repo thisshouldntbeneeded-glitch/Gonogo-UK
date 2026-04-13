@@ -413,36 +413,50 @@ var GoNoGoAPI = (function () {
       var self = this;
       return Promise.all([this._hashPassword(oldPassword), this._hashPassword(newPassword)]).then(function (hashes) {
         if (!userId) throw new Error('Invalid user session');
-        return supabaseRequest('admin_users?id=eq.' + encodeURIComponent(userId) + '&password_hash=eq.' + encodeURIComponent(hashes[0]) + '&select=id')
-          .then(function (rows) {
-            if (!rows || rows.length === 0) throw new Error('Current password is incorrect');
-            return supabaseRequest('admin_users?id=eq.' + encodeURIComponent(userId), { method: 'PATCH', body: { password_hash: hashes[1] } });
-          }).then(function () { return { ok: true }; });
+        return supabaseRequest('rpc/admin_change_password', {
+          method: 'POST',
+          body: { p_user_id: userId, p_old_hash: hashes[0], p_new_hash: hashes[1] }
+        }).then(function (result) {
+          if (result === false) throw new Error('Current password is incorrect');
+          var stored = GoNoGoStorage.get('adminUser');
+          if (stored) { stored._ah = hashes[1]; GoNoGoStorage.set('adminUser', stored); }
+          return { ok: true };
+        });
       });
     },
 
+    // Helper: get caller auth from stored admin session
+    _getCallerAuth: function () {
+      var stored = GoNoGoStorage.get('adminUser');
+      if (stored && stored.id && stored._ah) return { p_caller_id: stored.id, p_caller_hash: stored._ah };
+      return { p_caller_id: null, p_caller_hash: null };
+    },
+
     adminGetUsers: function () {
-      return supabaseRequest('admin_users?select=id,email,display_name,role,created_at&order=created_at.asc')
-        .then(function (rows) { return rows || []; })
-        .catch(function () {
-          var stored = GoNoGoStorage.get('adminUser');
-          if (stored) return [{ id: stored.id, email: stored.email, display_name: stored.display_name, role: stored.role, created_at: new Date().toISOString() }];
-          return [];
-        });
+      var auth = this._getCallerAuth();
+      return supabaseRequest('rpc/admin_list_users', {
+        method: 'POST',
+        body: auth
+      }).then(function (rows) { return rows || []; })
+        .catch(function () { return []; });
     },
 
     adminAddUser: function (email, password, displayName, role) {
+      var auth = this._getCallerAuth();
       return this._hashPassword(password).then(function (hash) {
-        return supabaseRequest('admin_users', {
+        return supabaseRequest('rpc/admin_add_user', {
           method: 'POST',
-          body: { email: email.toLowerCase().trim(), password_hash: hash, display_name: displayName || '', role: role || 'admin' }
+          body: Object.assign({ p_email: email.toLowerCase().trim(), p_hash: hash, p_display_name: displayName || '', p_role: role || 'admin' }, auth)
         });
       }).then(function (rows) { return { ok: true, user: rows && rows[0] ? rows[0] : null }; });
     },
 
     adminRemoveUser: function (userId) {
-      return supabaseRequest('admin_users?id=eq.' + encodeURIComponent(userId), { method: 'DELETE' })
-        .then(function () { return { ok: true }; });
+      var auth = this._getCallerAuth();
+      return supabaseRequest('rpc/admin_remove_user', {
+        method: 'POST',
+        body: Object.assign({ p_user_id: userId }, auth)
+      }).then(function () { return { ok: true }; });
     },
 
     // ==========================================
@@ -778,9 +792,10 @@ addCategory: function (categoryData) {
 
     // Brand user management (admin only)
 getBrandUsers: function () {
+  var auth = this._getCallerAuth();
   return supabaseRequest('rpc/admin_list_brand_users', {
     method: 'POST',
-    body: {}
+    body: auth
   }).then(function (rows) {
     return rows || [];
   }).catch(function () {
@@ -789,16 +804,18 @@ getBrandUsers: function () {
 },
 
 addBrandUser: function (email, password, displayName, brandSlug, region) {
+  var auth = this._getCallerAuth();
+  var self = this;
   return this._hashPassword(password).then(function (hash) {
     return supabaseRequest('rpc/admin_add_brand_user', {
       method: 'POST',
-      body: {
+      body: Object.assign({
         p_email: email.toLowerCase().trim(),
         p_hash: hash,
         p_display_name: displayName || '',
         p_brand_slug: brandSlug,
         p_region: region || SITE_REGION
-      }
+      }, auth)
     });
   }).then(function (rows) {
     return { ok: true, user: rows && rows[0] ? rows[0] : null };
@@ -806,9 +823,10 @@ addBrandUser: function (email, password, displayName, brandSlug, region) {
 },
 
 removeBrandUser: function (userId) {
+  var auth = this._getCallerAuth();
   return supabaseRequest('rpc/admin_remove_brand_user', {
     method: 'POST',
-    body: { p_user_id: userId }
+    body: Object.assign({ p_user_id: userId }, auth)
   }).then(function () {
     return { ok: true };
   });

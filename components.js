@@ -777,6 +777,9 @@ const Components = {
     try {
       var user = await GoNoGoAPI.adminLogin(email, password);
       if (user) {
+        // Store password hash for caller-auth on secured RPCs
+        var pwHash = await GoNoGoAPI._hashPassword(password);
+        user._ah = pwHash;
         Components._adminUser = user;
         GoNoGoStorage.set('adminUser', user);
         GoNoGoStorage.set('adminLoginTime', Date.now());
