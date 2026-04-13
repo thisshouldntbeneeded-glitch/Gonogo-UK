@@ -17,21 +17,23 @@ export default async function handler(req, res) {
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
-    // Homepage
+    // Static pages (clean URLs matching canonical tags)
     xml += url(SITE_URL + '/', today, '1.0', 'daily');
-
-    // Compare page
-    xml += url(SITE_URL + '/compare.html', today, '0.6', 'weekly');
+    xml += url(SITE_URL + '/compare', today, '0.6', 'weekly');
+    xml += url(SITE_URL + '/business', today, '0.7', 'weekly');
+    xml += url(SITE_URL + '/about', today, '0.5', 'monthly');
+    xml += url(SITE_URL + '/privacy', today, '0.3', 'monthly');
+    xml += url(SITE_URL + '/terms', today, '0.3', 'monthly');
 
     // Category pages
     for (const cat of cats) {
-      xml += url(SITE_URL + '/category.html?cat=' + cat.slug, today, '0.8', 'weekly');
+      xml += url(SITE_URL + '/category?cat=' + cat.slug, today, '0.8', 'weekly');
     }
 
     // Brand pages
     for (const brand of brands) {
       const lastmod = brand.last_updated || today;
-      xml += url(SITE_URL + '/brand.html?id=' + brand.slug, lastmod, '0.7', 'weekly');
+      xml += url(SITE_URL + '/brand?id=' + brand.slug, lastmod, '0.7', 'weekly');
     }
 
     xml += '</urlset>';
