@@ -431,12 +431,14 @@
   <script src="data/data.js"></script>
   <script src="data/helpers.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="components.js"></script>
   <script src="api.js"></script>
 
   <script>
     document.getElementById('nav').innerHTML = Components.renderPublicNav('home');
     Components.initTheme();
+    Components.initPublicAuth();
     document.getElementById('footer').innerHTML = Components.renderFooter();
 
     var categoryDescriptions = {

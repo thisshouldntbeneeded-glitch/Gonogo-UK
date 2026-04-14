@@ -1,9 +1,18 @@
-// GoNoGo SA — Shared Components
+// GoNoGo UK — Shared Components
 // Reusable rendering functions for public and admin pages
 
 const LOGO_URL = 'logos/gonogo-square.jpg';
 const HERO_LOGO_DARK = 'logos/gonogo-hero-dark.jpg';
 const HERO_LOGO_LIGHT = 'logos/gonogo-hero-light.jpg';
+const SITE_REGION = 'uk';
+
+// Supabase Auth client (public accounts — separate from admin/brand auth)
+const supabaseAuth = (typeof supabase !== 'undefined' && supabase.createClient)
+  ? supabase.createClient(
+      'https://fnpxaneextqidbessnej.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I'
+    )
+  : null;
 
 const Components = {
   // ============================================================
@@ -80,6 +89,11 @@ const Components = {
                   <i class="fa-solid ${themeIcon} theme-toggle-icon"></i>
                 </button>
               </li>
+              <li id="nav-auth-desktop">
+                <button class="btn btn-sm btn-auth-nav" onclick="Components.showAuthModal()">
+                  <i class="fa-solid fa-user"></i> Sign In
+                </button>
+              </li>
             </ul>
           </nav>
           <button class="hamburger" onclick="Components.toggleMobileNav()" aria-label="Menu">
@@ -97,6 +111,11 @@ const Components = {
           <i class="fa-solid ${themeIcon} theme-toggle-icon"></i>
           <span class="theme-toggle-label">Toggle Theme</span>
         </button>
+        <div id="nav-auth-mobile">
+          <button class="btn btn-sm btn-auth-nav" onclick="Components.showAuthModal()" style="margin-top:var(--space-2);width:100%">
+            <i class="fa-solid fa-user"></i> Sign In
+          </button>
+        </div>
       </div>
     `;
   },
@@ -1152,5 +1171,328 @@ const Components = {
         <i class="fa-solid fa-bars"></i>
       </button>
     `;
+  },
+
+  // ============================================================
+  // PUBLIC ACCOUNT AUTH (Supabase Auth — email/password)
+  // ============================================================
+  _currentUser: null,
+
+  initPublicAuth() {
+    if (!supabaseAuth) return;
+    supabaseAuth.auth.getSession().then(function(res) {
+      var session = res.data && res.data.session;
+      Components._currentUser = session ? session.user : null;
+      Components._updateNavAuth();
+    });
+    supabaseAuth.auth.onAuthStateChange(function(event, session) {
+      Components._currentUser = session ? session.user : null;
+      Components._updateNavAuth();
+    });
+  },
+
+  _updateNavAuth() {
+    var user = this._currentUser;
+    var displayName = '';
+    if (user) {
+      displayName = (user.user_metadata && user.user_metadata.display_name) || user.email.split('@')[0];
+    }
+
+    // Desktop nav
+    var desktop = document.getElementById('nav-auth-desktop');
+    if (desktop) {
+      if (user) {
+        desktop.innerHTML =
+          '<div class="auth-user-menu">' +
+            '<button class="btn btn-sm btn-auth-nav btn-auth-signed-in" onclick="Components.toggleUserMenu()">' +
+              '<i class="fa-solid fa-user-check"></i> ' + Components.escapeHTML(displayName) +
+              ' <i class="fa-solid fa-chevron-down" style="font-size:10px;margin-left:4px"></i>' +
+            '</button>' +
+            '<div class="auth-dropdown" id="auth-dropdown-desktop">' +
+              '<div class="auth-dropdown-header">' + Components.escapeHTML(user.email) + '</div>' +
+              '<a href="#" class="auth-dropdown-item" onclick="Components.publicSignOut(); return false;">' +
+                '<i class="fa-solid fa-right-from-bracket"></i> Sign Out' +
+              '</a>' +
+            '</div>' +
+          '</div>';
+      } else {
+        desktop.innerHTML =
+          '<button class="btn btn-sm btn-auth-nav" onclick="Components.showAuthModal()">' +
+            '<i class="fa-solid fa-user"></i> Sign In' +
+          '</button>';
+      }
+    }
+
+    // Mobile nav
+    var mobile = document.getElementById('nav-auth-mobile');
+    if (mobile) {
+      if (user) {
+        mobile.innerHTML =
+          '<div style="padding:var(--space-2) 0;border-top:1px solid var(--border-primary);margin-top:var(--space-2)">' +
+            '<div class="text-sm" style="padding:var(--space-2) var(--space-3);color:var(--text-secondary)">' +
+              '<i class="fa-solid fa-user-check" style="color:var(--green)"></i> ' + Components.escapeHTML(displayName) +
+            '</div>' +
+            '<button class="btn btn-sm btn-ghost" onclick="Components.publicSignOut()" style="width:100%;text-align:left;padding:var(--space-2) var(--space-3)">' +
+              '<i class="fa-solid fa-right-from-bracket"></i> Sign Out' +
+            '</button>' +
+          '</div>';
+      } else {
+        mobile.innerHTML =
+          '<button class="btn btn-sm btn-auth-nav" onclick="Components.showAuthModal()" style="margin-top:var(--space-2);width:100%">' +
+            '<i class="fa-solid fa-user"></i> Sign In' +
+          '</button>';
+      }
+    }
+
+    // Update review form if on brand page
+    if (typeof window._updateReviewFormAuth === 'function') {
+      window._updateReviewFormAuth(user);
+    }
+  },
+
+  toggleUserMenu() {
+    var dd = document.getElementById('auth-dropdown-desktop');
+    if (dd) dd.classList.toggle('open');
+    // Close on outside click
+    if (dd && dd.classList.contains('open')) {
+      setTimeout(function() {
+        document.addEventListener('click', Components._closeUserMenu, { once: true });
+      }, 10);
+    }
+  },
+
+  _closeUserMenu(e) {
+    var dd = document.getElementById('auth-dropdown-desktop');
+    if (dd) dd.classList.remove('open');
+  },
+
+  showAuthModal(defaultTab) {
+    // Remove existing
+    var existing = document.getElementById('auth-modal-overlay');
+    if (existing) existing.remove();
+
+    var tab = defaultTab || 'signin';
+    var overlay = document.createElement('div');
+    overlay.className = 'auth-modal-overlay';
+    overlay.id = 'auth-modal-overlay';
+    overlay.innerHTML =
+      '<div class="auth-modal">' +
+        '<button class="auth-modal-close" onclick="Components.closeAuthModal()" aria-label="Close">' +
+          '<i class="fa-solid fa-xmark"></i>' +
+        '</button>' +
+        '<div class="auth-modal-logo">' +
+          '<img src="' + LOGO_URL + '" alt="GoNoGo" style="height:40px;width:auto;border-radius:8px">' +
+        '</div>' +
+        '<div class="auth-tabs">' +
+          '<button class="auth-tab ' + (tab === 'signin' ? 'active' : '') + '" id="auth-tab-signin" onclick="Components.switchAuthTab(\'signin\')">Sign In</button>' +
+          '<button class="auth-tab ' + (tab === 'signup' ? 'active' : '') + '" id="auth-tab-signup" onclick="Components.switchAuthTab(\'signup\')">Create Account</button>' +
+        '</div>' +
+        '<div id="auth-form-area">' +
+          (tab === 'signin' ? this._renderSignInForm() : this._renderSignUpForm()) +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+    // Close on backdrop click
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) Components.closeAuthModal();
+    });
+    // Focus first input
+    setTimeout(function() {
+      var input = overlay.querySelector('input');
+      if (input) input.focus();
+    }, 100);
+  },
+
+  closeAuthModal() {
+    var el = document.getElementById('auth-modal-overlay');
+    if (el) el.remove();
+  },
+
+  switchAuthTab(tab) {
+    document.getElementById('auth-tab-signin').className = 'auth-tab' + (tab === 'signin' ? ' active' : '');
+    document.getElementById('auth-tab-signup').className = 'auth-tab' + (tab === 'signup' ? ' active' : '');
+    var area = document.getElementById('auth-form-area');
+    area.innerHTML = tab === 'signin' ? Components._renderSignInForm() : Components._renderSignUpForm();
+    var input = area.querySelector('input');
+    if (input) input.focus();
+  },
+
+  _renderSignInForm() {
+    return (
+      '<div class="form-group">' +
+        '<label class="form-label">Email</label>' +
+        '<input type="email" id="auth-email" placeholder="you@example.com" onkeydown="if(event.key===\'Enter\')Components.publicSignIn()">' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label">Password</label>' +
+        '<div style="position:relative">' +
+          '<input type="password" id="auth-password" placeholder="Your password" onkeydown="if(event.key===\'Enter\')Components.publicSignIn()">' +
+          '<button type="button" class="password-eye" onclick="Components._togglePasswordVis(\'auth-password\')" aria-label="Show password">' +
+            '<i class="fa-solid fa-eye"></i>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="auth-error" id="auth-error"></div>' +
+      '<button class="btn btn-primary w-full" id="auth-submit-btn" onclick="Components.publicSignIn()">' +
+        '<i class="fa-solid fa-right-to-bracket"></i> Sign In' +
+      '</button>' +
+      '<div class="auth-footer">' +
+        'Don\'t have an account? <a href="#" onclick="Components.switchAuthTab(\'signup\'); return false;">Create one</a>' +
+      '</div>'
+    );
+  },
+
+  _renderSignUpForm() {
+    return (
+      '<div class="form-group">' +
+        '<label class="form-label">Display Name</label>' +
+        '<input type="text" id="auth-name" placeholder="How you want to appear" onkeydown="if(event.key===\'Enter\')Components.publicSignUp()">' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label">Email</label>' +
+        '<input type="email" id="auth-email" placeholder="you@example.com" onkeydown="if(event.key===\'Enter\')Components.publicSignUp()">' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label">Password</label>' +
+        '<div style="position:relative">' +
+          '<input type="password" id="auth-password" placeholder="Min 6 characters" onkeydown="if(event.key===\'Enter\')Components.publicSignUp()">' +
+          '<button type="button" class="password-eye" onclick="Components._togglePasswordVis(\'auth-password\')" aria-label="Show password">' +
+            '<i class="fa-solid fa-eye"></i>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label">Confirm Password</label>' +
+        '<div style="position:relative">' +
+          '<input type="password" id="auth-password-confirm" placeholder="Re-enter password" onkeydown="if(event.key===\'Enter\')Components.publicSignUp()">' +
+          '<button type="button" class="password-eye" onclick="Components._togglePasswordVis(\'auth-password-confirm\')" aria-label="Show password">' +
+            '<i class="fa-solid fa-eye"></i>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="auth-error" id="auth-error"></div>' +
+      '<button class="btn btn-primary w-full" id="auth-submit-btn" onclick="Components.publicSignUp()">' +
+        '<i class="fa-solid fa-user-plus"></i> Create Account' +
+      '</button>' +
+      '<div class="auth-footer">' +
+        'Already have an account? <a href="#" onclick="Components.switchAuthTab(\'signin\'); return false;">Sign in</a>' +
+      '</div>'
+    );
+  },
+
+  _togglePasswordVis(inputId) {
+    var inp = document.getElementById(inputId);
+    if (!inp) return;
+    var isPass = inp.type === 'password';
+    inp.type = isPass ? 'text' : 'password';
+    var icon = inp.parentNode.querySelector('.password-eye i');
+    if (icon) icon.className = isPass ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+  },
+
+  async publicSignIn() {
+    if (!supabaseAuth) return;
+    var email = document.getElementById('auth-email').value.trim();
+    var password = document.getElementById('auth-password').value;
+    var errEl = document.getElementById('auth-error');
+    var btn = document.getElementById('auth-submit-btn');
+
+    if (!email || !password) {
+      errEl.textContent = 'Please enter your email and password.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Signing in...';
+    errEl.style.display = 'none';
+
+    try {
+      var res = await supabaseAuth.auth.signInWithPassword({ email: email, password: password });
+      if (res.error) throw res.error;
+      Components.closeAuthModal();
+      Components.showToast('Welcome back, ' + ((res.data.user.user_metadata && res.data.user.user_metadata.display_name) || email.split('@')[0]) + '!');
+    } catch (err) {
+      errEl.textContent = err.message || 'Sign in failed. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Sign In';
+    }
+  },
+
+  async publicSignUp() {
+    if (!supabaseAuth) return;
+    var name = document.getElementById('auth-name').value.trim();
+    var email = document.getElementById('auth-email').value.trim();
+    var password = document.getElementById('auth-password').value;
+    var confirm = document.getElementById('auth-password-confirm').value;
+    var errEl = document.getElementById('auth-error');
+    var btn = document.getElementById('auth-submit-btn');
+
+    if (!name || !email || !password) {
+      errEl.textContent = 'Please fill in all fields.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (password.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (password !== confirm) {
+      errEl.textContent = 'Passwords do not match.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account...';
+    errEl.style.display = 'none';
+
+    try {
+      var res = await supabaseAuth.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: { display_name: name, region: SITE_REGION }
+        }
+      });
+      if (res.error) throw res.error;
+
+      // Check if email confirmation is required
+      if (res.data.user && res.data.user.identities && res.data.user.identities.length === 0) {
+        errEl.textContent = 'An account with this email already exists.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
+        return;
+      }
+
+      // Show confirmation message
+      document.getElementById('auth-form-area').innerHTML =
+        '<div style="text-align:center;padding:var(--space-6) 0">' +
+          '<i class="fa-solid fa-envelope-circle-check" style="font-size:48px;color:var(--green);margin-bottom:var(--space-4);display:block"></i>' +
+          '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-3)">Check your email</h3>' +
+          '<p class="text-sm text-secondary" style="margin-bottom:var(--space-4)">' +
+            'We\'ve sent a confirmation link to <strong>' + Components.escapeHTML(email) + '</strong>. ' +
+            'Click the link to activate your account.' +
+          '</p>' +
+          '<button class="btn btn-ghost" onclick="Components.closeAuthModal()">Close</button>' +
+        '</div>';
+    } catch (err) {
+      errEl.textContent = err.message || 'Sign up failed. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
+    }
+  },
+
+  async publicSignOut() {
+    if (!supabaseAuth) return;
+    await supabaseAuth.auth.signOut();
+    Components.showToast('You have been signed out.');
+    // Close dropdown if open
+    var dd = document.getElementById('auth-dropdown-desktop');
+    if (dd) dd.classList.remove('open');
   }
 };

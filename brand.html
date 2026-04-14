@@ -52,6 +52,7 @@
   <script src="data/data.js"></script>
   <script src="data/helpers.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="components.js"></script>
   <script src="api.js"></script>
 
@@ -303,7 +304,7 @@
               '<div class="card" style="max-width:600px">' +
                 '<h4 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">Rate ' + brand.name + '</h4>' +
                 '<p class="text-sm text-secondary" style="margin-bottom:var(--space-4)">Would you recommend this brand? Cast your vote and tell us why.</p>' +
-                '<div class="form-group">' +
+                '<div class="form-group" id="review-name-group">' +
                   '<label class="form-label">Your Name</label>' +
                   '<input type="text" id="review-name" placeholder="Enter your name">' +
                 '</div>' +
@@ -502,22 +503,49 @@
           : '';
       }
 
+      // Update review form when auth state changes
+      window._updateReviewFormAuth = function(user) {
+        var group = document.getElementById('review-name-group');
+        if (!group) return;
+        if (user) {
+          var displayName = (user.user_metadata && user.user_metadata.display_name) || user.email.split('@')[0];
+          group.innerHTML =
+            '<div style="display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) 0;margin-bottom:var(--space-1)">' +
+              '<i class="fa-solid fa-user-check" style="color:var(--green)"></i>' +
+              '<span class="text-sm">Reviewing as <strong>' + Components.escapeHTML(displayName) + '</strong></span>' +
+            '</div>' +
+            '<input type="hidden" id="review-name" value="' + Components.escapeHTML(displayName) + '">';
+        } else {
+          group.innerHTML =
+            '<label class="form-label">Your Name</label>' +
+            '<input type="text" id="review-name" placeholder="Enter your name">';
+        }
+      };
+
       window.submitReview = async function() {
         var name = document.getElementById('review-name').value.trim();
         var text = document.getElementById('review-text').value.trim();
         if (!name || !selectedVerdict) {
-          Components.showToast('Please enter your name and select Go or No Go', 'error');
+          var msg = Components._currentUser ? 'Please select Go or No Go' : 'Please enter your name and select Go or No Go';
+          Components.showToast(msg, 'error');
           return;
         }
         try {
-          await GoNoGoAPI.submitReview({
+          var reviewData = {
             category: brand.categorySlug,
             brand_name: brand.name,
             reviewer_name: name,
             review_text: text,
             verdict: selectedVerdict
-          });
-          document.getElementById('review-name').value = '';
+          };
+          // Attach user_id if signed in
+          if (Components._currentUser) {
+            reviewData.user_id = Components._currentUser.id;
+          }
+          await GoNoGoAPI.submitReview(reviewData);
+          if (!Components._currentUser) {
+            document.getElementById('review-name').value = '';
+          }
           document.getElementById('review-text').value = '';
           selectedVerdict = null;
           document.querySelectorAll('.verdict-btn').forEach(function(b) {
