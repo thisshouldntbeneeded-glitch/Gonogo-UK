@@ -21,7 +21,11 @@
     { "source": "/brand-dashboard", "destination": "/brand-dashboard.html" },
     { "source": "/brand-reviews", "destination": "/brand-reviews.html" },
     { "source": "/brand-insights", "destination": "/brand-insights.html" },
-    { "source": "/reset-password", "destination": "/reset-password.html" }
+    { "source": "/reset-password", "destination": "/reset-password.html" },
+    { "source": "/account", "destination": "/account.html" },
+    { "source": "/auth/reset", "destination": "/auth/reset.html" },
+    { "source": "/admin-scoring", "destination": "/admin-scoring.html" },
+    { "source": "/admin-users", "destination": "/admin-users.html" }
   ],
   "headers": [
     {

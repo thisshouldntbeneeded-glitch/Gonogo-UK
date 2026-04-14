@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Reset Password — GoNoGo United Kingdom</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})()</script>
+<style>
+  .reset-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+    background: var(--bg-primary);
+  }
+  .reset-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    max-width: 420px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+  .reset-box .logo { display: flex; justify-content: center; margin-bottom: var(--space-5); }
+  .reset-box h2 { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-2); text-align: center; color: var(--text-primary); }
+  .reset-box .subtitle { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-6); text-align: center; line-height: 1.6; }
+  .reset-error {
+    display: none;
+    padding: var(--space-3);
+    background: var(--red-bg);
+    border: 1px solid rgba(231,76,60,0.3);
+    border-radius: var(--radius-md);
+    color: var(--red-text);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+    line-height: 1.5;
+  }
+  .pw-strength { font-size: var(--text-xs); margin-top: var(--space-1); min-height: 1.4em; }
+  .str-weak { color: var(--red-text); }
+  .str-fair { color: var(--orange-text); }
+  .str-good { color: var(--green-text); }
+  @media (max-width: 480px) {
+    .reset-box { padding: var(--space-6); }
+  }
+</style>
+</head>
+<body>
+  <div class="reset-wrapper">
+    <div class="reset-box" id="reset-box">
+      <div class="logo">
+        <img src="/logos/gonogo-square.jpg" alt="GoNoGo" style="height:44px;width:auto;border-radius:10px">
+      </div>
+      <h2>Set a new password</h2>
+      <p class="subtitle" id="reset-subtitle">Verifying your reset link&hellip;</p>
+      <div class="reset-error" id="reset-error"></div>
+
+      <!-- Password form (hidden until verified) -->
+      <div id="reset-form" style="display:none">
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <div style="position:relative">
+            <input type="password" id="new-password" placeholder="Minimum 8 characters" oninput="checkStrength()" onkeydown="if(event.key==='Enter')document.getElementById('confirm-password').focus()">
+            <button type="button" class="password-eye" onclick="togglePwVis('new-password')" aria-label="Show password">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+          <div class="pw-strength" id="pw-strength"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <div style="position:relative">
+            <input type="password" id="confirm-password" placeholder="Re-enter password" onkeydown="if(event.key==='Enter')submitNewPassword()">
+            <button type="button" class="password-eye" onclick="togglePwVis('confirm-password')" aria-label="Show password">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+        </div>
+        <button class="btn btn-primary w-full" id="submit-btn" onclick="submitNewPassword()">
+          <i class="fa-solid fa-key"></i> Update Password
+        </button>
+      </div>
+
+      <!-- Success state -->
+      <div id="reset-done" style="display:none;text-align:center">
+        <i class="fa-solid fa-circle-check" style="font-size:48px;color:var(--green);display:block;margin-bottom:var(--space-4)"></i>
+        <h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-3);color:var(--text-primary)">Password updated</h3>
+        <p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-6);line-height:1.6">Your password has been reset. You're now signed in.</p>
+        <a href="/" class="btn btn-primary" style="display:inline-flex;align-items:center;gap:6px">
+          <i class="fa-solid fa-arrow-right"></i> Go to GoNoGo
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    var sb = supabase.createClient(
+      'https://fnpxaneextqidbessnej.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I'
+    );
+
+    function togglePwVis(id) {
+      var inp = document.getElementById(id);
+      if (!inp) return;
+      var isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+      var icon = inp.parentNode.querySelector('.password-eye i');
+      if (icon) icon.className = isPass ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    }
+
+    function checkStrength() {
+      var pw = document.getElementById('new-password').value;
+      var el = document.getElementById('pw-strength');
+      if (!pw) { el.textContent = ''; return; }
+      var score = 0;
+      if (pw.length >= 8) score++;
+      if (pw.length >= 12) score++;
+      if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+      if (/[0-9]/.test(pw)) score++;
+      if (/[^A-Za-z0-9]/.test(pw)) score++;
+      if (score <= 2) el.innerHTML = '<span class="str-weak"><i class="fa-solid fa-circle-xmark"></i> Weak</span>';
+      else if (score <= 3) el.innerHTML = '<span class="str-fair"><i class="fa-solid fa-circle-minus"></i> Fair</span>';
+      else el.innerHTML = '<span class="str-good"><i class="fa-solid fa-circle-check"></i> Strong</span>';
+    }
+
+    async function submitNewPassword() {
+      var pw = document.getElementById('new-password').value;
+      var confirm = document.getElementById('confirm-password').value;
+      var error = document.getElementById('reset-error');
+      var btn = document.getElementById('submit-btn');
+      error.style.display = 'none';
+
+      if (pw.length < 8) {
+        error.textContent = 'Password must be at least 8 characters.';
+        error.style.display = 'block';
+        return;
+      }
+      if (pw !== confirm) {
+        error.textContent = 'Passwords do not match.';
+        error.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+
+      try {
+        var res = await sb.auth.updateUser({ password: pw });
+        if (res.error) throw res.error;
+        document.getElementById('reset-form').style.display = 'none';
+        document.getElementById('reset-subtitle').style.display = 'none';
+        document.getElementById('reset-done').style.display = 'block';
+      } catch (e) {
+        error.textContent = e.message || 'Failed to update password. The link may have expired.';
+        error.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-key"></i> Update Password';
+      }
+    }
+
+    // On load: Supabase handles the token exchange from the URL hash automatically
+    // via onAuthStateChange. We listen for PASSWORD_RECOVERY event.
+    (async function init() {
+      var error = document.getElementById('reset-error');
+      var subtitle = document.getElementById('reset-subtitle');
+
+      // Listen for auth state changes
+      sb.auth.onAuthStateChange(function(event, session) {
+        if (event === 'PASSWORD_RECOVERY') {
+          // User has been verified via the recovery link — show the form
+          subtitle.textContent = 'Choose a new password for your account.';
+          document.getElementById('reset-form').style.display = 'block';
+          setTimeout(function() { document.getElementById('new-password').focus(); }, 100);
+        }
+      });
+
+      // Also check if there's already a session (in case the event already fired)
+      // Give Supabase a moment to process the hash
+      setTimeout(async function() {
+        var form = document.getElementById('reset-form');
+        var done = document.getElementById('reset-done');
+        // If form is already visible or done is shown, skip
+        if (form.style.display === 'block' || done.style.display === 'block') return;
+
+        // Check URL hash for access_token (Supabase recovery flow)
+        var hash = window.location.hash;
+        if (hash && (hash.includes('access_token') || hash.includes('type=recovery'))) {
+          // Wait a bit more for Supabase to process
+          setTimeout(function() {
+            if (form.style.display !== 'block') {
+              subtitle.textContent = 'Choose a new password for your account.';
+              form.style.display = 'block';
+              document.getElementById('new-password').focus();
+            }
+          }, 1500);
+          return;
+        }
+
+        // No valid recovery context
+        error.innerHTML = 'This reset link is invalid or has expired. <a href="/" style="color:var(--green)">Go back to GoNoGo</a> and request a new one from the sign-in form.';
+        error.style.display = 'block';
+        subtitle.style.display = 'none';
+      }, 2000);
+    })();
+  </script>
+</body>
+</html>

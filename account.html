@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>My Account — GoNoGo United Kingdom</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})()</script>
+<style>
+  .account-page { max-width: 720px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-16); }
+  .account-header { margin-bottom: var(--space-8); }
+  .account-header h1 { font-size: var(--text-xl); font-weight: 800; margin-bottom: var(--space-2); }
+  .account-header p { color: var(--text-secondary); font-size: var(--text-sm); }
+  .account-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    margin-bottom: var(--space-5);
+  }
+  .account-card h2 {
+    font-size: var(--text-base);
+    font-weight: 700;
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+  .account-card h2 i { color: var(--green); font-size: 14px; }
+  .account-field { margin-bottom: var(--space-4); }
+  .account-field:last-child { margin-bottom: 0; }
+  .account-field-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: var(--space-1); }
+  .account-field-value { font-size: var(--text-sm); color: var(--text-primary); }
+  .account-field-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+  .account-field-row .btn { flex-shrink: 0; }
+
+  .account-toast {
+    display: none;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-4);
+    line-height: 1.5;
+  }
+  .account-toast.success { background: var(--green-bg); border: 1px solid rgba(17,165,81,0.3); color: var(--green-text); display: block; }
+  .account-toast.error { background: var(--red-bg); border: 1px solid rgba(231,76,60,0.3); color: var(--red-text); display: block; }
+
+  .edit-inline { display: none; gap: var(--space-2); align-items: center; }
+  .edit-inline.active { display: flex; }
+  .edit-inline input { flex: 1; }
+
+  .review-list { list-style: none; padding: 0; margin: 0; }
+  .review-item {
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-subtle);
+    transition: background 0.15s;
+  }
+  .review-item:last-child { border-bottom: none; }
+  .review-item:hover { background: var(--bg-card-hover); }
+  .review-brand { font-weight: 600; color: var(--text-primary); font-size: var(--text-sm); }
+  .review-date { font-size: var(--text-xs); color: var(--text-muted); }
+  .review-stars { color: var(--orange); font-size: 12px; margin: var(--space-1) 0; }
+  .review-excerpt { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; }
+  .review-empty { text-align: center; padding: var(--space-8) var(--space-4); color: var(--text-muted); font-size: var(--text-sm); }
+  .review-empty i { display: block; font-size: 32px; margin-bottom: var(--space-3); color: var(--text-faint); }
+
+  .danger-zone { border-color: rgba(231,76,60,0.2); }
+  .danger-zone h2 i { color: var(--red); }
+
+  .account-loading { text-align: center; padding: var(--space-16) 0; color: var(--text-muted); font-size: var(--text-sm); }
+  .account-gate { text-align: center; padding: var(--space-16) 0; }
+  .account-gate i { display: block; font-size: 48px; color: var(--text-faint); margin-bottom: var(--space-4); }
+  .account-gate h2 { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-3); }
+  .account-gate p { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-6); }
+
+  @media (max-width: 480px) {
+    .account-field-row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+  <div id="nav"></div>
+
+  <section class="section">
+    <div class="account-page" id="account-page">
+      <div class="account-loading" id="account-loading">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;margin-bottom:var(--space-3);display:block"></i>
+        Loading your account&hellip;
+      </div>
+    </div>
+  </section>
+
+  <div id="footer"></div>
+
+  <script src="data/helpers.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="components.js"></script>
+  <script src="api.js"></script>
+  <script>
+    document.getElementById('nav').innerHTML = Components.renderPublicNav('');
+    Components.initTheme();
+    Components.initPublicAuth();
+    document.getElementById('footer').innerHTML = Components.renderFooter();
+
+    var sb = supabaseAuth; // Reuse the same client from components.js
+
+    (async function init() {
+      var page = document.getElementById('account-page');
+      var loading = document.getElementById('account-loading');
+
+      // Wait for auth state
+      var sessionRes = await sb.auth.getSession();
+      var session = sessionRes.data && sessionRes.data.session;
+
+      if (!session) {
+        // Not signed in — show gate
+        page.innerHTML =
+          '<div class="account-gate">' +
+            '<i class="fa-solid fa-user-lock"></i>' +
+            '<h2>Sign in to view your account</h2>' +
+            '<p>You need to be signed in to access your account settings.</p>' +
+            '<button class="btn btn-primary" onclick="Components.showAuthModal()"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>' +
+          '</div>';
+        return;
+      }
+
+      var user = session.user;
+      var meta = user.user_metadata || {};
+      var displayName = meta.display_name || user.email.split('@')[0];
+      var region = (meta.region || 'za').toUpperCase();
+      var createdAt = new Date(user.created_at);
+      var memberSince = createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+      // Fetch review history
+      var reviews = [];
+      try {
+        var reviewRes = await fetch('https://fnpxaneextqidbessnej.supabase.co/rest/v1/reviews?user_id=eq.' + user.id + '&order=created_at.desc&limit=20', {
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I',
+            'Authorization': 'Bearer ' + session.access_token
+          }
+        });
+        if (reviewRes.ok) reviews = await reviewRes.json();
+      } catch (e) { /* silent */ }
+
+      var reviewCount = reviews.length;
+
+      // Build the page
+      page.innerHTML =
+        // Header
+        '<div class="account-header">' +
+          '<h1><i class="fa-solid fa-user-circle" style="color:var(--green);margin-right:var(--space-2)"></i>' + Components.escapeHTML(displayName) + '</h1>' +
+          '<p>Member since ' + memberSince + ' &bull; ' + region + ' region</p>' +
+        '</div>' +
+
+        // Profile card
+        '<div class="account-card" id="profile-card">' +
+          '<h2><i class="fa-solid fa-id-card"></i> Profile</h2>' +
+          '<div class="account-toast" id="profile-toast"></div>' +
+          '<div class="account-field">' +
+            '<div class="account-field-label">Display Name</div>' +
+            '<div class="account-field-row">' +
+              '<span class="account-field-value" id="display-name-value">' + Components.escapeHTML(displayName) + '</span>' +
+              '<button class="btn btn-sm btn-ghost" onclick="editDisplayName()"><i class="fa-solid fa-pen"></i> Edit</button>' +
+            '</div>' +
+            '<div class="edit-inline" id="edit-name">' +
+              '<input type="text" id="name-input" value="' + Components.escapeHTML(displayName) + '" placeholder="Your display name" maxlength="50">' +
+              '<button class="btn btn-sm btn-primary" onclick="saveDisplayName()">Save</button>' +
+              '<button class="btn btn-sm btn-ghost" onclick="cancelEditName()">Cancel</button>' +
+            '</div>' +
+          '</div>' +
+          '<div class="account-field">' +
+            '<div class="account-field-label">Email</div>' +
+            '<div class="account-field-value">' + Components.escapeHTML(user.email) + '</div>' +
+          '</div>' +
+          '<div class="account-field">' +
+            '<div class="account-field-label">Region</div>' +
+            '<div class="account-field-value">' + (region === 'ZA' ? '🇿🇦 South Africa' : region === 'UK' ? '🇬🇧 United Kingdom' : region) + '</div>' +
+          '</div>' +
+          '<div class="account-field">' +
+            '<div class="account-field-label">Email Confirmed</div>' +
+            '<div class="account-field-value">' +
+              (user.email_confirmed_at
+                ? '<span style="color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> Verified</span>'
+                : '<span style="color:var(--orange-text)"><i class="fa-solid fa-clock"></i> Pending verification</span>') +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        // Security card
+        '<div class="account-card" id="security-card">' +
+          '<h2><i class="fa-solid fa-shield-halved"></i> Security</h2>' +
+          '<div class="account-toast" id="security-toast"></div>' +
+          '<div class="account-field">' +
+            '<div class="account-field-label">Password</div>' +
+            '<div class="account-field-row" id="pw-display">' +
+              '<span class="account-field-value">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>' +
+              '<button class="btn btn-sm btn-ghost" onclick="showChangePassword()"><i class="fa-solid fa-key"></i> Change</button>' +
+            '</div>' +
+            '<div id="pw-form" style="display:none">' +
+              '<div class="form-group" style="margin-top:var(--space-3)">' +
+                '<label class="form-label">New Password</label>' +
+                '<div style="position:relative">' +
+                  '<input type="password" id="pw-new" placeholder="Minimum 8 characters" oninput="acctCheckStr()">' +
+                  '<button type="button" class="password-eye" onclick="acctTogglePw(\'pw-new\')" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>' +
+                '</div>' +
+                '<div class="pw-strength" style="font-size:var(--text-xs);margin-top:var(--space-1);min-height:1.4em" id="acct-pw-str"></div>' +
+              '</div>' +
+              '<div class="form-group">' +
+                '<label class="form-label">Confirm Password</label>' +
+                '<div style="position:relative">' +
+                  '<input type="password" id="pw-confirm" placeholder="Re-enter password">' +
+                  '<button type="button" class="password-eye" onclick="acctTogglePw(\'pw-confirm\')" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>' +
+                '</div>' +
+              '</div>' +
+              '<div style="display:flex;gap:var(--space-2)">' +
+                '<button class="btn btn-sm btn-primary" id="pw-save-btn" onclick="savePassword()"><i class="fa-solid fa-key"></i> Update Password</button>' +
+                '<button class="btn btn-sm btn-ghost" onclick="cancelChangePassword()">Cancel</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        // Reviews card
+        '<div class="account-card" id="reviews-card">' +
+          '<h2><i class="fa-solid fa-star"></i> My Reviews <span style="font-weight:400;color:var(--text-muted);font-size:var(--text-xs);margin-left:var(--space-2)">' + reviewCount + ' total</span></h2>' +
+          (reviewCount > 0
+            ? '<ul class="review-list">' + reviews.map(function(r) {
+                var date = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                var stars = '';
+                for (var s = 0; s < 5; s++) stars += '<i class="fa-solid fa-star' + (s < (r.rating || 0) ? '' : '" style="opacity:0.2') + '"></i> ';
+                var excerpt = (r.review_text || '').substring(0, 120);
+                if ((r.review_text || '').length > 120) excerpt += '&hellip;';
+                return '<li class="review-item">' +
+                  '<div style="display:flex;justify-content:space-between;align-items:center">' +
+                    '<span class="review-brand">' + Components.escapeHTML(r.brand_name || r.brand_slug || 'Brand') + '</span>' +
+                    '<span class="review-date">' + date + '</span>' +
+                  '</div>' +
+                  '<div class="review-stars">' + stars + '</div>' +
+                  (excerpt ? '<div class="review-excerpt">' + Components.escapeHTML(excerpt) + '</div>' : '') +
+                '</li>';
+              }).join('') + '</ul>'
+            : '<div class="review-empty">' +
+                '<i class="fa-solid fa-comment-dots"></i>' +
+                '<p>You haven\'t left any reviews yet.</p>' +
+                '<a href="/" class="btn btn-sm btn-ghost" style="display:inline-flex;align-items:center;gap:6px"><i class="fa-solid fa-search"></i> Browse brands to review</a>' +
+              '</div>'
+          ) +
+        '</div>' +
+
+        // Danger zone
+        '<div class="account-card danger-zone">' +
+          '<h2><i class="fa-solid fa-triangle-exclamation"></i> Account</h2>' +
+          '<p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-4);line-height:1.6">' +
+            'Need to delete your account? This will permanently remove your profile and disassociate your reviews. This action cannot be undone.' +
+          '</p>' +
+          '<button class="btn btn-sm" style="background:var(--red-bg);color:var(--red-text);border:1px solid rgba(231,76,60,0.3)" onclick="requestAccountDeletion()">' +
+            '<i class="fa-solid fa-trash"></i> Request Account Deletion' +
+          '</button>' +
+        '</div>';
+    })();
+
+    // ============================================================
+    // Edit display name
+    // ============================================================
+    function editDisplayName() {
+      document.getElementById('edit-name').classList.add('active');
+      document.getElementById('name-input').focus();
+    }
+
+    function cancelEditName() {
+      document.getElementById('edit-name').classList.remove('active');
+    }
+
+    async function saveDisplayName() {
+      var name = document.getElementById('name-input').value.trim();
+      var toast = document.getElementById('profile-toast');
+      if (!name) return;
+
+      try {
+        var res = await sb.auth.updateUser({ data: { display_name: name } });
+        if (res.error) throw res.error;
+        document.getElementById('display-name-value').textContent = name;
+        document.getElementById('edit-name').classList.remove('active');
+        toast.className = 'account-toast success';
+        toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Display name updated.';
+        // Also update the profile in the database
+        await fetch('https://fnpxaneextqidbessnej.supabase.co/rest/v1/profiles?id=eq.' + res.data.user.id, {
+          method: 'PATCH',
+          headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I',
+            'Authorization': 'Bearer ' + (await sb.auth.getSession()).data.session.access_token,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ display_name: name, updated_at: new Date().toISOString() })
+        });
+        setTimeout(function() { toast.className = 'account-toast'; }, 4000);
+      } catch (e) {
+        toast.className = 'account-toast error';
+        toast.textContent = e.message || 'Failed to update name.';
+        setTimeout(function() { toast.className = 'account-toast'; }, 4000);
+      }
+    }
+
+    // ============================================================
+    // Change password
+    // ============================================================
+    function showChangePassword() {
+      document.getElementById('pw-display').style.display = 'none';
+      document.getElementById('pw-form').style.display = 'block';
+      document.getElementById('pw-new').focus();
+    }
+
+    function cancelChangePassword() {
+      document.getElementById('pw-form').style.display = 'none';
+      document.getElementById('pw-display').style.display = 'flex';
+      document.getElementById('pw-new').value = '';
+      document.getElementById('pw-confirm').value = '';
+      document.getElementById('acct-pw-str').textContent = '';
+    }
+
+    function acctTogglePw(id) {
+      var inp = document.getElementById(id);
+      if (!inp) return;
+      var isPass = inp.type === 'password';
+      inp.type = isPass ? 'text' : 'password';
+      var icon = inp.parentNode.querySelector('.password-eye i');
+      if (icon) icon.className = isPass ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    }
+
+    function acctCheckStr() {
+      var pw = document.getElementById('pw-new').value;
+      var el = document.getElementById('acct-pw-str');
+      if (!pw) { el.textContent = ''; return; }
+      var score = 0;
+      if (pw.length >= 8) score++;
+      if (pw.length >= 12) score++;
+      if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+      if (/[0-9]/.test(pw)) score++;
+      if (/[^A-Za-z0-9]/.test(pw)) score++;
+      if (score <= 2) el.innerHTML = '<span style="color:var(--red-text)"><i class="fa-solid fa-circle-xmark"></i> Weak</span>';
+      else if (score <= 3) el.innerHTML = '<span style="color:var(--orange-text)"><i class="fa-solid fa-circle-minus"></i> Fair</span>';
+      else el.innerHTML = '<span style="color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> Strong</span>';
+    }
+
+    async function savePassword() {
+      var pw = document.getElementById('pw-new').value;
+      var confirm = document.getElementById('pw-confirm').value;
+      var toast = document.getElementById('security-toast');
+      var btn = document.getElementById('pw-save-btn');
+
+      if (pw.length < 8) {
+        toast.className = 'account-toast error';
+        toast.textContent = 'Password must be at least 8 characters.';
+        return;
+      }
+      if (pw !== confirm) {
+        toast.className = 'account-toast error';
+        toast.textContent = 'Passwords do not match.';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
+
+      try {
+        var res = await sb.auth.updateUser({ password: pw });
+        if (res.error) throw res.error;
+        cancelChangePassword();
+        toast.className = 'account-toast success';
+        toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Password updated successfully.';
+        setTimeout(function() { toast.className = 'account-toast'; }, 4000);
+      } catch (e) {
+        toast.className = 'account-toast error';
+        toast.textContent = e.message || 'Failed to update password.';
+      }
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-key"></i> Update Password';
+    }
+
+    // ============================================================
+    // Account deletion
+    // ============================================================
+    function requestAccountDeletion() {
+      var ok = confirm('Are you sure you want to request account deletion? This cannot be undone. Your profile data will be permanently removed.');
+      if (!ok) return;
+      // Send deletion request to support email
+      var mailto = 'mailto:support@gonogo.co.uk?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20GoNoGo%20account.%20My%20email%20is%20' + encodeURIComponent((sb.auth && Components._currentUser) ? Components._currentUser.email : '');
+      window.location.href = mailto;
+    }
+  </script>
+</body>
+</html>
