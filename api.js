@@ -877,7 +877,7 @@ getBrandUser: function () {
     },
 
     getBrandReviews: function (brandName) {
-      return reviewsRequest('reviews?brand_name=eq.' + encodeURIComponent(brandName) + '&order=created_at.desc')
+      return reviewsRequest('reviews?brand_name=eq.' + encodeURIComponent(brandName) + '&status=eq.approved&order=created_at.desc')
         .then(function (data) {
           return (data || []).map(function (r) {
             return {
