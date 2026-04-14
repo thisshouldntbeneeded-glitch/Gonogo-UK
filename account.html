@@ -80,8 +80,139 @@
   .account-gate h2 { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-3); }
   .account-gate p { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-6); }
 
+  /* ── Persona Picker ── */
+  .persona-intro { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-5); }
+  .persona-intro strong { color: var(--text-primary); }
+  .persona-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5); }
+  .persona-tile {
+    position: relative;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .persona-tile:hover { border-color: var(--border-secondary); background: var(--bg-card-hover); }
+  .persona-tile:active { transform: scale(0.98); }
+  .persona-tile.selected { border-color: var(--green); background: rgba(17,165,81,0.06); }
+  .persona-tile .tile-icon {
+    font-size: 20px;
+    margin-bottom: var(--space-2);
+    display: block;
+  }
+  .persona-tile .tile-name { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+  .persona-tile .tile-desc { font-size: var(--text-xs); color: var(--text-muted); line-height: 1.5; }
+  .persona-tile .tile-badge {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 800;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    box-shadow: 0 2px 8px rgba(17,165,81,0.3);
+  }
+  .persona-tile.selected .tile-badge { display: flex; }
+  .persona-counter {
+    text-align: center;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin-bottom: var(--space-4);
+    min-height: 1.4em;
+  }
+  .persona-counter strong { color: var(--green); }
   @media (max-width: 480px) {
+    .persona-grid { grid-template-columns: 1fr; }
     .account-field-row { flex-direction: column; align-items: flex-start; }
+  }
+
+  /* ── Persona Result Card ── */
+  .persona-result {
+    text-align: center;
+    padding: var(--space-4) 0 var(--space-2);
+  }
+  .persona-badge-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    margin: 0 auto var(--space-4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    box-shadow: 0 4px 20px rgba(17,165,81,0.15);
+  }
+  .persona-name {
+    font-size: var(--text-lg);
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+  }
+  .persona-tagline {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--space-5);
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .persona-priorities {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+    flex-wrap: wrap;
+  }
+  .persona-priority-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: 100px;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-primary);
+    color: var(--text-primary);
+  }
+  .persona-priority-chip .chip-rank {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--green);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* Radar chart */
+  .radar-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--space-4);
+  }
+  .radar-wrap canvas { max-width: 280px; max-height: 280px; }
+
+  .persona-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-3);
+    padding-top: var(--space-2);
   }
 </style>
 </head>
@@ -109,18 +240,345 @@
     Components.initPublicAuth();
     document.getElementById('footer').innerHTML = Components.renderFooter();
 
-    var sb = supabaseAuth; // Reuse the same client from components.js
+    var sb = supabaseAuth;
+    var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I';
+    var API_BASE = 'https://fnpxaneextqidbessnej.supabase.co/rest/v1';
+    var _session = null;
 
+    // ═══════════════════════════════════════════════════════
+    // Category definitions
+    // ═══════════════════════════════════════════════════════
+    var CATEGORIES = [
+      { key: 'product_value',    name: 'Product Value',    icon: 'fa-solid fa-coins',           desc: 'Fair pricing, quality for money, transparent costs' },
+      { key: 'innovation',       name: 'Innovation',       icon: 'fa-solid fa-lightbulb',       desc: 'Tech-forward, inventive features, industry disruption' },
+      { key: 'customer_support', name: 'Customer Support', icon: 'fa-solid fa-headset',         desc: 'Responsive help, issue resolution, human touch' },
+      { key: 'compliance',       name: 'Compliance',       icon: 'fa-solid fa-scale-balanced',  desc: 'Regulatory adherence, ethical practices, data protection' },
+      { key: 'sustainability',   name: 'Sustainability',   icon: 'fa-solid fa-leaf',            desc: 'Environmental impact, social responsibility, ESG' },
+      { key: 'satisfaction',     name: 'Customer Satisfaction', icon: 'fa-solid fa-face-smile', desc: 'Overall experience, loyalty, would-recommend score' }
+    ];
+
+    // ═══════════════════════════════════════════════════════
+    // Persona engine — maps top-3 priority pattern to persona
+    // ═══════════════════════════════════════════════════════
+    var PERSONAS = {
+      // Primary key is the first priority; combos refine it
+      product_value:    { name: 'The Sharp Spender',   icon: '💰', tagline: 'You hold brands to account on value. Every pound or rand must earn its place.' },
+      innovation:       { name: 'The Early Adopter',   icon: '🚀', tagline: 'You chase what\'s next. If a brand isn\'t pushing boundaries, it\'s falling behind.' },
+      customer_support: { name: 'The Experience Seeker',icon: '🤝', tagline: 'You believe brands are only as good as how they treat people when things go wrong.' },
+      compliance:       { name: 'The Watchdog',        icon: '🔍', tagline: 'Rules matter. You trust brands that play by the book and protect your rights.' },
+      sustainability:   { name: 'The Conscious Consumer', icon: '🌱', tagline: 'Planet over profit. You back brands making a genuine effort, not just greenwashing.' },
+      satisfaction:     { name: 'The Loyalist',        icon: '⭐', tagline: 'Results speak loudest. If a brand delivers consistently, you\'ll stick with it.' }
+    };
+
+    // Refined personas when first + second combine
+    var PERSONA_COMBOS = {
+      'product_value+innovation':       { name: 'The Smart Investor',    icon: '🧠', tagline: 'You want cutting-edge quality without the premium markup. Value meets vision.' },
+      'product_value+customer_support':  { name: 'The Fair Dealer',      icon: '⚖️', tagline: 'Good value backed by great service — that\'s your non-negotiable baseline.' },
+      'innovation+sustainability':       { name: 'The Future Builder',   icon: '🌍', tagline: 'Innovation should serve the planet, not just shareholders. You demand both.' },
+      'innovation+compliance':           { name: 'The Ethical Technologist', icon: '🔬', tagline: 'Move fast, but don\'t break trust. You want progress within guardrails.' },
+      'customer_support+satisfaction':   { name: 'The People Person',    icon: '💬', tagline: 'Happy customers aren\'t an accident. You notice when brands genuinely care.' },
+      'sustainability+compliance':       { name: 'The Principled Buyer', icon: '🏛️', tagline: 'Doing right by law and planet. You hold brands to the highest standard.' },
+      'sustainability+product_value':    { name: 'The Mindful Spender',  icon: '🧘', tagline: 'Sustainable shouldn\'t mean expensive. You seek impact-per-rand efficiency.' },
+      'compliance+customer_support':     { name: 'The Trust Seeker',     icon: '🛡️', tagline: 'Compliant and caring — you need brands to earn trust at every touchpoint.' },
+      'satisfaction+innovation':         { name: 'The Optimist',         icon: '✨', tagline: 'Great experiences powered by smart ideas. You\'re drawn to brands that delight.' },
+      'satisfaction+product_value':      { name: 'The Pragmatist',       icon: '🎯', tagline: 'Does it work well? Is it worth it? If yes and yes, you\'re in.' }
+    };
+
+    function resolvePersona(priorities) {
+      if (!priorities || priorities.length < 3) return null;
+      var comboKey = priorities[0] + '+' + priorities[1];
+      return PERSONA_COMBOS[comboKey] || PERSONAS[priorities[0]] || PERSONAS.satisfaction;
+    }
+
+    function getCategoryByKey(key) {
+      for (var i = 0; i < CATEGORIES.length; i++) {
+        if (CATEGORIES[i].key === key) return CATEGORIES[i];
+      }
+      return null;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // Helper: REST PATCH to profiles
+    // ═══════════════════════════════════════════════════════
+    async function patchProfile(userId, body) {
+      return fetch(API_BASE + '/profiles?id=eq.' + userId, {
+        method: 'PATCH',
+        headers: {
+          'apikey': ANON_KEY,
+          'Authorization': 'Bearer ' + _session.access_token,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(body)
+      });
+    }
+
+    async function getProfile(userId) {
+      var res = await fetch(API_BASE + '/profiles?id=eq.' + userId + '&select=priorities,persona,persona_set_at', {
+        headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + _session.access_token }
+      });
+      if (!res.ok) return null;
+      var rows = await res.json();
+      return rows.length ? rows[0] : null;
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // Render: Persona picker (select 3 categories)
+    // ═══════════════════════════════════════════════════════
+    var _pickerSelections = [];
+
+    function renderPersonaPicker() {
+      var tiles = CATEGORIES.map(function(cat) {
+        return '<div class="persona-tile" data-key="' + cat.key + '" onclick="toggleCategory(\'' + cat.key + '\')">' +
+          '<span class="tile-badge"></span>' +
+          '<span class="tile-icon">' +
+            '<i class="' + cat.icon + '"></i>' +
+          '</span>' +
+          '<div class="tile-name">' + cat.name + '</div>' +
+          '<div class="tile-desc">' + cat.desc + '</div>' +
+        '</div>';
+      }).join('');
+
+      return '<div class="persona-intro">' +
+        '<strong>What matters most to you?</strong> Pick your top 3 categories in order of importance. ' +
+        'We\'ll use this to build your consumer persona and tailor how you experience GoNoGo.' +
+      '</div>' +
+      '<div class="persona-grid">' + tiles + '</div>' +
+      '<div class="persona-counter" id="persona-counter">Tap your <strong>first</strong> priority</div>' +
+      '<div class="account-toast" id="persona-toast"></div>' +
+      '<button class="btn btn-primary w-full" id="persona-save-btn" onclick="savePersona()" disabled style="opacity:0.4">' +
+        '<i class="fa-solid fa-wand-magic-sparkles"></i> Reveal My Persona' +
+      '</button>';
+    }
+
+    function toggleCategory(key) {
+      var idx = _pickerSelections.indexOf(key);
+      if (idx > -1) {
+        // Deselect
+        _pickerSelections.splice(idx, 1);
+      } else {
+        if (_pickerSelections.length >= 3) return; // max 3
+        _pickerSelections.push(key);
+      }
+      // Update tile visuals
+      var tiles = document.querySelectorAll('.persona-tile');
+      for (var i = 0; i < tiles.length; i++) {
+        var t = tiles[i];
+        var k = t.getAttribute('data-key');
+        var pos = _pickerSelections.indexOf(k);
+        if (pos > -1) {
+          t.classList.add('selected');
+          t.querySelector('.tile-badge').textContent = pos + 1;
+        } else {
+          t.classList.remove('selected');
+          t.querySelector('.tile-badge').textContent = '';
+        }
+      }
+      // Counter
+      var counter = document.getElementById('persona-counter');
+      var btn = document.getElementById('persona-save-btn');
+      var n = _pickerSelections.length;
+      if (n === 0) {
+        counter.innerHTML = 'Tap your <strong>first</strong> priority';
+        btn.disabled = true; btn.style.opacity = '0.4';
+      } else if (n === 1) {
+        counter.innerHTML = 'Now pick your <strong>second</strong> priority';
+        btn.disabled = true; btn.style.opacity = '0.4';
+      } else if (n === 2) {
+        counter.innerHTML = 'One more — pick your <strong>third</strong> priority';
+        btn.disabled = true; btn.style.opacity = '0.4';
+      } else {
+        counter.innerHTML = '<i class="fa-solid fa-check" style="color:var(--green)"></i> All 3 selected — ready to reveal';
+        btn.disabled = false; btn.style.opacity = '1';
+      }
+    }
+
+    async function savePersona() {
+      if (_pickerSelections.length < 3) return;
+      var btn = document.getElementById('persona-save-btn');
+      var toast = document.getElementById('persona-toast');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+
+      var persona = resolvePersona(_pickerSelections);
+
+      try {
+        await patchProfile(_session.user.id, {
+          priorities: _pickerSelections,
+          persona: persona.name,
+          persona_set_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+        // Show result with animation
+        var card = document.getElementById('persona-card');
+        card.innerHTML = '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
+          renderPersonaResult(_pickerSelections, persona);
+        // Load radar chart
+        loadRadarChart(_pickerSelections);
+      } catch (e) {
+        toast.className = 'account-toast error';
+        toast.textContent = 'Failed to save persona. Please try again.';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Reveal My Persona';
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // Render: Persona result (after saved)
+    // ═══════════════════════════════════════════════════════
+    function renderPersonaResult(priorities, persona) {
+      var chips = priorities.map(function(key, i) {
+        var cat = getCategoryByKey(key);
+        return '<span class="persona-priority-chip">' +
+          '<span class="chip-rank">' + (i + 1) + '</span>' +
+          '<i class="' + cat.icon + '" style="font-size:11px"></i> ' +
+          cat.name +
+        '</span>';
+      }).join('');
+
+      return '<div class="persona-result">' +
+        '<div class="persona-badge-icon" style="background:rgba(17,165,81,0.1);border:2px solid rgba(17,165,81,0.25)">' + persona.icon + '</div>' +
+        '<div class="persona-name">' + persona.name + '</div>' +
+        '<div class="persona-tagline">' + persona.tagline + '</div>' +
+        '<div class="persona-priorities">' + chips + '</div>' +
+        '<div class="radar-wrap"><canvas id="persona-radar" width="280" height="280"></canvas></div>' +
+        '<div class="persona-actions">' +
+          '<button class="btn btn-sm btn-ghost" onclick="resetPersona()" style="color:var(--text-muted)">' +
+            '<i class="fa-solid fa-arrows-rotate"></i> Retake' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function resetPersona() {
+      _pickerSelections = [];
+      var card = document.getElementById('persona-card');
+      card.innerHTML = '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
+        renderPersonaPicker();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // Radar chart (pure canvas — no library)
+    // ═══════════════════════════════════════════════════════
+    function loadRadarChart(priorities) {
+      var canvas = document.getElementById('persona-radar');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var dpr = window.devicePixelRatio || 1;
+      var size = 280;
+      canvas.width = size * dpr;
+      canvas.height = size * dpr;
+      canvas.style.width = size + 'px';
+      canvas.style.height = size + 'px';
+      ctx.scale(dpr, dpr);
+
+      var cx = size / 2;
+      var cy = size / 2;
+      var maxR = 110;
+      var n = CATEGORIES.length;
+      var step = (Math.PI * 2) / n;
+      var offset = -Math.PI / 2; // start from top
+
+      // Compute values: priority 1 = 1.0, 2 = 0.75, 3 = 0.5, rest = 0.18
+      var values = CATEGORIES.map(function(cat) {
+        var idx = priorities.indexOf(cat.key);
+        if (idx === 0) return 1.0;
+        if (idx === 1) return 0.78;
+        if (idx === 2) return 0.55;
+        return 0.18;
+      });
+
+      // Grid rings
+      var rings = [0.25, 0.5, 0.75, 1.0];
+      var isLight = document.documentElement.classList.contains('light-mode');
+      var gridColor = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.06)';
+      var labelColor = isLight ? '#888' : '#666';
+      var textColor = isLight ? '#333' : '#ddd';
+
+      for (var r = 0; r < rings.length; r++) {
+        ctx.beginPath();
+        for (var i = 0; i <= n; i++) {
+          var angle = offset + i * step;
+          var x = cx + Math.cos(angle) * maxR * rings[r];
+          var y = cy + Math.sin(angle) * maxR * rings[r];
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Axis lines
+      for (var i = 0; i < n; i++) {
+        var angle = offset + i * step;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
+        ctx.strokeStyle = gridColor;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Data polygon — fill
+      ctx.beginPath();
+      for (var i = 0; i <= n; i++) {
+        var idx = i % n;
+        var angle = offset + idx * step;
+        var x = cx + Math.cos(angle) * maxR * values[idx];
+        var y = cy + Math.sin(angle) * maxR * values[idx];
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(17,165,81,0.12)';
+      ctx.fill();
+      ctx.strokeStyle = '#11a551';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Data dots
+      for (var i = 0; i < n; i++) {
+        var angle = offset + i * step;
+        var x = cx + Math.cos(angle) * maxR * values[i];
+        var y = cy + Math.sin(angle) * maxR * values[i];
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#11a551';
+        ctx.fill();
+        ctx.strokeStyle = isLight ? '#fff' : '#1a1a1a';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+
+      // Labels
+      ctx.font = '600 11px Inter, -apple-system, sans-serif';
+      ctx.textBaseline = 'middle';
+      for (var i = 0; i < n; i++) {
+        var angle = offset + i * step;
+        var lx = cx + Math.cos(angle) * (maxR + 22);
+        var ly = cy + Math.sin(angle) * (maxR + 22);
+        ctx.textAlign = 'center';
+        // Adjust horizontal alignment for left/right labels
+        if (Math.cos(angle) < -0.3) ctx.textAlign = 'right';
+        else if (Math.cos(angle) > 0.3) ctx.textAlign = 'left';
+        var isPriority = priorities.indexOf(CATEGORIES[i].key) > -1;
+        ctx.fillStyle = isPriority ? '#11a551' : labelColor;
+        // Shorter labels for small canvas
+        var shortNames = ['Value', 'Innovation', 'Support', 'Compliance', 'Sustainability', 'Satisfaction'];
+        ctx.fillText(shortNames[i], lx, ly);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // Main init
+    // ═══════════════════════════════════════════════════════
     (async function init() {
       var page = document.getElementById('account-page');
-      var loading = document.getElementById('account-loading');
 
-      // Wait for auth state
       var sessionRes = await sb.auth.getSession();
-      var session = sessionRes.data && sessionRes.data.session;
+      _session = sessionRes.data && sessionRes.data.session;
 
-      if (!session) {
-        // Not signed in — show gate
+      if (!_session) {
         page.innerHTML =
           '<div class="account-gate">' +
             '<i class="fa-solid fa-user-lock"></i>' +
@@ -131,36 +589,52 @@
         return;
       }
 
-      var user = session.user;
+      var user = _session.user;
       var meta = user.user_metadata || {};
       var displayName = meta.display_name || user.email.split('@')[0];
       var region = (meta.region || 'za').toUpperCase();
       var createdAt = new Date(user.created_at);
       var memberSince = createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-      // Fetch review history
-      var reviews = [];
-      try {
-        var reviewRes = await fetch('https://fnpxaneextqidbessnej.supabase.co/rest/v1/reviews?user_id=eq.' + user.id + '&order=created_at.desc&limit=20', {
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I',
-            'Authorization': 'Bearer ' + session.access_token
-          }
-        });
-        if (reviewRes.ok) reviews = await reviewRes.json();
-      } catch (e) { /* silent */ }
+      // Fetch profile (persona data) + reviews in parallel
+      var profilePromise = getProfile(user.id);
+      var reviewPromise = (async function() {
+        try {
+          var r = await fetch(API_BASE + '/reviews?user_id=eq.' + user.id + '&order=created_at.desc&limit=20', {
+            headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + _session.access_token }
+          });
+          return r.ok ? await r.json() : [];
+        } catch(e) { return []; }
+      })();
 
+      var profile = await profilePromise;
+      var reviews = await reviewPromise;
       var reviewCount = reviews.length;
 
-      // Build the page
+      // ─── Persona card content ───
+      var personaCardInner = '';
+      if (profile && profile.priorities && profile.priorities.length >= 3) {
+        // Already has persona — show result
+        var persona = resolvePersona(profile.priorities);
+        personaCardInner = '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
+          renderPersonaResult(profile.priorities, persona);
+      } else {
+        // Show picker
+        personaCardInner = '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
+          renderPersonaPicker();
+      }
+
+      // ─── Build page ───
       page.innerHTML =
-        // Header
         '<div class="account-header">' +
           '<h1><i class="fa-solid fa-user-circle" style="color:var(--green);margin-right:var(--space-2)"></i>' + Components.escapeHTML(displayName) + '</h1>' +
           '<p>Member since ' + memberSince + ' &bull; ' + region + ' region</p>' +
         '</div>' +
 
-        // Profile card
+        // Persona card (top billing — the hero feature)
+        '<div class="account-card" id="persona-card">' + personaCardInner + '</div>' +
+
+        // Profile
         '<div class="account-card" id="profile-card">' +
           '<h2><i class="fa-solid fa-id-card"></i> Profile</h2>' +
           '<div class="account-toast" id="profile-toast"></div>' +
@@ -194,7 +668,7 @@
           '</div>' +
         '</div>' +
 
-        // Security card
+        // Security
         '<div class="account-card" id="security-card">' +
           '<h2><i class="fa-solid fa-shield-halved"></i> Security</h2>' +
           '<div class="account-toast" id="security-toast"></div>' +
@@ -228,7 +702,7 @@
           '</div>' +
         '</div>' +
 
-        // Reviews card
+        // Reviews
         '<div class="account-card" id="reviews-card">' +
           '<h2><i class="fa-solid fa-star"></i> My Reviews <span style="font-weight:400;color:var(--text-muted);font-size:var(--text-xs);margin-left:var(--space-2)">' + reviewCount + ' total</span></h2>' +
           (reviewCount > 0
@@ -265,25 +739,27 @@
             '<i class="fa-solid fa-trash"></i> Request Account Deletion' +
           '</button>' +
         '</div>';
+
+      // If persona already saved, draw the radar chart
+      if (profile && profile.priorities && profile.priorities.length >= 3) {
+        setTimeout(function() { loadRadarChart(profile.priorities); }, 50);
+      }
     })();
 
-    // ============================================================
+    // ═══════════════════════════════════════════════════════
     // Edit display name
-    // ============================================================
+    // ═══════════════════════════════════════════════════════
     function editDisplayName() {
       document.getElementById('edit-name').classList.add('active');
       document.getElementById('name-input').focus();
     }
-
     function cancelEditName() {
       document.getElementById('edit-name').classList.remove('active');
     }
-
     async function saveDisplayName() {
       var name = document.getElementById('name-input').value.trim();
       var toast = document.getElementById('profile-toast');
       if (!name) return;
-
       try {
         var res = await sb.auth.updateUser({ data: { display_name: name } });
         if (res.error) throw res.error;
@@ -291,17 +767,7 @@
         document.getElementById('edit-name').classList.remove('active');
         toast.className = 'account-toast success';
         toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Display name updated.';
-        // Also update the profile in the database
-        await fetch('https://fnpxaneextqidbessnej.supabase.co/rest/v1/profiles?id=eq.' + res.data.user.id, {
-          method: 'PATCH',
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I',
-            'Authorization': 'Bearer ' + (await sb.auth.getSession()).data.session.access_token,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ display_name: name, updated_at: new Date().toISOString() })
-        });
+        await patchProfile(res.data.user.id, { display_name: name, updated_at: new Date().toISOString() });
         setTimeout(function() { toast.className = 'account-toast'; }, 4000);
       } catch (e) {
         toast.className = 'account-toast error';
@@ -310,15 +776,14 @@
       }
     }
 
-    // ============================================================
+    // ═══════════════════════════════════════════════════════
     // Change password
-    // ============================================================
+    // ═══════════════════════════════════════════════════════
     function showChangePassword() {
       document.getElementById('pw-display').style.display = 'none';
       document.getElementById('pw-form').style.display = 'block';
       document.getElementById('pw-new').focus();
     }
-
     function cancelChangePassword() {
       document.getElementById('pw-form').style.display = 'none';
       document.getElementById('pw-display').style.display = 'flex';
@@ -326,7 +791,6 @@
       document.getElementById('pw-confirm').value = '';
       document.getElementById('acct-pw-str').textContent = '';
     }
-
     function acctTogglePw(id) {
       var inp = document.getElementById(id);
       if (!inp) return;
@@ -335,7 +799,6 @@
       var icon = inp.parentNode.querySelector('.password-eye i');
       if (icon) icon.className = isPass ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
     }
-
     function acctCheckStr() {
       var pw = document.getElementById('pw-new').value;
       var el = document.getElementById('acct-pw-str');
@@ -350,27 +813,15 @@
       else if (score <= 3) el.innerHTML = '<span style="color:var(--orange-text)"><i class="fa-solid fa-circle-minus"></i> Fair</span>';
       else el.innerHTML = '<span style="color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> Strong</span>';
     }
-
     async function savePassword() {
       var pw = document.getElementById('pw-new').value;
       var confirm = document.getElementById('pw-confirm').value;
       var toast = document.getElementById('security-toast');
       var btn = document.getElementById('pw-save-btn');
-
-      if (pw.length < 8) {
-        toast.className = 'account-toast error';
-        toast.textContent = 'Password must be at least 8 characters.';
-        return;
-      }
-      if (pw !== confirm) {
-        toast.className = 'account-toast error';
-        toast.textContent = 'Passwords do not match.';
-        return;
-      }
-
+      if (pw.length < 8) { toast.className = 'account-toast error'; toast.textContent = 'Password must be at least 8 characters.'; return; }
+      if (pw !== confirm) { toast.className = 'account-toast error'; toast.textContent = 'Passwords do not match.'; return; }
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
-
       try {
         var res = await sb.auth.updateUser({ password: pw });
         if (res.error) throw res.error;
@@ -386,14 +837,13 @@
       btn.innerHTML = '<i class="fa-solid fa-key"></i> Update Password';
     }
 
-    // ============================================================
+    // ═══════════════════════════════════════════════════════
     // Account deletion
-    // ============================================================
+    // ═══════════════════════════════════════════════════════
     function requestAccountDeletion() {
       var ok = confirm('Are you sure you want to request account deletion? This cannot be undone. Your profile data will be permanently removed.');
       if (!ok) return;
-      // Send deletion request to support email
-      var mailto = 'mailto:support@gonogo.co.uk?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20GoNoGo%20account.%20My%20email%20is%20' + encodeURIComponent((sb.auth && Components._currentUser) ? Components._currentUser.email : '');
+      var mailto = 'mailto:support@gonogo.co.uk?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20GoNoGo%20account.%20My%20email%20is%20' + encodeURIComponent((_session && _session.user) ? _session.user.email : '');
       window.location.href = mailto;
     }
   </script>
