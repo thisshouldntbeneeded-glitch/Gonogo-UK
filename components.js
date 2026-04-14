@@ -248,12 +248,14 @@ const Components = {
     var banner = document.getElementById('cookie-banner');
     if (banner) banner.remove();
     this.loadGA();
+    this._triggerWelcomeAfterConsent();
   },
 
   cookieReject() {
     localStorage.setItem('gonogo_cookie_consent', 'rejected');
     var banner = document.getElementById('cookie-banner');
     if (banner) banner.remove();
+    this._triggerWelcomeAfterConsent();
   },
 
   loadGA() {
@@ -1299,13 +1301,33 @@ const Components = {
     if (path.indexOf('admin') > -1 || path.indexOf('account') > -1 || path.indexOf('reset') > -1 || path.indexOf('auth/') > -1) return;
     // Only once per browser session
     if (sessionStorage.getItem('gonogo_welcome_seen')) return;
+    // If cookie consent hasn't been handled yet, wait — the banner takes priority.
+    // cookieAccept/cookieReject will call _triggerWelcomeAfterConsent() instead.
+    var consent = localStorage.getItem('gonogo_cookie_consent');
+    if (!consent) {
+      // Flag that we want to show welcome after consent is handled
+      Components._welcomePending = true;
+      return;
+    }
+    // Cookies already dealt with on a previous visit — show after short delay
     sessionStorage.setItem('gonogo_welcome_seen', '1');
-    // Slight delay so the page settles first
     setTimeout(function() {
-      // Recheck — user may have signed in during the delay
       if (Components._currentUser) return;
       Components._showWelcomeModal();
-    }, 2500);
+    }, 2000);
+  },
+
+  _triggerWelcomeAfterConsent() {
+    if (!Components._welcomePending) return;
+    Components._welcomePending = false;
+    if (Components._currentUser) return;
+    if (sessionStorage.getItem('gonogo_welcome_seen')) return;
+    sessionStorage.setItem('gonogo_welcome_seen', '1');
+    // Short pause after cookie banner dismisses so it doesn't feel like a barrage
+    setTimeout(function() {
+      if (Components._currentUser) return;
+      Components._showWelcomeModal();
+    }, 1500);
   },
 
   _showWelcomeModal() {
