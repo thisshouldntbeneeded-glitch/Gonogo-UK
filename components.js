@@ -1203,6 +1203,8 @@ const Components = {
       var session = res.data && res.data.session;
       Components._currentUser = session ? session.user : null;
       Components._updateNavAuth();
+      // Show welcome modal for anonymous visitors (once per session)
+      if (!session) Components._maybeShowWelcome();
     });
     supabaseAuth.auth.onAuthStateChange(function(event, session) {
       Components._currentUser = session ? session.user : null;
@@ -1291,10 +1293,66 @@ const Components = {
     if (dd) dd.classList.remove('open');
   },
 
+  _maybeShowWelcome() {
+    // Don't show on admin, account, or reset pages
+    var path = window.location.pathname;
+    if (path.indexOf('admin') > -1 || path.indexOf('account') > -1 || path.indexOf('reset') > -1 || path.indexOf('auth/') > -1) return;
+    // Only once per browser session
+    if (sessionStorage.getItem('gonogo_welcome_seen')) return;
+    sessionStorage.setItem('gonogo_welcome_seen', '1');
+    // Slight delay so the page settles first
+    setTimeout(function() {
+      // Recheck — user may have signed in during the delay
+      if (Components._currentUser) return;
+      Components._showWelcomeModal();
+    }, 2500);
+  },
+
+  _showWelcomeModal() {
+    var overlay = document.createElement('div');
+    overlay.className = 'auth-modal-overlay';
+    overlay.id = 'welcome-modal-overlay';
+    overlay.innerHTML =
+      '<div class="auth-modal welcome-modal">' +
+        '<button class="auth-modal-close" onclick="Components._closeWelcome()" aria-label="Close">' +
+          '<i class="fa-solid fa-xmark"></i>' +
+        '</button>' +
+        '<div class="auth-modal-logo">' +
+          '<img src="' + LOGO_URL + '" alt="GoNoGo" style="height:44px;width:auto;border-radius:10px">' +
+        '</div>' +
+        '<h2 class="welcome-title">Honest ratings. Real insight.</h2>' +
+        '<p class="welcome-body">' +
+          'Create a free account to leave reviews, build your consumer persona, and help hold brands to a higher standard.' +
+        '</p>' +
+        '<div class="welcome-perks">' +
+          '<div class="welcome-perk"><i class="fa-solid fa-star"></i> Rate &amp; review brands you use</div>' +
+          '<div class="welcome-perk"><i class="fa-solid fa-fingerprint"></i> Discover your consumer persona</div>' +
+          '<div class="welcome-perk"><i class="fa-solid fa-chart-simple"></i> See how brands really compare</div>' +
+        '</div>' +
+        '<button class="btn btn-primary w-full" onclick="Components._closeWelcome(); Components.showAuthModal(\'signup\');">' +
+          '<i class="fa-solid fa-user-plus"></i> Create Free Account' +
+        '</button>' +
+        '<div class="welcome-footer">' +
+          'Already have an account? <a href="#" onclick="Components._closeWelcome(); Components.showAuthModal(\'signin\'); return false;">Sign in</a>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) Components._closeWelcome();
+    });
+  },
+
+  _closeWelcome() {
+    var el = document.getElementById('welcome-modal-overlay');
+    if (el) el.remove();
+  },
+
   showAuthModal(defaultTab) {
     // Remove existing
     var existing = document.getElementById('auth-modal-overlay');
     if (existing) existing.remove();
+    var welcomeEl = document.getElementById('welcome-modal-overlay');
+    if (welcomeEl) welcomeEl.remove();
 
     var tab = defaultTab || 'signin';
     var overlay = document.createElement('div');

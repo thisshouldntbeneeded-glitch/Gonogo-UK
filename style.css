@@ -1765,6 +1765,57 @@ textarea {
   color: var(--text-secondary);
 }
 
+/* Welcome modal */
+.welcome-modal { text-align: center; }
+.welcome-title {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+.welcome-body {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: var(--space-5);
+}
+.welcome-perks {
+  text-align: left;
+  margin-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.welcome-perk {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.welcome-perk i {
+  color: var(--green);
+  width: 20px;
+  text-align: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.welcome-footer {
+  text-align: center;
+  margin-top: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+.welcome-footer a {
+  color: var(--green);
+  text-decoration: none;
+  font-weight: 600;
+}
+.welcome-footer a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
   .auth-modal {
     padding: var(--space-6);
