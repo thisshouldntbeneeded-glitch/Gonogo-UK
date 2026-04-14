@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GoNoGo UK — Public Users</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebar-container"></div>
+    <main class="admin-main" id="admin-content" style="display:none;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title"><i class="fa-solid fa-users" style="color:var(--green)"></i> Public Users</h1>
+          <p class="text-sm text-secondary">Registered accounts across GoNoGo</p>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="exportUsersCSV()">
+          <i class="fa-solid fa-download"></i> Export CSV
+        </button>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid" style="margin-bottom:var(--space-6);" id="user-kpis">
+        <div class="kpi-card"><div class="kpi-label">Loading...</div></div>
+      </div>
+
+      <!-- Filters -->
+      <div class="card" style="margin-bottom:var(--space-6);">
+        <div style="display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;">
+          <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px;">
+            <input type="text" id="user-search" placeholder="Search by name or email..." oninput="filterUsers()">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <select id="filter-region" onchange="filterUsers()">
+              <option value="">All Regions</option>
+              <option value="za">South Africa</option>
+              <option value="uk">United Kingdom</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <select id="filter-status" onchange="filterUsers()">
+              <option value="">All Statuses</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="unconfirmed">Unconfirmed</option>
+              <option value="banned">Banned</option>
+            </select>
+          </div>
+          <span class="text-xs text-muted" id="user-count-label"></span>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div class="card" style="overflow-x:auto;">
+        <table class="data-table" id="users-table">
+          <thead>
+            <tr>
+              <th style="cursor:pointer" onclick="sortUsers('display_name')">Name <i class="fa-solid fa-sort" style="opacity:0.3"></i></th>
+              <th style="cursor:pointer" onclick="sortUsers('email')">Email <i class="fa-solid fa-sort" style="opacity:0.3"></i></th>
+              <th style="cursor:pointer" onclick="sortUsers('region')">Region <i class="fa-solid fa-sort" style="opacity:0.3"></i></th>
+              <th style="cursor:pointer" onclick="sortUsers('email_confirmed_at')">Confirmed <i class="fa-solid fa-sort" style="opacity:0.3"></i></th>
+              <th style="cursor:pointer" onclick="sortUsers('last_sign_in_at')">Last Sign In <i class="fa-solid fa-sort" style="opacity:0.3"></i></th>
+              <th style="cursor:pointer" onclick="sortUsers('created_at')">Joined <i class="fa-solid fa-sort" style="opacity:0.3"></i></th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+        <div id="users-empty" style="display:none;text-align:center;padding:var(--space-8);">
+          <i class="fa-solid fa-user-slash" style="font-size:36px;color:var(--text-muted);margin-bottom:var(--space-3);display:block"></i>
+          <p class="text-sm text-muted">No registered users yet</p>
+        </div>
+      </div>
+
+      <div style="padding:var(--space-6) 0;text-align:center;">
+        <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="data/data_partA.js"></script>
+  <script src="data/data_partB.js"></script>
+  <script src="data/data_partC.js"></script>
+  <script src="data/data_partD.js"></script>
+  <script src="data/data_partE.js"></script>
+  <script src="data/data_partF.js"></script>
+  <script src="data/data.js"></script>
+  <script src="data/helpers.js"></script>
+  <script src="components.js"></script>
+  <script src="api.js"></script>
+
+  <script>
+    document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('users');
+
+    if (Components.checkAdminAuth()) {
+      initUsersPage();
+    }
+
+    var allUsers = [];
+    var filteredUsers = [];
+    var currentSort = { field: 'created_at', dir: 'desc' };
+
+    async function initUsersPage() {
+      document.getElementById('admin-content').style.display = 'block';
+
+      try {
+        allUsers = await GoNoGoAPI.supabaseRequest(
+          'user_accounts?select=id,email,display_name,region,email_confirmed_at,last_sign_in_at,created_at,banned_until,meta_display_name,meta_region&order=created_at.desc'
+        );
+      } catch (e) {
+        console.error('Error loading users:', e);
+        allUsers = [];
+      }
+
+      renderKPIs();
+      filterUsers();
+    }
+
+    function renderKPIs() {
+      var total = allUsers.length;
+      var confirmed = allUsers.filter(function(u) { return u.email_confirmed_at; }).length;
+      var unconfirmed = total - confirmed;
+      var za = allUsers.filter(function(u) { return (u.region || u.meta_region) === 'za'; }).length;
+      var uk = allUsers.filter(function(u) { return (u.region || u.meta_region) === 'uk'; }).length;
+
+      // Recent (last 7 days)
+      var weekAgo = new Date();
+      weekAgo.setDate(weekAgo.getDate() - 7);
+      var recent = allUsers.filter(function(u) { return new Date(u.created_at) > weekAgo; }).length;
+
+      // Active (signed in within last 30 days)
+      var monthAgo = new Date();
+      monthAgo.setDate(monthAgo.getDate() - 30);
+      var active = allUsers.filter(function(u) { return u.last_sign_in_at && new Date(u.last_sign_in_at) > monthAgo; }).length;
+
+      document.getElementById('user-kpis').innerHTML =
+        '<div class="kpi-card">' +
+          '<div class="kpi-value">' + total + '</div>' +
+          '<div class="kpi-label">Total Users</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-value" style="color:var(--green)">' + confirmed + '</div>' +
+          '<div class="kpi-label">Confirmed</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-value" style="color:var(--yellow,#f59e0b)">' + unconfirmed + '</div>' +
+          '<div class="kpi-label">Unconfirmed</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-value">' + recent + '</div>' +
+          '<div class="kpi-label">New (7 days)</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-value">' + active + '</div>' +
+          '<div class="kpi-label">Active (30 days)</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-value">' +
+            '<span title="South Africa">\ud83c\uddff\ud83c\udde6 ' + za + '</span>' +
+            '<span style="margin:0 8px;color:var(--text-muted)">|</span>' +
+            '<span title="United Kingdom">\ud83c\uddec\ud83c\udde7 ' + uk + '</span>' +
+          '</div>' +
+          '<div class="kpi-label">By Region</div>' +
+        '</div>';
+    }
+
+    function filterUsers() {
+      var search = (document.getElementById('user-search').value || '').toLowerCase();
+      var region = document.getElementById('filter-region').value;
+      var status = document.getElementById('filter-status').value;
+
+      filteredUsers = allUsers.filter(function(u) {
+        var name = (u.display_name || u.meta_display_name || '').toLowerCase();
+        var email = (u.email || '').toLowerCase();
+        var userRegion = u.region || u.meta_region || '';
+
+        if (search && name.indexOf(search) === -1 && email.indexOf(search) === -1) return false;
+        if (region && userRegion !== region) return false;
+
+        if (status === 'confirmed' && !u.email_confirmed_at) return false;
+        if (status === 'unconfirmed' && u.email_confirmed_at) return false;
+        if (status === 'banned' && !u.banned_until) return false;
+
+        return true;
+      });
+
+      // Sort
+      sortArray(filteredUsers, currentSort.field, currentSort.dir);
+
+      document.getElementById('user-count-label').textContent =
+        filteredUsers.length + ' of ' + allUsers.length + ' users';
+
+      renderTable();
+    }
+
+    function sortUsers(field) {
+      if (currentSort.field === field) {
+        currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        currentSort.field = field;
+        currentSort.dir = field === 'created_at' || field === 'last_sign_in_at' || field === 'email_confirmed_at' ? 'desc' : 'asc';
+      }
+      filterUsers();
+    }
+
+    function sortArray(arr, field, dir) {
+      arr.sort(function(a, b) {
+        var va = a[field] || '';
+        var vb = b[field] || '';
+        if (typeof va === 'string') va = va.toLowerCase();
+        if (typeof vb === 'string') vb = vb.toLowerCase();
+        if (va < vb) return dir === 'asc' ? -1 : 1;
+        if (va > vb) return dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    function renderTable() {
+      var tbody = document.getElementById('users-tbody');
+      var empty = document.getElementById('users-empty');
+
+      if (filteredUsers.length === 0) {
+        tbody.innerHTML = '';
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      tbody.innerHTML = filteredUsers.map(function(u) {
+        var name = Components.escapeHTML(u.display_name || u.meta_display_name || '—');
+        var email = Components.escapeHTML(u.email || '');
+        var region = u.region || u.meta_region || '—';
+        var regionLabel = region === 'za' ? '\ud83c\uddff\ud83c\udde6 SA' : region === 'uk' ? '\ud83c\uddec\ud83c\udde7 UK' : region;
+        var confirmed = u.email_confirmed_at;
+        var confirmedLabel = confirmed
+          ? '<span style="color:var(--green)" title="' + formatDate(confirmed) + '"><i class="fa-solid fa-circle-check"></i> Yes</span>'
+          : '<span style="color:var(--yellow,#f59e0b)"><i class="fa-solid fa-clock"></i> Pending</span>';
+        var lastSignIn = u.last_sign_in_at ? timeAgo(u.last_sign_in_at) : '<span class="text-muted">Never</span>';
+        var joined = formatDate(u.created_at);
+
+        var statusBadge = '';
+        if (u.banned_until) {
+          statusBadge = '<span class="badge badge-red">Banned</span>';
+        } else if (confirmed) {
+          statusBadge = '<span class="badge badge-green">Active</span>';
+        } else {
+          statusBadge = '<span class="badge badge-yellow">Unconfirmed</span>';
+        }
+
+        return '<tr>' +
+          '<td><strong>' + name + '</strong></td>' +
+          '<td class="text-sm">' + email + '</td>' +
+          '<td class="text-sm">' + regionLabel + '</td>' +
+          '<td class="text-sm">' + confirmedLabel + '</td>' +
+          '<td class="text-sm">' + lastSignIn + '</td>' +
+          '<td class="text-sm">' + joined + '</td>' +
+          '<td>' + statusBadge + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      var d = new Date(iso);
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function timeAgo(iso) {
+      if (!iso) return '';
+      var diff = Date.now() - new Date(iso).getTime();
+      var mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return mins + 'm ago';
+      var hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + 'h ago';
+      var days = Math.floor(hours / 24);
+      if (days < 30) return days + 'd ago';
+      return formatDate(iso);
+    }
+
+    function exportUsersCSV() {
+      if (filteredUsers.length === 0) {
+        Components.showToast('No users to export', 'error');
+        return;
+      }
+      var headers = ['Name', 'Email', 'Region', 'Confirmed', 'Last Sign In', 'Joined', 'Status'];
+      var rows = filteredUsers.map(function(u) {
+        var name = u.display_name || u.meta_display_name || '';
+        var email = u.email || '';
+        var region = (u.region || u.meta_region || '').toUpperCase();
+        var confirmed = u.email_confirmed_at ? 'Yes' : 'No';
+        var lastSignIn = u.last_sign_in_at || '';
+        var joined = u.created_at || '';
+        var status = u.banned_until ? 'Banned' : (u.email_confirmed_at ? 'Active' : 'Unconfirmed');
+        return [name, email, region, confirmed, lastSignIn, joined, status].map(function(v) {
+          return '"' + String(v).replace(/"/g, '""') + '"';
+        }).join(',');
+      });
+      var csv = [headers.join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'gonogo-users-' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      Components.showToast('CSV exported');
+    }
+  </script>
+</body>
+</html>

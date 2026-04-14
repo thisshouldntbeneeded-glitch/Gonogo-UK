@@ -114,8 +114,8 @@
         <ul>
           <li><strong>Contact information</strong> — name and email address submitted via contact forms or direct
             email to admin@gonogo.co.uk.</li>
-          <li><strong>Account registration data</strong> — full name, email address, and password (hashed and stored
-            securely in Supabase Auth; we never store plaintext passwords) when you create a user account.</li>
+          <li><strong>Account registration data</strong> — display name, email address, and password (hashed and stored
+            securely in Supabase Auth; we never store plaintext passwords) when you create a user account. We also store your region (United Kingdom or South Africa) and a unique account identifier. We may collect account activity history and preferences as the service evolves.</li>
           <li><strong>Brand portal credentials</strong> — email address and password for admin and brand user accounts
             used to access the GoNoGo brand management portal.</li>
           <li><strong>Competition and survey responses</strong> — any personal data you provide when entering a
@@ -308,6 +308,7 @@
             Contains your brand user identifier and login timestamp.</li>
           <li>Research date selections and brand override preferences — stores your in-session UI state for search and
             comparison tools. Contains no directly identifying personal data.</li>
+          <li><code>sb-fnpxaneextqidbessnej-auth-token</code> — Supabase Auth session tokens (JWT access token and refresh token) stored when you sign in to your GoNoGo account. These keep you signed in across pages and visits, and are automatically removed when you sign out.</li>
         </ul>
 
         <h3>8.3 Analytics Cookies (Consent Required)</h3>
