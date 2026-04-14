@@ -14,18 +14,65 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})()</script>
 <style>
-  .account-page { max-width: 720px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-16); }
-  .account-header { margin-bottom: var(--space-8); }
-  .account-header h1 { font-size: var(--text-xl); font-weight: 800; margin-bottom: var(--space-2); }
-  .account-header p { color: var(--text-secondary); font-size: var(--text-sm); }
-  .account-card {
+  /* ── Layout ── */
+  .acct-wrap { max-width: 900px; margin: 0 auto; padding: var(--space-6) var(--space-4) var(--space-16); }
+  .acct-header { margin-bottom: var(--space-6); }
+  .acct-header h1 { font-size: var(--text-xl); font-weight: 800; margin-bottom: var(--space-1); }
+  .acct-header p { color: var(--text-secondary); font-size: var(--text-sm); }
+  .acct-layout { display: flex; gap: var(--space-6); align-items: flex-start; }
+
+  /* ── Sidebar tabs ── */
+  .acct-tabs {
+    flex-shrink: 0;
+    width: 200px;
+    position: sticky;
+    top: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .acct-tab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border: none;
+    background: none;
+    text-align: left;
+    width: 100%;
+    transition: background 0.15s, color 0.15s;
+  }
+  .acct-tab:hover { background: var(--bg-card-hover); color: var(--text-primary); }
+  .acct-tab.active { background: var(--bg-card); color: var(--green); font-weight: 600; }
+  .acct-tab i { width: 18px; text-align: center; font-size: 13px; }
+  .acct-tab .tab-badge {
+    margin-left: auto;
+    background: var(--green);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 100px;
+    line-height: 1.2;
+  }
+
+  /* ── Content panels ── */
+  .acct-content { flex: 1; min-width: 0; }
+  .acct-panel { display: none; }
+  .acct-panel.active { display: block; }
+  .acct-card {
     background: var(--bg-card);
     border: 1px solid var(--border-primary);
     border-radius: var(--radius-lg);
     padding: var(--space-6);
     margin-bottom: var(--space-5);
   }
-  .account-card h2 {
+  .acct-card h2 {
     font-size: var(--text-base);
     font-weight: 700;
     margin-bottom: var(--space-4);
@@ -33,15 +80,17 @@
     align-items: center;
     gap: var(--space-2);
   }
-  .account-card h2 i { color: var(--green); font-size: 14px; }
-  .account-field { margin-bottom: var(--space-4); }
-  .account-field:last-child { margin-bottom: 0; }
-  .account-field-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: var(--space-1); }
-  .account-field-value { font-size: var(--text-sm); color: var(--text-primary); }
-  .account-field-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
-  .account-field-row .btn { flex-shrink: 0; }
+  .acct-card h2 i { color: var(--green); font-size: 14px; }
 
-  .account-toast {
+  /* ── Fields ── */
+  .af { margin-bottom: var(--space-4); }
+  .af:last-child { margin-bottom: 0; }
+  .af-label { font-size: var(--text-xs); color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: var(--space-1); }
+  .af-value { font-size: var(--text-sm); color: var(--text-primary); }
+  .af-row { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+
+  /* ── Toast ── */
+  .acct-toast {
     display: none;
     padding: var(--space-3);
     border-radius: var(--radius-md);
@@ -49,136 +98,80 @@
     margin-bottom: var(--space-4);
     line-height: 1.5;
   }
-  .account-toast.success { background: var(--green-bg); border: 1px solid rgba(17,165,81,0.3); color: var(--green-text); display: block; }
-  .account-toast.error { background: var(--red-bg); border: 1px solid rgba(231,76,60,0.3); color: var(--red-text); display: block; }
-
+  .acct-toast.success { background: var(--green-bg); border: 1px solid rgba(17,165,81,0.3); color: var(--green-text); display: block; }
+  .acct-toast.error { background: var(--red-bg); border: 1px solid rgba(231,76,60,0.3); color: var(--red-text); display: block; }
   .edit-inline { display: none; gap: var(--space-2); align-items: center; }
   .edit-inline.active { display: flex; }
   .edit-inline input { flex: 1; }
 
-  .review-list { list-style: none; padding: 0; margin: 0; }
-  .review-item {
-    padding: var(--space-4);
-    border-bottom: 1px solid var(--border-subtle);
-    transition: background 0.15s;
-  }
-  .review-item:last-child { border-bottom: none; }
-  .review-item:hover { background: var(--bg-card-hover); }
-  .review-brand { font-weight: 600; color: var(--text-primary); font-size: var(--text-sm); }
-  .review-date { font-size: var(--text-xs); color: var(--text-muted); }
-  .review-stars { color: var(--orange); font-size: 12px; margin: var(--space-1) 0; }
-  .review-excerpt { font-size: var(--text-xs); color: var(--text-secondary); line-height: 1.5; }
-  .review-empty { text-align: center; padding: var(--space-8) var(--space-4); color: var(--text-muted); font-size: var(--text-sm); }
-  .review-empty i { display: block; font-size: 32px; margin-bottom: var(--space-3); color: var(--text-faint); }
-
-  .danger-zone { border-color: rgba(231,76,60,0.2); }
-  .danger-zone h2 i { color: var(--red); }
-
-  .account-loading { text-align: center; padding: var(--space-16) 0; color: var(--text-muted); font-size: var(--text-sm); }
-  .account-gate { text-align: center; padding: var(--space-16) 0; }
-  .account-gate i { display: block; font-size: 48px; color: var(--text-faint); margin-bottom: var(--space-4); }
-  .account-gate h2 { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-3); }
-  .account-gate p { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-6); }
-
-  /* ── Persona Picker ── */
-  .persona-intro { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-5); }
-  .persona-intro strong { color: var(--text-primary); }
-  .persona-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-5); }
-  .persona-tile {
+  /* ── Persona picker tiles ── */
+  .pp-intro { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-5); }
+  .pp-intro strong { color: var(--text-primary); }
+  .pp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-4); }
+  .pp-tile {
     position: relative;
     background: var(--bg-primary);
     border: 2px solid var(--border-primary);
     border-radius: var(--radius-lg);
-    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-5);
+    padding: var(--space-4);
     cursor: pointer;
-    transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    transition: border-color 0.2s, background 0.2s, transform 0.12s;
     user-select: none;
     -webkit-user-select: none;
   }
-  .persona-tile:hover { border-color: var(--border-secondary); background: var(--bg-card-hover); }
-  .persona-tile:active { transform: scale(0.98); }
-  .persona-tile.selected { border-color: var(--green); background: rgba(17,165,81,0.06); }
-  .persona-tile .tile-icon {
-    font-size: 20px;
-    margin-bottom: var(--space-2);
-    display: block;
-  }
-  .persona-tile .tile-name { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
-  .persona-tile .tile-desc { font-size: var(--text-xs); color: var(--text-muted); line-height: 1.5; }
-  .persona-tile .tile-badge {
+  .pp-tile:hover { border-color: var(--border-secondary); background: var(--bg-card-hover); }
+  .pp-tile:active { transform: scale(0.97); }
+  .pp-tile.selected { border-color: var(--green); background: rgba(17,165,81,0.06); }
+  .pp-tile .t-icon { font-size: 20px; margin-bottom: var(--space-2); display: block; }
+  .pp-tile .t-name { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+  .pp-tile .t-desc { font-size: var(--text-xs); color: var(--text-muted); line-height: 1.5; }
+  .pp-tile .t-badge {
     position: absolute;
-    top: var(--space-2);
-    right: var(--space-2);
-    width: 24px;
-    height: 24px;
+    top: 10px; right: 10px;
+    width: 22px; height: 22px;
     border-radius: 50%;
     background: var(--green);
     color: #fff;
-    font-size: 11px;
-    font-weight: 800;
+    font-size: 11px; font-weight: 800;
     display: none;
     align-items: center;
     justify-content: center;
-    line-height: 1;
     box-shadow: 0 2px 8px rgba(17,165,81,0.3);
   }
-  .persona-tile.selected .tile-badge { display: flex; }
-  .persona-counter {
+  .pp-tile.selected .t-badge { display: flex; }
+  .pp-counter {
     text-align: center;
     font-size: var(--text-xs);
     color: var(--text-muted);
     margin-bottom: var(--space-4);
     min-height: 1.4em;
   }
-  .persona-counter strong { color: var(--green); }
-  @media (max-width: 480px) {
-    .persona-grid { grid-template-columns: 1fr; }
-    .account-field-row { flex-direction: column; align-items: flex-start; }
-  }
+  .pp-counter strong { color: var(--green); }
 
-  /* ── Persona Result Card ── */
-  .persona-result {
+  /* ── Persona result ── */
+  .pr-card {
     text-align: center;
-    padding: var(--space-4) 0 var(--space-2);
+    padding: var(--space-2) 0;
   }
-  .persona-badge-icon {
-    width: 72px;
-    height: 72px;
+  .pr-icon {
+    width: 64px; height: 64px;
     border-radius: 50%;
     margin: 0 auto var(--space-4);
     display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    box-shadow: 0 4px 20px rgba(17,165,81,0.15);
+    align-items: center; justify-content: center;
+    font-size: 28px;
+    background: rgba(17,165,81,0.1);
+    border: 2px solid rgba(17,165,81,0.25);
+    box-shadow: 0 4px 20px rgba(17,165,81,0.1);
   }
-  .persona-name {
-    font-size: var(--text-lg);
-    font-weight: 800;
-    color: var(--text-primary);
-    margin-bottom: var(--space-1);
-  }
-  .persona-tagline {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-    line-height: 1.6;
-    margin-bottom: var(--space-5);
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .persona-priorities {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-3);
-    margin-bottom: var(--space-5);
-    flex-wrap: wrap;
-  }
-  .persona-priority-chip {
-    display: flex;
+  .pr-name { font-size: var(--text-lg); font-weight: 800; color: var(--text-primary); margin-bottom: var(--space-1); }
+  .pr-tagline { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--space-5); max-width: 380px; margin-left: auto; margin-right: auto; }
+  .pr-chips { display: flex; justify-content: center; gap: var(--space-2); flex-wrap: wrap; margin-bottom: var(--space-5); }
+  .pr-chip {
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: var(--space-2) var(--space-3);
+    padding: 6px 12px;
     border-radius: 100px;
     font-size: var(--text-xs);
     font-weight: 600;
@@ -186,33 +179,97 @@
     border: 1px solid var(--border-primary);
     color: var(--text-primary);
   }
-  .persona-priority-chip .chip-rank {
-    width: 18px;
-    height: 18px;
+  .pr-chip .rank {
+    width: 18px; height: 18px;
     border-radius: 50%;
     background: var(--green);
     color: #fff;
-    font-size: 10px;
-    font-weight: 800;
+    font-size: 10px; font-weight: 800;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center; justify-content: center;
     flex-shrink: 0;
   }
 
-  /* Radar chart */
-  .radar-wrap {
-    display: flex;
-    justify-content: center;
-    margin-bottom: var(--space-4);
-  }
-  .radar-wrap canvas { max-width: 280px; max-height: 280px; }
+  /* ── Horizontal bar chart (replaces radar) ── */
+  .pri-bars { margin-top: var(--space-4); }
+  .pri-bar-row { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-3); }
+  .pri-bar-label { width: 110px; font-size: var(--text-xs); font-weight: 600; color: var(--text-secondary); text-align: right; flex-shrink: 0; }
+  .pri-bar-track { flex: 1; height: 8px; background: var(--bg-primary); border-radius: 4px; overflow: hidden; }
+  .pri-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .pri-bar-row.rank-1 .pri-bar-label { color: var(--green); }
+  .pri-bar-row.rank-1 .pri-bar-fill { background: var(--green); }
+  .pri-bar-row.rank-2 .pri-bar-fill { background: rgba(17,165,81,0.6); }
+  .pri-bar-row.rank-3 .pri-bar-fill { background: rgba(17,165,81,0.35); }
+  .pri-bar-row.rank-0 .pri-bar-fill { background: var(--border-primary); }
 
-  .persona-actions {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-3);
-    padding-top: var(--space-2);
+  /* ── Reviews ── */
+  .rv-list { list-style: none; padding: 0; margin: 0; }
+  .rv-item { padding: var(--space-4); border-bottom: 1px solid var(--border-subtle); transition: background 0.15s; }
+  .rv-item:last-child { border-bottom: none; }
+  .rv-item:hover { background: var(--bg-card-hover); }
+  .rv-empty { text-align: center; padding: var(--space-8) var(--space-4); color: var(--text-muted); font-size: var(--text-sm); }
+  .rv-empty i { display: block; font-size: 28px; margin-bottom: var(--space-3); color: var(--text-faint); }
+
+  /* ── Preferences ── */
+  .pref-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: var(--space-4) 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .pref-row:last-child { border-bottom: none; }
+  .pref-label { font-size: var(--text-sm); color: var(--text-primary); font-weight: 500; }
+  .pref-desc { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+  .toggle {
+    position: relative;
+    width: 40px; height: 22px;
+    background: var(--border-primary);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+    border: none;
+  }
+  .toggle::after {
+    content: '';
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+  }
+  .toggle.on { background: var(--green); }
+  .toggle.on::after { transform: translateX(18px); }
+
+  /* ── Danger zone ── */
+  .dz { border-color: rgba(231,76,60,0.2); }
+  .dz h2 i { color: var(--red); }
+
+  /* ── Gate / Loading ── */
+  .acct-loading { text-align: center; padding: var(--space-16) 0; color: var(--text-muted); font-size: var(--text-sm); }
+  .acct-gate { text-align: center; padding: var(--space-16) 0; }
+  .acct-gate i { display: block; font-size: 48px; color: var(--text-faint); margin-bottom: var(--space-4); }
+  .acct-gate h2 { font-size: var(--text-lg); font-weight: 700; margin-bottom: var(--space-3); }
+  .acct-gate p { color: var(--text-secondary); font-size: var(--text-sm); margin-bottom: var(--space-6); }
+
+  /* ── Mobile ── */
+  @media (max-width: 640px) {
+    .acct-layout { flex-direction: column; }
+    .acct-tabs {
+      position: static;
+      width: 100%;
+      flex-direction: row;
+      overflow-x: auto;
+      gap: 0;
+      border-bottom: 1px solid var(--border-primary);
+      padding-bottom: var(--space-2);
+      margin-bottom: var(--space-4);
+    }
+    .acct-tab { white-space: nowrap; padding: var(--space-2) var(--space-3); font-size: var(--text-xs); border-radius: var(--radius-sm); }
+    .acct-tab .tab-label { display: none; }
+    .acct-tab i { width: auto; }
+    .pp-grid { grid-template-columns: 1fr; }
+    .af-row { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
@@ -220,8 +277,8 @@
   <div id="nav"></div>
 
   <section class="section">
-    <div class="account-page" id="account-page">
-      <div class="account-loading" id="account-loading">
+    <div class="acct-wrap" id="acct-page">
+      <div class="acct-loading" id="acct-loading">
         <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;margin-bottom:var(--space-3);display:block"></i>
         Loading your account&hellip;
       </div>
@@ -242,609 +299,352 @@
 
     var sb = supabaseAuth;
     var ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I';
-    var API_BASE = 'https://fnpxaneextqidbessnej.supabase.co/rest/v1';
-    var _session = null;
+    var API = 'https://fnpxaneextqidbessnej.supabase.co/rest/v1';
+    var _sess = null;
+    var _profile = null;
 
     // ═══════════════════════════════════════════════════════
-    // Category definitions
+    // Categories & Persona engine
     // ═══════════════════════════════════════════════════════
-    var CATEGORIES = [
-      { key: 'product_value',    name: 'Product Value',    icon: 'fa-solid fa-coins',           desc: 'Fair pricing, quality for money, transparent costs' },
-      { key: 'innovation',       name: 'Innovation',       icon: 'fa-solid fa-lightbulb',       desc: 'Tech-forward, inventive features, industry disruption' },
-      { key: 'customer_support', name: 'Customer Support', icon: 'fa-solid fa-headset',         desc: 'Responsive help, issue resolution, human touch' },
-      { key: 'compliance',       name: 'Compliance',       icon: 'fa-solid fa-scale-balanced',  desc: 'Regulatory adherence, ethical practices, data protection' },
-      { key: 'sustainability',   name: 'Sustainability',   icon: 'fa-solid fa-leaf',            desc: 'Environmental impact, social responsibility, ESG' },
-      { key: 'satisfaction',     name: 'Customer Satisfaction', icon: 'fa-solid fa-face-smile', desc: 'Overall experience, loyalty, would-recommend score' }
+    var CATS = [
+      { key: 'product_value',    name: 'Product Value',         icon: 'fa-solid fa-coins',          desc: 'Fair pricing, quality for money, transparent costs' },
+      { key: 'innovation',       name: 'Innovation',            icon: 'fa-solid fa-lightbulb',      desc: 'Tech-forward, inventive features, industry disruption' },
+      { key: 'customer_support', name: 'Customer Support',      icon: 'fa-solid fa-headset',        desc: 'Responsive help, issue resolution, human touch' },
+      { key: 'compliance',       name: 'Compliance',            icon: 'fa-solid fa-scale-balanced', desc: 'Regulatory adherence, ethical practices, data protection' },
+      { key: 'sustainability',   name: 'Sustainability',        icon: 'fa-solid fa-leaf',           desc: 'Environmental impact, social responsibility, ESG' },
+      { key: 'satisfaction',     name: 'Customer Satisfaction', icon: 'fa-solid fa-face-smile',     desc: 'Overall experience, loyalty, would-recommend score' }
     ];
-
-    // ═══════════════════════════════════════════════════════
-    // Persona engine — maps top-3 priority pattern to persona
-    // ═══════════════════════════════════════════════════════
     var PERSONAS = {
-      // Primary key is the first priority; combos refine it
-      product_value:    { name: 'The Sharp Spender',   icon: '💰', tagline: 'You hold brands to account on value. Every pound or rand must earn its place.' },
-      innovation:       { name: 'The Early Adopter',   icon: '🚀', tagline: 'You chase what\'s next. If a brand isn\'t pushing boundaries, it\'s falling behind.' },
-      customer_support: { name: 'The Experience Seeker',icon: '🤝', tagline: 'You believe brands are only as good as how they treat people when things go wrong.' },
-      compliance:       { name: 'The Watchdog',        icon: '🔍', tagline: 'Rules matter. You trust brands that play by the book and protect your rights.' },
+      product_value:    { name: 'The Sharp Spender',      icon: '💰', tagline: 'You hold brands to account on value. Every pound or rand must earn its place.' },
+      innovation:       { name: 'The Early Adopter',      icon: '🚀', tagline: 'You chase what\'s next. If a brand isn\'t pushing boundaries, it\'s falling behind.' },
+      customer_support: { name: 'The Experience Seeker',  icon: '🤝', tagline: 'You believe brands are only as good as how they treat people when things go wrong.' },
+      compliance:       { name: 'The Watchdog',           icon: '🔍', tagline: 'Rules matter. You trust brands that play by the book and protect your rights.' },
       sustainability:   { name: 'The Conscious Consumer', icon: '🌱', tagline: 'Planet over profit. You back brands making a genuine effort, not just greenwashing.' },
-      satisfaction:     { name: 'The Loyalist',        icon: '⭐', tagline: 'Results speak loudest. If a brand delivers consistently, you\'ll stick with it.' }
+      satisfaction:     { name: 'The Loyalist',           icon: '⭐', tagline: 'Results speak loudest. If a brand delivers consistently, you\'ll stick with it.' }
     };
-
-    // Refined personas when first + second combine
-    var PERSONA_COMBOS = {
-      'product_value+innovation':       { name: 'The Smart Investor',    icon: '🧠', tagline: 'You want cutting-edge quality without the premium markup. Value meets vision.' },
-      'product_value+customer_support':  { name: 'The Fair Dealer',      icon: '⚖️', tagline: 'Good value backed by great service — that\'s your non-negotiable baseline.' },
-      'innovation+sustainability':       { name: 'The Future Builder',   icon: '🌍', tagline: 'Innovation should serve the planet, not just shareholders. You demand both.' },
-      'innovation+compliance':           { name: 'The Ethical Technologist', icon: '🔬', tagline: 'Move fast, but don\'t break trust. You want progress within guardrails.' },
-      'customer_support+satisfaction':   { name: 'The People Person',    icon: '💬', tagline: 'Happy customers aren\'t an accident. You notice when brands genuinely care.' },
-      'sustainability+compliance':       { name: 'The Principled Buyer', icon: '🏛️', tagline: 'Doing right by law and planet. You hold brands to the highest standard.' },
-      'sustainability+product_value':    { name: 'The Mindful Spender',  icon: '🧘', tagline: 'Sustainable shouldn\'t mean expensive. You seek impact-per-rand efficiency.' },
-      'compliance+customer_support':     { name: 'The Trust Seeker',     icon: '🛡️', tagline: 'Compliant and caring — you need brands to earn trust at every touchpoint.' },
-      'satisfaction+innovation':         { name: 'The Optimist',         icon: '✨', tagline: 'Great experiences powered by smart ideas. You\'re drawn to brands that delight.' },
-      'satisfaction+product_value':      { name: 'The Pragmatist',       icon: '🎯', tagline: 'Does it work well? Is it worth it? If yes and yes, you\'re in.' }
+    var COMBOS = {
+      'product_value+innovation':       { name: 'The Smart Investor',       icon: '🧠', tagline: 'You want cutting-edge quality without the premium markup. Value meets vision.' },
+      'product_value+customer_support':  { name: 'The Fair Dealer',         icon: '⚖️', tagline: 'Good value backed by great service — that\'s your non-negotiable baseline.' },
+      'innovation+sustainability':       { name: 'The Future Builder',      icon: '🌍', tagline: 'Innovation should serve the planet, not just shareholders. You demand both.' },
+      'innovation+compliance':           { name: 'The Ethical Technologist',icon: '🔬', tagline: 'Move fast, but don\'t break trust. You want progress within guardrails.' },
+      'customer_support+satisfaction':   { name: 'The People Person',       icon: '💬', tagline: 'Happy customers aren\'t an accident. You notice when brands genuinely care.' },
+      'sustainability+compliance':       { name: 'The Principled Buyer',    icon: '🏛️', tagline: 'Doing right by law and planet. You hold brands to the highest standard.' },
+      'sustainability+product_value':    { name: 'The Mindful Spender',     icon: '🧘', tagline: 'Sustainable shouldn\'t mean expensive. You seek impact-per-rand efficiency.' },
+      'compliance+customer_support':     { name: 'The Trust Seeker',        icon: '🛡️', tagline: 'Compliant and caring — you need brands to earn trust at every touchpoint.' },
+      'satisfaction+innovation':         { name: 'The Optimist',            icon: '✨', tagline: 'Great experiences powered by smart ideas. You\'re drawn to brands that delight.' },
+      'satisfaction+product_value':      { name: 'The Pragmatist',          icon: '🎯', tagline: 'Does it work well? Is it worth it? If yes and yes, you\'re in.' }
     };
-
-    function resolvePersona(priorities) {
-      if (!priorities || priorities.length < 3) return null;
-      var comboKey = priorities[0] + '+' + priorities[1];
-      return PERSONA_COMBOS[comboKey] || PERSONAS[priorities[0]] || PERSONAS.satisfaction;
+    function resolvePersona(p) {
+      if (!p || p.length < 3) return null;
+      return COMBOS[p[0] + '+' + p[1]] || PERSONAS[p[0]] || PERSONAS.satisfaction;
     }
-
-    function getCategoryByKey(key) {
-      for (var i = 0; i < CATEGORIES.length; i++) {
-        if (CATEGORIES[i].key === key) return CATEGORIES[i];
-      }
+    function catByKey(k) {
+      for (var i = 0; i < CATS.length; i++) if (CATS[i].key === k) return CATS[i];
       return null;
     }
 
     // ═══════════════════════════════════════════════════════
-    // Helper: REST PATCH to profiles
+    // REST helpers
     // ═══════════════════════════════════════════════════════
-    async function patchProfile(userId, body) {
-      return fetch(API_BASE + '/profiles?id=eq.' + userId, {
-        method: 'PATCH',
-        headers: {
-          'apikey': ANON_KEY,
-          'Authorization': 'Bearer ' + _session.access_token,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(body)
-      });
+    function authHeaders() {
+      return { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + _sess.access_token, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
     }
-
-    async function getProfile(userId) {
-      var res = await fetch(API_BASE + '/profiles?id=eq.' + userId + '&select=priorities,persona,persona_set_at', {
-        headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + _session.access_token }
-      });
-      if (!res.ok) return null;
-      var rows = await res.json();
+    async function patchProfile(body) {
+      return fetch(API + '/profiles?id=eq.' + _sess.user.id, { method: 'PATCH', headers: authHeaders(), body: JSON.stringify(body) });
+    }
+    async function getProfile() {
+      var r = await fetch(API + '/profiles?id=eq.' + _sess.user.id + '&select=priorities,persona,persona_set_at', { headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + _sess.access_token } });
+      if (!r.ok) return null;
+      var rows = await r.json();
       return rows.length ? rows[0] : null;
     }
 
     // ═══════════════════════════════════════════════════════
-    // Render: Persona picker (select 3 categories)
+    // Tab switching
     // ═══════════════════════════════════════════════════════
-    var _pickerSelections = [];
-
-    function renderPersonaPicker() {
-      var tiles = CATEGORIES.map(function(cat) {
-        return '<div class="persona-tile" data-key="' + cat.key + '" onclick="toggleCategory(\'' + cat.key + '\')">' +
-          '<span class="tile-badge"></span>' +
-          '<span class="tile-icon">' +
-            '<i class="' + cat.icon + '"></i>' +
-          '</span>' +
-          '<div class="tile-name">' + cat.name + '</div>' +
-          '<div class="tile-desc">' + cat.desc + '</div>' +
-        '</div>';
-      }).join('');
-
-      return '<div class="persona-intro">' +
-        '<strong>What matters most to you?</strong> Pick your top 3 categories in order of importance. ' +
-        'We\'ll use this to build your consumer persona and tailor how you experience GoNoGo.' +
-      '</div>' +
-      '<div class="persona-grid">' + tiles + '</div>' +
-      '<div class="persona-counter" id="persona-counter">Tap your <strong>first</strong> priority</div>' +
-      '<div class="account-toast" id="persona-toast"></div>' +
-      '<button class="btn btn-primary w-full" id="persona-save-btn" onclick="savePersona()" disabled style="opacity:0.4">' +
-        '<i class="fa-solid fa-wand-magic-sparkles"></i> Reveal My Persona' +
-      '</button>';
-    }
-
-    function toggleCategory(key) {
-      var idx = _pickerSelections.indexOf(key);
-      if (idx > -1) {
-        // Deselect
-        _pickerSelections.splice(idx, 1);
-      } else {
-        if (_pickerSelections.length >= 3) return; // max 3
-        _pickerSelections.push(key);
-      }
-      // Update tile visuals
-      var tiles = document.querySelectorAll('.persona-tile');
-      for (var i = 0; i < tiles.length; i++) {
-        var t = tiles[i];
-        var k = t.getAttribute('data-key');
-        var pos = _pickerSelections.indexOf(k);
-        if (pos > -1) {
-          t.classList.add('selected');
-          t.querySelector('.tile-badge').textContent = pos + 1;
-        } else {
-          t.classList.remove('selected');
-          t.querySelector('.tile-badge').textContent = '';
-        }
-      }
-      // Counter
-      var counter = document.getElementById('persona-counter');
-      var btn = document.getElementById('persona-save-btn');
-      var n = _pickerSelections.length;
-      if (n === 0) {
-        counter.innerHTML = 'Tap your <strong>first</strong> priority';
-        btn.disabled = true; btn.style.opacity = '0.4';
-      } else if (n === 1) {
-        counter.innerHTML = 'Now pick your <strong>second</strong> priority';
-        btn.disabled = true; btn.style.opacity = '0.4';
-      } else if (n === 2) {
-        counter.innerHTML = 'One more — pick your <strong>third</strong> priority';
-        btn.disabled = true; btn.style.opacity = '0.4';
-      } else {
-        counter.innerHTML = '<i class="fa-solid fa-check" style="color:var(--green)"></i> All 3 selected — ready to reveal';
-        btn.disabled = false; btn.style.opacity = '1';
-      }
-    }
-
-    async function savePersona() {
-      if (_pickerSelections.length < 3) return;
-      var btn = document.getElementById('persona-save-btn');
-      var toast = document.getElementById('persona-toast');
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
-
-      var persona = resolvePersona(_pickerSelections);
-
-      try {
-        await patchProfile(_session.user.id, {
-          priorities: _pickerSelections,
-          persona: persona.name,
-          persona_set_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        });
-        // Show result with animation
-        var card = document.getElementById('persona-card');
-        card.innerHTML = '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
-          renderPersonaResult(_pickerSelections, persona);
-        // Load radar chart
-        loadRadarChart(_pickerSelections);
-      } catch (e) {
-        toast.className = 'account-toast error';
-        toast.textContent = 'Failed to save persona. Please try again.';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Reveal My Persona';
-      }
+    function switchTab(id) {
+      var tabs = document.querySelectorAll('.acct-tab');
+      var panels = document.querySelectorAll('.acct-panel');
+      for (var i = 0; i < tabs.length; i++) tabs[i].classList.toggle('active', tabs[i].getAttribute('data-tab') === id);
+      for (var i = 0; i < panels.length; i++) panels[i].classList.toggle('active', panels[i].id === 'p-' + id);
     }
 
     // ═══════════════════════════════════════════════════════
-    // Render: Persona result (after saved)
+    // Toast helper
     // ═══════════════════════════════════════════════════════
-    function renderPersonaResult(priorities, persona) {
-      var chips = priorities.map(function(key, i) {
-        var cat = getCategoryByKey(key);
-        return '<span class="persona-priority-chip">' +
-          '<span class="chip-rank">' + (i + 1) + '</span>' +
-          '<i class="' + cat.icon + '" style="font-size:11px"></i> ' +
-          cat.name +
-        '</span>';
-      }).join('');
-
-      return '<div class="persona-result">' +
-        '<div class="persona-badge-icon" style="background:rgba(17,165,81,0.1);border:2px solid rgba(17,165,81,0.25)">' + persona.icon + '</div>' +
-        '<div class="persona-name">' + persona.name + '</div>' +
-        '<div class="persona-tagline">' + persona.tagline + '</div>' +
-        '<div class="persona-priorities">' + chips + '</div>' +
-        '<div class="radar-wrap"><canvas id="persona-radar" width="280" height="280"></canvas></div>' +
-        '<div class="persona-actions">' +
-          '<button class="btn btn-sm btn-ghost" onclick="resetPersona()" style="color:var(--text-muted)">' +
-            '<i class="fa-solid fa-arrows-rotate"></i> Retake' +
-          '</button>' +
-        '</div>' +
-      '</div>';
-    }
-
-    function resetPersona() {
-      _pickerSelections = [];
-      var card = document.getElementById('persona-card');
-      card.innerHTML = '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
-        renderPersonaPicker();
+    function showToast(elId, msg, type) {
+      var el = document.getElementById(elId);
+      if (!el) return;
+      el.className = 'acct-toast ' + type;
+      el.innerHTML = (type === 'success' ? '<i class="fa-solid fa-circle-check"></i> ' : '') + msg;
+      setTimeout(function() { el.className = 'acct-toast'; }, 4000);
     }
 
     // ═══════════════════════════════════════════════════════
-    // Radar chart (pure canvas — no library)
-    // ═══════════════════════════════════════════════════════
-    function loadRadarChart(priorities) {
-      var canvas = document.getElementById('persona-radar');
-      if (!canvas) return;
-      var ctx = canvas.getContext('2d');
-      var dpr = window.devicePixelRatio || 1;
-      var size = 280;
-      canvas.width = size * dpr;
-      canvas.height = size * dpr;
-      canvas.style.width = size + 'px';
-      canvas.style.height = size + 'px';
-      ctx.scale(dpr, dpr);
-
-      var cx = size / 2;
-      var cy = size / 2;
-      var maxR = 110;
-      var n = CATEGORIES.length;
-      var step = (Math.PI * 2) / n;
-      var offset = -Math.PI / 2; // start from top
-
-      // Compute values: priority 1 = 1.0, 2 = 0.75, 3 = 0.5, rest = 0.18
-      var values = CATEGORIES.map(function(cat) {
-        var idx = priorities.indexOf(cat.key);
-        if (idx === 0) return 1.0;
-        if (idx === 1) return 0.78;
-        if (idx === 2) return 0.55;
-        return 0.18;
-      });
-
-      // Grid rings
-      var rings = [0.25, 0.5, 0.75, 1.0];
-      var isLight = document.documentElement.classList.contains('light-mode');
-      var gridColor = isLight ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.06)';
-      var labelColor = isLight ? '#888' : '#666';
-      var textColor = isLight ? '#333' : '#ddd';
-
-      for (var r = 0; r < rings.length; r++) {
-        ctx.beginPath();
-        for (var i = 0; i <= n; i++) {
-          var angle = offset + i * step;
-          var x = cx + Math.cos(angle) * maxR * rings[r];
-          var y = cy + Math.sin(angle) * maxR * rings[r];
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = gridColor;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-
-      // Axis lines
-      for (var i = 0; i < n; i++) {
-        var angle = offset + i * step;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.lineTo(cx + Math.cos(angle) * maxR, cy + Math.sin(angle) * maxR);
-        ctx.strokeStyle = gridColor;
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-
-      // Data polygon — fill
-      ctx.beginPath();
-      for (var i = 0; i <= n; i++) {
-        var idx = i % n;
-        var angle = offset + idx * step;
-        var x = cx + Math.cos(angle) * maxR * values[idx];
-        var y = cy + Math.sin(angle) * maxR * values[idx];
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-      }
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(17,165,81,0.12)';
-      ctx.fill();
-      ctx.strokeStyle = '#11a551';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-
-      // Data dots
-      for (var i = 0; i < n; i++) {
-        var angle = offset + i * step;
-        var x = cx + Math.cos(angle) * maxR * values[i];
-        var y = cy + Math.sin(angle) * maxR * values[i];
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fillStyle = '#11a551';
-        ctx.fill();
-        ctx.strokeStyle = isLight ? '#fff' : '#1a1a1a';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-
-      // Labels
-      ctx.font = '600 11px Inter, -apple-system, sans-serif';
-      ctx.textBaseline = 'middle';
-      for (var i = 0; i < n; i++) {
-        var angle = offset + i * step;
-        var lx = cx + Math.cos(angle) * (maxR + 22);
-        var ly = cy + Math.sin(angle) * (maxR + 22);
-        ctx.textAlign = 'center';
-        // Adjust horizontal alignment for left/right labels
-        if (Math.cos(angle) < -0.3) ctx.textAlign = 'right';
-        else if (Math.cos(angle) > 0.3) ctx.textAlign = 'left';
-        var isPriority = priorities.indexOf(CATEGORIES[i].key) > -1;
-        ctx.fillStyle = isPriority ? '#11a551' : labelColor;
-        // Shorter labels for small canvas
-        var shortNames = ['Value', 'Innovation', 'Support', 'Compliance', 'Sustainability', 'Satisfaction'];
-        ctx.fillText(shortNames[i], lx, ly);
-      }
-    }
-
-    // ═══════════════════════════════════════════════════════
-    // Main init
+    // Init
     // ═══════════════════════════════════════════════════════
     (async function init() {
-      var page = document.getElementById('account-page');
-
+      var page = document.getElementById('acct-page');
       var sessionRes = await sb.auth.getSession();
-      _session = sessionRes.data && sessionRes.data.session;
+      _sess = sessionRes.data && sessionRes.data.session;
 
-      if (!_session) {
-        page.innerHTML =
-          '<div class="account-gate">' +
-            '<i class="fa-solid fa-user-lock"></i>' +
-            '<h2>Sign in to view your account</h2>' +
-            '<p>You need to be signed in to access your account settings.</p>' +
-            '<button class="btn btn-primary" onclick="Components.showAuthModal()"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>' +
-          '</div>';
+      if (!_sess) {
+        page.innerHTML = '<div class="acct-gate"><i class="fa-solid fa-user-lock"></i><h2>Sign in to view your account</h2><p>You need to be signed in to access your account settings.</p><button class="btn btn-primary" onclick="Components.showAuthModal()"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button></div>';
         return;
       }
 
-      var user = _session.user;
+      var user = _sess.user;
       var meta = user.user_metadata || {};
       var displayName = meta.display_name || user.email.split('@')[0];
       var region = (meta.region || 'za').toUpperCase();
-      var createdAt = new Date(user.created_at);
-      var memberSince = createdAt.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      var memberSince = new Date(user.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
-      // Fetch profile (persona data) + reviews in parallel
-      var profilePromise = getProfile(user.id);
-      var reviewPromise = (async function() {
-        try {
-          var r = await fetch(API_BASE + '/reviews?user_id=eq.' + user.id + '&order=created_at.desc&limit=20', {
-            headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + _session.access_token }
-          });
-          return r.ok ? await r.json() : [];
-        } catch(e) { return []; }
+      // Parallel fetch
+      var profileP = getProfile();
+      var reviewsP = (async function() {
+        try { var r = await fetch(API + '/reviews?user_id=eq.' + user.id + '&order=created_at.desc&limit=20', { headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + _sess.access_token } }); return r.ok ? await r.json() : []; } catch(e) { return []; }
       })();
 
-      var profile = await profilePromise;
-      var reviews = await reviewPromise;
-      var reviewCount = reviews.length;
-
-      // ─── Persona card content ───
-      var personaCardInner = '';
-      if (profile && profile.priorities && profile.priorities.length >= 3) {
-        // Already has persona — show result
-        var persona = resolvePersona(profile.priorities);
-        personaCardInner = '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
-          renderPersonaResult(profile.priorities, persona);
-      } else {
-        // Show picker
-        personaCardInner = '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
-          renderPersonaPicker();
-      }
+      _profile = await profileP;
+      var reviews = await reviewsP;
+      var rc = reviews.length;
+      var hasPers = _profile && _profile.priorities && _profile.priorities.length >= 3;
 
       // ─── Build page ───
       page.innerHTML =
-        '<div class="account-header">' +
+        '<div class="acct-header">' +
           '<h1><i class="fa-solid fa-user-circle" style="color:var(--green);margin-right:var(--space-2)"></i>' + Components.escapeHTML(displayName) + '</h1>' +
           '<p>Member since ' + memberSince + ' &bull; ' + region + ' region</p>' +
         '</div>' +
+        '<div class="acct-layout">' +
+          // Sidebar
+          '<nav class="acct-tabs">' +
+            '<button class="acct-tab active" data-tab="persona" onclick="switchTab(\'persona\')"><i class="fa-solid fa-fingerprint"></i> <span class="tab-label">My Persona</span>' + (!hasPers ? '<span class="tab-badge">NEW</span>' : '') + '</button>' +
+            '<button class="acct-tab" data-tab="profile" onclick="switchTab(\'profile\')"><i class="fa-solid fa-id-card"></i> <span class="tab-label">Profile</span></button>' +
+            '<button class="acct-tab" data-tab="security" onclick="switchTab(\'security\')"><i class="fa-solid fa-shield-halved"></i> <span class="tab-label">Security</span></button>' +
+            '<button class="acct-tab" data-tab="reviews" onclick="switchTab(\'reviews\')"><i class="fa-solid fa-star"></i> <span class="tab-label">Reviews</span><span class="tab-badge" style="background:var(--text-muted)">' + rc + '</span></button>' +
+            '<button class="acct-tab" data-tab="prefs" onclick="switchTab(\'prefs\')"><i class="fa-solid fa-sliders"></i> <span class="tab-label">Preferences</span></button>' +
+            '<button class="acct-tab" data-tab="account" onclick="switchTab(\'account\')"><i class="fa-solid fa-gear"></i> <span class="tab-label">Account</span></button>' +
+          '</nav>' +
+          // Content
+          '<div class="acct-content">' +
 
-        // Persona card (top billing — the hero feature)
-        '<div class="account-card" id="persona-card">' + personaCardInner + '</div>' +
-
-        // Profile
-        '<div class="account-card" id="profile-card">' +
-          '<h2><i class="fa-solid fa-id-card"></i> Profile</h2>' +
-          '<div class="account-toast" id="profile-toast"></div>' +
-          '<div class="account-field">' +
-            '<div class="account-field-label">Display Name</div>' +
-            '<div class="account-field-row">' +
-              '<span class="account-field-value" id="display-name-value">' + Components.escapeHTML(displayName) + '</span>' +
-              '<button class="btn btn-sm btn-ghost" onclick="editDisplayName()"><i class="fa-solid fa-pen"></i> Edit</button>' +
-            '</div>' +
-            '<div class="edit-inline" id="edit-name">' +
-              '<input type="text" id="name-input" value="' + Components.escapeHTML(displayName) + '" placeholder="Your display name" maxlength="50">' +
-              '<button class="btn btn-sm btn-primary" onclick="saveDisplayName()">Save</button>' +
-              '<button class="btn btn-sm btn-ghost" onclick="cancelEditName()">Cancel</button>' +
-            '</div>' +
-          '</div>' +
-          '<div class="account-field">' +
-            '<div class="account-field-label">Email</div>' +
-            '<div class="account-field-value">' + Components.escapeHTML(user.email) + '</div>' +
-          '</div>' +
-          '<div class="account-field">' +
-            '<div class="account-field-label">Region</div>' +
-            '<div class="account-field-value">' + (region === 'ZA' ? '🇿🇦 South Africa' : region === 'UK' ? '🇬🇧 United Kingdom' : region) + '</div>' +
-          '</div>' +
-          '<div class="account-field">' +
-            '<div class="account-field-label">Email Confirmed</div>' +
-            '<div class="account-field-value">' +
-              (user.email_confirmed_at
-                ? '<span style="color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> Verified</span>'
-                : '<span style="color:var(--orange-text)"><i class="fa-solid fa-clock"></i> Pending verification</span>') +
-            '</div>' +
-          '</div>' +
-        '</div>' +
-
-        // Security
-        '<div class="account-card" id="security-card">' +
-          '<h2><i class="fa-solid fa-shield-halved"></i> Security</h2>' +
-          '<div class="account-toast" id="security-toast"></div>' +
-          '<div class="account-field">' +
-            '<div class="account-field-label">Password</div>' +
-            '<div class="account-field-row" id="pw-display">' +
-              '<span class="account-field-value">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span>' +
-              '<button class="btn btn-sm btn-ghost" onclick="showChangePassword()"><i class="fa-solid fa-key"></i> Change</button>' +
-            '</div>' +
-            '<div id="pw-form" style="display:none">' +
-              '<div class="form-group" style="margin-top:var(--space-3)">' +
-                '<label class="form-label">New Password</label>' +
-                '<div style="position:relative">' +
-                  '<input type="password" id="pw-new" placeholder="Minimum 8 characters" oninput="acctCheckStr()">' +
-                  '<button type="button" class="password-eye" onclick="acctTogglePw(\'pw-new\')" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>' +
-                '</div>' +
-                '<div class="pw-strength" style="font-size:var(--text-xs);margin-top:var(--space-1);min-height:1.4em" id="acct-pw-str"></div>' +
-              '</div>' +
-              '<div class="form-group">' +
-                '<label class="form-label">Confirm Password</label>' +
-                '<div style="position:relative">' +
-                  '<input type="password" id="pw-confirm" placeholder="Re-enter password">' +
-                  '<button type="button" class="password-eye" onclick="acctTogglePw(\'pw-confirm\')" aria-label="Show password"><i class="fa-solid fa-eye"></i></button>' +
-                '</div>' +
-              '</div>' +
-              '<div style="display:flex;gap:var(--space-2)">' +
-                '<button class="btn btn-sm btn-primary" id="pw-save-btn" onclick="savePassword()"><i class="fa-solid fa-key"></i> Update Password</button>' +
-                '<button class="btn btn-sm btn-ghost" onclick="cancelChangePassword()">Cancel</button>' +
+            // ═══ PERSONA ═══
+            '<div class="acct-panel active" id="p-persona">' +
+              '<div class="acct-card" id="persona-card">' +
+                (hasPers ? renderPersonaResult(_profile.priorities) : renderPicker()) +
               '</div>' +
             '</div>' +
-          '</div>' +
-        '</div>' +
 
-        // Reviews
-        '<div class="account-card" id="reviews-card">' +
-          '<h2><i class="fa-solid fa-star"></i> My Reviews <span style="font-weight:400;color:var(--text-muted);font-size:var(--text-xs);margin-left:var(--space-2)">' + reviewCount + ' total</span></h2>' +
-          (reviewCount > 0
-            ? '<ul class="review-list">' + reviews.map(function(r) {
-                var date = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                var stars = '';
-                for (var s = 0; s < 5; s++) stars += '<i class="fa-solid fa-star' + (s < (r.rating || 0) ? '' : '" style="opacity:0.2') + '"></i> ';
-                var excerpt = (r.review_text || '').substring(0, 120);
-                if ((r.review_text || '').length > 120) excerpt += '&hellip;';
-                return '<li class="review-item">' +
-                  '<div style="display:flex;justify-content:space-between;align-items:center">' +
-                    '<span class="review-brand">' + Components.escapeHTML(r.brand_name || r.brand_slug || 'Brand') + '</span>' +
-                    '<span class="review-date">' + date + '</span>' +
-                  '</div>' +
-                  '<div class="review-stars">' + stars + '</div>' +
-                  (excerpt ? '<div class="review-excerpt">' + Components.escapeHTML(excerpt) + '</div>' : '') +
-                '</li>';
-              }).join('') + '</ul>'
-            : '<div class="review-empty">' +
-                '<i class="fa-solid fa-comment-dots"></i>' +
-                '<p>You haven\'t left any reviews yet.</p>' +
-                '<a href="/" class="btn btn-sm btn-ghost" style="display:inline-flex;align-items:center;gap:6px"><i class="fa-solid fa-search"></i> Browse brands to review</a>' +
-              '</div>'
-          ) +
-        '</div>' +
+            // ═══ PROFILE ═══
+            '<div class="acct-panel" id="p-profile">' +
+              '<div class="acct-card">' +
+                '<h2><i class="fa-solid fa-id-card"></i> Profile</h2>' +
+                '<div class="acct-toast" id="t-profile"></div>' +
+                '<div class="af"><div class="af-label">Display Name</div><div class="af-row"><span class="af-value" id="dn-val">' + Components.escapeHTML(displayName) + '</span><button class="btn btn-sm btn-ghost" onclick="editName()"><i class="fa-solid fa-pen"></i> Edit</button></div><div class="edit-inline" id="edit-name"><input type="text" id="name-inp" value="' + Components.escapeHTML(displayName) + '" placeholder="Your display name" maxlength="50"><button class="btn btn-sm btn-primary" onclick="saveName()">Save</button><button class="btn btn-sm btn-ghost" onclick="cancelName()">Cancel</button></div></div>' +
+                '<div class="af"><div class="af-label">Email</div><div class="af-value">' + Components.escapeHTML(user.email) + '</div></div>' +
+                '<div class="af"><div class="af-label">Region</div><div class="af-value">' + (region === 'ZA' ? '🇿🇦 South Africa' : region === 'UK' ? '🇬🇧 United Kingdom' : region) + '</div></div>' +
+                '<div class="af"><div class="af-label">Email Status</div><div class="af-value">' + (user.email_confirmed_at ? '<span style="color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> Verified</span>' : '<span style="color:var(--orange-text)"><i class="fa-solid fa-clock"></i> Pending verification</span>') + '</div></div>' +
+              '</div>' +
+            '</div>' +
 
-        // Danger zone
-        '<div class="account-card danger-zone">' +
-          '<h2><i class="fa-solid fa-triangle-exclamation"></i> Account</h2>' +
-          '<p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-4);line-height:1.6">' +
-            'Need to delete your account? This will permanently remove your profile and disassociate your reviews. This action cannot be undone.' +
-          '</p>' +
-          '<button class="btn btn-sm" style="background:var(--red-bg);color:var(--red-text);border:1px solid rgba(231,76,60,0.3)" onclick="requestAccountDeletion()">' +
-            '<i class="fa-solid fa-trash"></i> Request Account Deletion' +
-          '</button>' +
-        '</div>';
+            // ═══ SECURITY ═══
+            '<div class="acct-panel" id="p-security">' +
+              '<div class="acct-card">' +
+                '<h2><i class="fa-solid fa-shield-halved"></i> Security</h2>' +
+                '<div class="acct-toast" id="t-security"></div>' +
+                '<div class="af"><div class="af-label">Password</div><div class="af-row" id="pw-show"><span class="af-value">&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;</span><button class="btn btn-sm btn-ghost" onclick="showPwForm()"><i class="fa-solid fa-key"></i> Change</button></div><div id="pw-form" style="display:none"><div class="form-group" style="margin-top:var(--space-3)"><label class="form-label">New Password</label><div style="position:relative"><input type="password" id="pw-new" placeholder="Minimum 8 characters" oninput="chkStr()"><button type="button" class="password-eye" onclick="togPw(\'pw-new\')" aria-label="Toggle"><i class="fa-solid fa-eye"></i></button></div><div style="font-size:var(--text-xs);margin-top:var(--space-1);min-height:1.4em" id="pw-str"></div></div><div class="form-group"><label class="form-label">Confirm Password</label><div style="position:relative"><input type="password" id="pw-conf" placeholder="Re-enter password"><button type="button" class="password-eye" onclick="togPw(\'pw-conf\')" aria-label="Toggle"><i class="fa-solid fa-eye"></i></button></div></div><div style="display:flex;gap:var(--space-2)"><button class="btn btn-sm btn-primary" id="pw-btn" onclick="savePw()"><i class="fa-solid fa-key"></i> Update</button><button class="btn btn-sm btn-ghost" onclick="cancelPw()">Cancel</button></div></div></div>' +
+                '<div class="af"><div class="af-label">Sessions</div><div class="af-value" style="font-size:var(--text-xs);color:var(--text-muted)">Last sign-in: ' + (user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Unknown') + '</div></div>' +
+              '</div>' +
+            '</div>' +
 
-      // If persona already saved, draw the radar chart
-      if (profile && profile.priorities && profile.priorities.length >= 3) {
-        setTimeout(function() { loadRadarChart(profile.priorities); }, 50);
-      }
+            // ═══ REVIEWS ═══
+            '<div class="acct-panel" id="p-reviews">' +
+              '<div class="acct-card">' +
+                '<h2><i class="fa-solid fa-star"></i> My Reviews <span style="font-weight:400;color:var(--text-muted);font-size:var(--text-xs);margin-left:var(--space-2)">' + rc + ' total</span></h2>' +
+                (rc > 0
+                  ? '<ul class="rv-list">' + reviews.map(function(r) {
+                      var d = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                      var stars = ''; for (var s = 0; s < 5; s++) stars += '<i class="fa-solid fa-star' + (s < (r.rating || 0) ? '' : '" style="opacity:0.2') + '"></i> ';
+                      var ex = (r.review_text || '').substring(0, 120); if ((r.review_text || '').length > 120) ex += '&hellip;';
+                      return '<li class="rv-item"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:600;font-size:var(--text-sm)">' + Components.escapeHTML(r.brand_name || r.brand_slug || 'Brand') + '</span><span style="font-size:var(--text-xs);color:var(--text-muted)">' + d + '</span></div><div style="color:var(--orange);font-size:12px;margin:var(--space-1) 0">' + stars + '</div>' + (ex ? '<div style="font-size:var(--text-xs);color:var(--text-secondary);line-height:1.5">' + Components.escapeHTML(ex) + '</div>' : '') + '</li>';
+                    }).join('') + '</ul>'
+                  : '<div class="rv-empty"><i class="fa-solid fa-comment-dots"></i><p>You haven\'t left any reviews yet.</p><a href="/" class="btn btn-sm btn-ghost" style="display:inline-flex;align-items:center;gap:6px"><i class="fa-solid fa-search"></i> Browse brands</a></div>'
+                ) +
+              '</div>' +
+            '</div>' +
+
+            // ═══ PREFERENCES ═══
+            '<div class="acct-panel" id="p-prefs">' +
+              '<div class="acct-card">' +
+                '<h2><i class="fa-solid fa-sliders"></i> Preferences</h2>' +
+                '<div class="pref-row"><div><div class="pref-label">Email notifications</div><div class="pref-desc">Receive updates when brands you\'ve reviewed are re-scored</div></div><button class="toggle on" id="tog-email" onclick="togglePref(this)"></button></div>' +
+                '<div class="pref-row"><div><div class="pref-label">Dark mode</div><div class="pref-desc">Switch between dark and light appearance</div></div><button class="toggle' + (document.documentElement.classList.contains('light-mode') ? '' : ' on') + '" id="tog-theme" onclick="toggleTheme(this)"></button></div>' +
+                '<div class="pref-row"><div><div class="pref-label">Show my name on reviews</div><div class="pref-desc">Display your name publicly, or stay anonymous</div></div><button class="toggle on" id="tog-anon" onclick="togglePref(this)"></button></div>' +
+              '</div>' +
+            '</div>' +
+
+            // ═══ ACCOUNT ═══
+            '<div class="acct-panel" id="p-account">' +
+              '<div class="acct-card dz">' +
+                '<h2><i class="fa-solid fa-triangle-exclamation"></i> Danger Zone</h2>' +
+                '<p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-4);line-height:1.6">Deleting your account permanently removes your profile and disassociates your reviews. This cannot be undone.</p>' +
+                '<button class="btn btn-sm" style="background:var(--red-bg);color:var(--red-text);border:1px solid rgba(231,76,60,0.3)" onclick="reqDelete()"><i class="fa-solid fa-trash"></i> Request Account Deletion</button>' +
+              '</div>' +
+            '</div>' +
+
+          '</div>' + // acct-content
+        '</div>'; // acct-layout
     })();
 
     // ═══════════════════════════════════════════════════════
-    // Edit display name
+    // Persona picker
     // ═══════════════════════════════════════════════════════
-    function editDisplayName() {
-      document.getElementById('edit-name').classList.add('active');
-      document.getElementById('name-input').focus();
+    var _picks = [];
+    function renderPicker() {
+      var tiles = CATS.map(function(c) {
+        return '<div class="pp-tile" data-key="' + c.key + '" onclick="pickCat(\'' + c.key + '\')">' +
+          '<span class="t-badge"></span><span class="t-icon"><i class="' + c.icon + '"></i></span>' +
+          '<div class="t-name">' + c.name + '</div><div class="t-desc">' + c.desc + '</div></div>';
+      }).join('');
+      return '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
+        '<div class="pp-intro"><strong>What matters most to you when choosing a brand?</strong> Pick your top 3 in order of importance. We\'ll build your consumer persona and use it to tailor your GoNoGo experience.</div>' +
+        '<div class="pp-grid">' + tiles + '</div>' +
+        '<div class="pp-counter" id="pp-count">Tap your <strong>first</strong> priority</div>' +
+        '<div class="acct-toast" id="t-persona"></div>' +
+        '<button class="btn btn-primary w-full" id="pp-btn" onclick="savePersona()" disabled style="opacity:0.4"><i class="fa-solid fa-wand-magic-sparkles"></i> Reveal My Persona</button>';
     }
-    function cancelEditName() {
-      document.getElementById('edit-name').classList.remove('active');
+    function pickCat(key) {
+      var idx = _picks.indexOf(key);
+      if (idx > -1) _picks.splice(idx, 1); else { if (_picks.length >= 3) return; _picks.push(key); }
+      var tiles = document.querySelectorAll('.pp-tile');
+      for (var i = 0; i < tiles.length; i++) {
+        var k = tiles[i].getAttribute('data-key'), pos = _picks.indexOf(k);
+        tiles[i].classList.toggle('selected', pos > -1);
+        tiles[i].querySelector('.t-badge').textContent = pos > -1 ? pos + 1 : '';
+      }
+      var ctr = document.getElementById('pp-count'), btn = document.getElementById('pp-btn'), n = _picks.length;
+      var msgs = ['Tap your <strong>first</strong> priority', 'Now pick your <strong>second</strong>', 'One more — pick your <strong>third</strong>', '<i class="fa-solid fa-check" style="color:var(--green)"></i> All set — ready to reveal'];
+      ctr.innerHTML = msgs[Math.min(n, 3)];
+      btn.disabled = n < 3; btn.style.opacity = n < 3 ? '0.4' : '1';
     }
-    async function saveDisplayName() {
-      var name = document.getElementById('name-input').value.trim();
-      var toast = document.getElementById('profile-toast');
-      if (!name) return;
+    async function savePersona() {
+      if (_picks.length < 3) return;
+      var btn = document.getElementById('pp-btn');
+      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+      var persona = resolvePersona(_picks);
       try {
-        var res = await sb.auth.updateUser({ data: { display_name: name } });
-        if (res.error) throw res.error;
-        document.getElementById('display-name-value').textContent = name;
-        document.getElementById('edit-name').classList.remove('active');
-        toast.className = 'account-toast success';
-        toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Display name updated.';
-        await patchProfile(res.data.user.id, { display_name: name, updated_at: new Date().toISOString() });
-        setTimeout(function() { toast.className = 'account-toast'; }, 4000);
+        await patchProfile({ priorities: _picks, persona: persona.name, persona_set_at: new Date().toISOString(), updated_at: new Date().toISOString() });
+        _profile = { priorities: _picks, persona: persona.name };
+        document.getElementById('persona-card').innerHTML = renderPersonaResult(_picks);
+        // Remove the NEW badge from tab
+        var badge = document.querySelector('.acct-tab[data-tab="persona"] .tab-badge');
+        if (badge) badge.remove();
       } catch (e) {
-        toast.className = 'account-toast error';
-        toast.textContent = e.message || 'Failed to update name.';
-        setTimeout(function() { toast.className = 'account-toast'; }, 4000);
+        showToast('t-persona', 'Failed to save. Please try again.', 'error');
+        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Reveal My Persona';
       }
     }
 
     // ═══════════════════════════════════════════════════════
-    // Change password
+    // Persona result
     // ═══════════════════════════════════════════════════════
-    function showChangePassword() {
-      document.getElementById('pw-display').style.display = 'none';
-      document.getElementById('pw-form').style.display = 'block';
-      document.getElementById('pw-new').focus();
+    function renderPersonaResult(pris) {
+      var p = resolvePersona(pris);
+      var chips = pris.map(function(k, i) {
+        var c = catByKey(k);
+        return '<span class="pr-chip"><span class="rank">' + (i+1) + '</span><i class="' + c.icon + '" style="font-size:11px"></i> ' + c.name + '</span>';
+      }).join('');
+
+      // Horizontal bars
+      var bars = CATS.map(function(c) {
+        var idx = pris.indexOf(c.key);
+        var rank = idx === 0 ? 1 : idx === 1 ? 2 : idx === 2 ? 3 : 0;
+        var pct = rank === 1 ? 100 : rank === 2 ? 70 : rank === 3 ? 45 : 12;
+        return '<div class="pri-bar-row rank-' + rank + '">' +
+          '<div class="pri-bar-label">' + c.name + '</div>' +
+          '<div class="pri-bar-track"><div class="pri-bar-fill" style="width:' + pct + '%"></div></div>' +
+        '</div>';
+      }).join('');
+
+      return '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
+        '<div class="pr-card">' +
+          '<div class="pr-icon">' + p.icon + '</div>' +
+          '<div class="pr-name">' + p.name + '</div>' +
+          '<div class="pr-tagline">' + p.tagline + '</div>' +
+          '<div class="pr-chips">' + chips + '</div>' +
+        '</div>' +
+        '<div class="pri-bars">' + bars + '</div>' +
+        '<div style="text-align:center;padding-top:var(--space-5)">' +
+          '<button class="btn btn-sm btn-ghost" onclick="resetPersona()" style="color:var(--text-muted)"><i class="fa-solid fa-arrows-rotate"></i> Retake</button>' +
+        '</div>';
     }
-    function cancelChangePassword() {
-      document.getElementById('pw-form').style.display = 'none';
-      document.getElementById('pw-display').style.display = 'flex';
-      document.getElementById('pw-new').value = '';
-      document.getElementById('pw-confirm').value = '';
-      document.getElementById('acct-pw-str').textContent = '';
+    function resetPersona() {
+      _picks = [];
+      document.getElementById('persona-card').innerHTML = renderPicker();
     }
-    function acctTogglePw(id) {
-      var inp = document.getElementById(id);
-      if (!inp) return;
-      var isPass = inp.type === 'password';
-      inp.type = isPass ? 'text' : 'password';
-      var icon = inp.parentNode.querySelector('.password-eye i');
-      if (icon) icon.className = isPass ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+
+    // ═══════════════════════════════════════════════════════
+    // Profile
+    // ═══════════════════════════════════════════════════════
+    function editName() { document.getElementById('edit-name').classList.add('active'); document.getElementById('name-inp').focus(); }
+    function cancelName() { document.getElementById('edit-name').classList.remove('active'); }
+    async function saveName() {
+      var n = document.getElementById('name-inp').value.trim(); if (!n) return;
+      try {
+        var r = await sb.auth.updateUser({ data: { display_name: n } }); if (r.error) throw r.error;
+        document.getElementById('dn-val').textContent = n;
+        document.getElementById('edit-name').classList.remove('active');
+        showToast('t-profile', 'Display name updated.', 'success');
+        await patchProfile({ display_name: n, updated_at: new Date().toISOString() });
+      } catch (e) { showToast('t-profile', e.message || 'Failed to update.', 'error'); }
     }
-    function acctCheckStr() {
-      var pw = document.getElementById('pw-new').value;
-      var el = document.getElementById('acct-pw-str');
+
+    // ═══════════════════════════════════════════════════════
+    // Security
+    // ═══════════════════════════════════════════════════════
+    function showPwForm() { document.getElementById('pw-show').style.display = 'none'; document.getElementById('pw-form').style.display = 'block'; document.getElementById('pw-new').focus(); }
+    function cancelPw() { document.getElementById('pw-form').style.display = 'none'; document.getElementById('pw-show').style.display = 'flex'; document.getElementById('pw-new').value = ''; document.getElementById('pw-conf').value = ''; document.getElementById('pw-str').textContent = ''; }
+    function togPw(id) { var i = document.getElementById(id); if (!i) return; var p = i.type === 'password'; i.type = p ? 'text' : 'password'; var ic = i.parentNode.querySelector('.password-eye i'); if (ic) ic.className = p ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'; }
+    function chkStr() {
+      var pw = document.getElementById('pw-new').value, el = document.getElementById('pw-str');
       if (!pw) { el.textContent = ''; return; }
-      var score = 0;
-      if (pw.length >= 8) score++;
-      if (pw.length >= 12) score++;
-      if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
-      if (/[0-9]/.test(pw)) score++;
-      if (/[^A-Za-z0-9]/.test(pw)) score++;
-      if (score <= 2) el.innerHTML = '<span style="color:var(--red-text)"><i class="fa-solid fa-circle-xmark"></i> Weak</span>';
-      else if (score <= 3) el.innerHTML = '<span style="color:var(--orange-text)"><i class="fa-solid fa-circle-minus"></i> Fair</span>';
+      var s = 0; if (pw.length >= 8) s++; if (pw.length >= 12) s++; if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) s++; if (/[0-9]/.test(pw)) s++; if (/[^A-Za-z0-9]/.test(pw)) s++;
+      if (s <= 2) el.innerHTML = '<span style="color:var(--red-text)"><i class="fa-solid fa-circle-xmark"></i> Weak</span>';
+      else if (s <= 3) el.innerHTML = '<span style="color:var(--orange-text)"><i class="fa-solid fa-circle-minus"></i> Fair</span>';
       else el.innerHTML = '<span style="color:var(--green-text)"><i class="fa-solid fa-circle-check"></i> Strong</span>';
     }
-    async function savePassword() {
-      var pw = document.getElementById('pw-new').value;
-      var confirm = document.getElementById('pw-confirm').value;
-      var toast = document.getElementById('security-toast');
-      var btn = document.getElementById('pw-save-btn');
-      if (pw.length < 8) { toast.className = 'account-toast error'; toast.textContent = 'Password must be at least 8 characters.'; return; }
-      if (pw !== confirm) { toast.className = 'account-toast error'; toast.textContent = 'Passwords do not match.'; return; }
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating...';
-      try {
-        var res = await sb.auth.updateUser({ password: pw });
-        if (res.error) throw res.error;
-        cancelChangePassword();
-        toast.className = 'account-toast success';
-        toast.innerHTML = '<i class="fa-solid fa-circle-check"></i> Password updated successfully.';
-        setTimeout(function() { toast.className = 'account-toast'; }, 4000);
-      } catch (e) {
-        toast.className = 'account-toast error';
-        toast.textContent = e.message || 'Failed to update password.';
+    async function savePw() {
+      var pw = document.getElementById('pw-new').value, co = document.getElementById('pw-conf').value, btn = document.getElementById('pw-btn');
+      if (pw.length < 8) { showToast('t-security', 'Minimum 8 characters.', 'error'); return; }
+      if (pw !== co) { showToast('t-security', 'Passwords do not match.', 'error'); return; }
+      btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+      try { var r = await sb.auth.updateUser({ password: pw }); if (r.error) throw r.error; cancelPw(); showToast('t-security', 'Password updated.', 'success'); }
+      catch (e) { showToast('t-security', e.message || 'Failed.', 'error'); }
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-key"></i> Update';
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // Preferences
+    // ═══════════════════════════════════════════════════════
+    function togglePref(el) { el.classList.toggle('on'); }
+    function toggleTheme(el) {
+      el.classList.toggle('on');
+      if (el.classList.contains('on')) {
+        document.documentElement.classList.remove('light-mode');
+        localStorage.setItem('gonogo_theme', 'dark');
+      } else {
+        document.documentElement.classList.add('light-mode');
+        localStorage.setItem('gonogo_theme', 'light');
       }
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-key"></i> Update Password';
     }
 
     // ═══════════════════════════════════════════════════════
     // Account deletion
     // ═══════════════════════════════════════════════════════
-    function requestAccountDeletion() {
-      var ok = confirm('Are you sure you want to request account deletion? This cannot be undone. Your profile data will be permanently removed.');
-      if (!ok) return;
-      var mailto = 'mailto:support@gonogo.co.uk?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20GoNoGo%20account.%20My%20email%20is%20' + encodeURIComponent((_session && _session.user) ? _session.user.email : '');
-      window.location.href = mailto;
+    function reqDelete() {
+      if (!confirm('Are you sure? This cannot be undone.')) return;
+      window.location.href = 'mailto:support@gonogo.co.uk?subject=Account%20Deletion%20Request&body=Please%20delete%20my%20GoNoGo%20account.%20My%20email%20is%20' + encodeURIComponent(_sess.user.email);
     }
   </script>
 </body>
