@@ -1,17 +1,41 @@
+# GoNoGo United Kingdom — robots.txt
 User-agent: *
 Allow: /
 
-Disallow: /admin
-Disallow: /admin-brands
-Disallow: /admin-comments
-Disallow: /admin-research
-Disallow: /admin-settings
-Disallow: /admin-api
-Disallow: /brand-dashboard
-Disallow: /brand-reviews
-Disallow: /brand-insights
-Disallow: /brand-badge
-Disallow: /brand-qr
-Disallow: /reset-password
+Disallow: /admin.html
+Disallow: /admin-brands.html
+Disallow: /admin-comments.html
+Disallow: /admin-research.html
+Disallow: /admin-settings.html
+Disallow: /admin-users.html
+Disallow: /admin-api.html
+Disallow: /brand-dashboard.html
+Disallow: /brand-reviews.html
+Disallow: /brand-insights.html
+Disallow: /brand-badge.html
+Disallow: /brand-qr.html
+Disallow: /reset-password.html
+Disallow: /account.html
+Disallow: /api_data/
+
+# Allow AI crawlers to index content
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: CCBot
+Allow: /
 
 Sitemap: https://www.gonogo.co.uk/api/sitemap
+Sitemap: https://www.gonogo.co.uk/sitemap.xml
