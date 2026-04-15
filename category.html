@@ -13,11 +13,12 @@
 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Compare brands in this industry on GoNoGo UK. See scores, verdicts, and rankings.">
-<meta name="keywords" content="industry comparison, brand rankings, UK brands, category ratings">
+<meta name="description" content="Compare and rate UK brands by industry. Independent 100-point scores, side-by-side comparisons, and transparent ratings on GoNoGo.">
+<meta name="keywords" content="brand comparison UK, industry ratings, company reviews, GoNoGo ratings, UK brand rankings">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <link rel="canonical" href="https://www.gonogo.co.uk/category">
-<meta property="og:title" content="Industry Brands — GoNoGo UK">
-<meta property="og:description" content="Compare brands in this industry on GoNoGo UK. See scores, verdicts, and rankings.">
+<meta property="og:title" content="Brand Ratings by Industry — GoNoGo United Kingdom">
+<meta property="og:description" content="Compare and rate UK brands by industry. Independent 100-point scores and transparent ratings.">
 <meta property="og:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -25,11 +26,10 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="GoNoGo United Kingdom">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Industry Brands — GoNoGo UK">
-<meta name="twitter:description" content="Compare brands in this industry on GoNoGo UK. See scores, verdicts, and rankings.">
+<meta name="twitter:title" content="Brand Ratings by Industry — GoNoGo United Kingdom">
+<meta name="twitter:description" content="Compare and rate UK brands by industry. Independent 100-point scores and transparent ratings.">
 <meta name="twitter:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
-<meta name="robots" content="index, follow">
-  <title>Industry Brands — GoNoGo United Kingdom</title>
+  <title>Brand Ratings by Industry — GoNoGo United Kingdom</title>
    <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -134,13 +134,44 @@
         }
 
         document.getElementById('nav').innerHTML = Components.renderPublicNav(slug);
-        document.title = catInfo.name + ' — GoNoGo United Kingdom';
 
-        // SEO meta
-        var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' brands in the United Kingdom. Independent ratings on a 100-point scoring framework.';
-        var metaTag = document.querySelector('meta[name="description"]');
-        if (!metaTag) { metaTag = document.createElement('meta'); metaTag.name = 'description'; document.head.appendChild(metaTag); }
-        metaTag.content = catDesc;
+        // === SEO: Dynamic meta tags for category pages ===
+        var seoTitle = catInfo.name + ' Ratings & Reviews \u2014 GoNoGo United Kingdom';
+        var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' brands in the United Kingdom. Independent ' + catInfo.name.toLowerCase() + ' ratings using a transparent 100-point scoring framework on GoNoGo.';
+        var canonicalUrl = 'https://www.gonogo.co.uk/category.html?cat=' + slug;
+
+        document.title = seoTitle;
+
+        function setMeta(attr, attrVal, content) {
+          var el = document.querySelector('meta[' + attr + '="' + attrVal + '"]');
+          if (!el) { el = document.createElement('meta'); el.setAttribute(attr, attrVal); document.head.appendChild(el); }
+          el.content = content;
+        }
+        setMeta('name', 'description', catDesc);
+        setMeta('name', 'keywords', catInfo.name + ' UK, ' + catInfo.name.toLowerCase() + ' ratings, ' + catInfo.name.toLowerCase() + ' comparison, best ' + catInfo.name.toLowerCase() + ' UK, GoNoGo ' + catInfo.name.toLowerCase());
+        setMeta('property', 'og:title', seoTitle);
+        setMeta('property', 'og:description', catDesc);
+        setMeta('property', 'og:url', canonicalUrl);
+        setMeta('name', 'twitter:title', seoTitle);
+        setMeta('name', 'twitter:description', catDesc);
+
+        var canonicalEl = document.querySelector('link[rel="canonical"]');
+        if (canonicalEl) canonicalEl.href = canonicalUrl;
+
+        // === SEO: JSON-LD structured data for category ===
+        var catJsonLD = {
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          'name': catInfo.name + ' Brand Ratings \u2014 GoNoGo United Kingdom',
+          'description': catDesc,
+          'url': canonicalUrl,
+          'isPartOf': { '@type': 'WebSite', 'name': 'GoNoGo United Kingdom', 'url': 'https://www.gonogo.co.uk' },
+          'about': { '@type': 'Thing', 'name': catInfo.name + ' in the United Kingdom' }
+        };
+        var catLdScript = document.createElement('script');
+        catLdScript.type = 'application/ld+json';
+        catLdScript.textContent = JSON.stringify(catJsonLD);
+        document.head.appendChild(catLdScript);
 
         var brands = await GoNoGoAPI.getBrandsByCategory(slug);
         var currentSort = 'score-desc';

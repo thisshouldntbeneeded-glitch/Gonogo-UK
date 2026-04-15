@@ -339,6 +339,23 @@
           <label class="form-label">Description <span class="text-xs text-muted">(optional)</span></label>
           <textarea id="fc-description" rows="2" placeholder="Brief description of this category" style="font-size:var(--text-sm);"></textarea>
         </div>
+
+        <div style="border-top:1px solid var(--border-primary);margin:var(--space-4) 0;padding-top:var(--space-4)">
+          <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-3)">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--green)"></i>
+            <span style="font-size:var(--text-sm);font-weight:700;color:var(--text-primary)">SEO Preview</span>
+            <span class="text-xs text-muted">(auto-generated from category name)</span>
+          </div>
+          <div class="card" id="seo-preview-card" style="padding:var(--space-3);background:var(--surface-1);border:1px solid var(--border-primary)">
+            <div id="seo-preview-title" style="font-size:var(--text-base);font-weight:600;color:#1a0dab;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Category Name Ratings &amp; Reviews — GoNoGo United Kingdom</div>
+            <div id="seo-preview-url" style="font-size:var(--text-xs);color:#006621;margin-bottom:4px;">www.gonogo.co.uk/category.html?cat=...</div>
+            <div id="seo-preview-desc" style="font-size:var(--text-xs);color:var(--text-secondary);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">Compare brands in this category in the United Kingdom. Independent ratings using a transparent 100-point scoring framework on GoNoGo.</div>
+          </div>
+          <p class="text-xs text-muted" style="margin-top:var(--space-2);line-height:1.5;">
+            <i class="fa-solid fa-circle-info"></i> This is how the category page will appear in Google search results. The title, URL, and description are auto-generated from the category name. A good category name = good SEO.
+          </p>
+        </div>
+
         <div class="form-group">
           <label class="form-label">Icon</label>
           <div class="icon-picker-wrapper">
@@ -1095,7 +1112,32 @@
       }
 
       document.getElementById('category-modal').classList.add('open');
+      updateSeoPreview();
     }
+
+    function updateSeoPreview() {
+      var name = (document.getElementById('fc-name').value || '').trim();
+      var slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || '...';
+      var titleEl = document.getElementById('seo-preview-title');
+      var urlEl = document.getElementById('seo-preview-url');
+      var descEl = document.getElementById('seo-preview-desc');
+      if (!titleEl) return;
+
+      if (name) {
+        titleEl.textContent = name + ' Ratings & Reviews \u2014 GoNoGo United Kingdom';
+        urlEl.textContent = 'www.gonogo.co.uk/category.html?cat=' + slug;
+        descEl.textContent = 'Compare ' + name.toLowerCase() + ' brands in the United Kingdom. Independent ' + name.toLowerCase() + ' ratings using a transparent 100-point scoring framework on GoNoGo.';
+      } else {
+        titleEl.textContent = 'Category Name Ratings & Reviews \u2014 GoNoGo United Kingdom';
+        urlEl.textContent = 'www.gonogo.co.uk/category.html?cat=...';
+        descEl.textContent = 'Compare brands in this category in the United Kingdom. Independent ratings using a transparent 100-point scoring framework on GoNoGo.';
+      }
+    }
+
+    (function() {
+      var nameInput = document.getElementById('fc-name');
+      if (nameInput) nameInput.addEventListener('input', updateSeoPreview);
+    })();
 
     function closeCategoryModal() {
       document.getElementById('category-modal').classList.remove('open');
