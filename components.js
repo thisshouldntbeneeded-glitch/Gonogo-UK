@@ -402,20 +402,27 @@ const Components = {
   },
 
   renderVerdictBadge(verdict) {
-    let cls, icon;
-    if (verdict === 'GO') {
+    let cls, icon, label;
+    if (verdict === 'TOP PERFORMER') {
+      cls = 'badge-top-performer';
+      icon = 'fa-trophy';
+      label = 'Top Performer';
+    } else if (verdict === 'GO') {
       cls = 'badge-go';
       icon = 'fa-circle-check';
+      label = 'Go';
     } else if (verdict === 'NOGO') {
       cls = 'badge-nogo';
       icon = 'fa-circle-xmark';
+      label = 'No\u2011Go';
     } else {
-      cls = 'badge-caution';
-      icon = 'fa-triangle-exclamation';
+      cls = 'badge-go';
+      icon = 'fa-circle-check';
+      label = verdict || 'Go';
     }
     return `<span class="badge ${cls}">
       <i class="fa-solid ${icon}"></i>
-      ${verdict}
+      ${label}
     </span>`;
   },
 
@@ -1107,7 +1114,7 @@ const Components = {
 
     var listHtml = '';
     brands.forEach(function(b) {
-      var verdictColor = b.verdict === 'GO' ? 'var(--green)' : b.verdict === 'NOGO' ? 'var(--red)' : 'var(--orange)';
+      var verdictColor = b.verdict === 'TOP PERFORMER' ? '#d4af37' : b.verdict === 'NOGO' ? 'var(--red)' : 'var(--green)';
       listHtml += '<div class="brand-picker-item" data-slug="' + b.slug + '" data-name="' + Components.escapeHTML(b.name) + '" ' +
         'onclick="Components.selectAdminBrand(\'' + b.slug + '\', \'' + Components.escapeHTML(b.name).replace(/'/g, "\\'") + '\')" ' +
         'style="padding:10px 12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-subtle);font-size:var(--text-sm);transition:background 0.15s;"' +

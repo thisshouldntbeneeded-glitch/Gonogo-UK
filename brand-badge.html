@@ -160,11 +160,12 @@
       var verdict = window.brandVerdict || 'NOGO';
       var slug = window.brandSlug || '';
       var siteUrl = window.siteUrl || LIVE_PUBLIC_BASE_URL;
-      var vc = verdict === 'GO' ? '#11a551' : verdict === 'NOGO' ? '#e74c3c' : '#ff9800';
-      var vcDim = verdict === 'GO' ? 'rgba(17,165,81,0.15)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.15)' : 'rgba(255,152,0,0.15)';
-      var vcBorder = verdict === 'GO' ? 'rgba(17,165,81,0.35)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.35)' : 'rgba(255,152,0,0.35)';
+      var isTop = verdict === 'TOP PERFORMER';
+      var vc = isTop ? '#d4af37' : verdict === 'NOGO' ? '#e74c3c' : '#11a551';
+      var vcDim = isTop ? 'rgba(212,175,55,0.15)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.15)' : 'rgba(17,165,81,0.15)';
+      var vcBorder = isTop ? 'rgba(212,175,55,0.35)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.35)' : 'rgba(17,165,81,0.35)';
       var brandUrl = siteUrl + '/brand.html?id=' + encodeURIComponent(slug);
-      var verdictLabel = verdict.replace(/_/g,' ');
+      var verdictLabel = isTop ? 'Top Performer' : (verdict === 'NOGO' ? 'No Go' : 'Go');
       var circ = 150.796;
       var offset = circ * (1 - Math.min(100, Math.max(0, score)) / 100);
       var nameShort = escapeInline(name.length > 22 ? name.substring(0, 21) + '\u2026' : name);

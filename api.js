@@ -273,13 +273,8 @@ var GoNoGoAPI = (function () {
             brands.forEach(function (b) {
               total++;
               scoreSum += b.gonogo_score || 0;
-              var v = (b.verdict || '').toUpperCase().trim();
-              if (v === 'CAUTION') v = 'GO WITH CAUTION';
-              if (v === 'GO') go++;
-              else if (v === 'GO WITH CAUTION') caution++;
-              else if (v === 'NOGO') nogo++;
-              else if (b.gonogo_score >= 80) go++;
-              else if (b.gonogo_score >= 60) caution++;
+              var s = b.gonogo_score || 0;
+              if (s >= 60) go++;
               else nogo++;
             });
             return {
@@ -299,13 +294,7 @@ var GoNoGoAPI = (function () {
             totalBrands++;
             var score = b.gonogo_score || 0;
             totalScore += score;
-            var verdict = (b.verdict || '').toUpperCase().trim();
-            if (verdict === 'CAUTION') verdict = 'GO WITH CAUTION';
-            if (verdict === 'GO') goCount++;
-            else if (verdict === 'GO WITH CAUTION') cautionCount++;
-            else if (verdict === 'NOGO') nogoCount++;
-            else if (score >= 80) goCount++;
-            else if (score >= 60) cautionCount++;
+            if (score >= 60) goCount++;
             else nogoCount++;
           });
         });
@@ -491,8 +480,8 @@ var GoNoGoAPI = (function () {
       }
       var overallScore = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : (brandData.gonogo_score || 0);
       var verdict = totalMax > 0
-        ? (overallScore >= 80 ? 'GO' : overallScore >= 60 ? 'GO WITH CAUTION' : 'NOGO')
-        : (brandData.verdict || (overallScore >= 80 ? 'GO' : overallScore >= 60 ? 'GO WITH CAUTION' : 'NOGO'));
+        ? (overallScore >= 80 ? 'TOP PERFORMER' : overallScore >= 60 ? 'GO' : 'NOGO')
+        : (brandData.verdict || (overallScore >= 80 ? 'TOP PERFORMER' : overallScore >= 60 ? 'GO' : 'NOGO'));
       var slug = brandData.id || brandData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
       // Build the update record — only include fields that were actually provided

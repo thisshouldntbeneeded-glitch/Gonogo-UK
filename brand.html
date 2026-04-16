@@ -86,7 +86,7 @@
       }
 
       // === SEO: Dynamic meta tags optimised for brand name searches ===
-      var verdictLabel = brand.verdict === 'GO' ? 'Go' : (brand.verdict === 'NOGO' ? 'No\u2011Go' : 'Caution');
+      var verdictLabel = brand.verdict === 'TOP PERFORMER' ? 'Top Performer' : (brand.verdict === 'NOGO' ? 'No\u2011Go' : 'Go');
       var seoTitle = brand.name + ' Reviews & Rating (' + brand.overallScore + '/100) \u2014 GoNoGo United Kingdom';
       var brandUrl = 'https://www.gonogo.co.uk/brand.html?id=' + encodeURIComponent(brand.id || brandId);
       var metaDesc = brand.name + ' scored ' + brand.overallScore + '/100 (' + verdictLabel + ') in ' + brand.categoryName + ' on GoNoGo. ' + (brand.overview ? brand.overview.substring(0, 120) : 'See the full 100-point breakdown, strengths, concerns, pricing, and user reviews.');
