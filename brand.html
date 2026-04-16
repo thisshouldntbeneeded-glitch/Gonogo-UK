@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
-  <meta name="keywords" content="brand rating, brand review, GoNoGo score, UK brands">
+  <meta name="description" content="Independent brand rating and reviews on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, strengths, concerns, and verdict.">
+  <meta name="keywords" content="brand rating UK, brand review, GoNoGo score, company reviews, UK brand comparison">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <link rel="canonical" href="https://www.gonogo.co.uk/brand">
-  <meta property="og:title" content="Brand Rating — GoNoGo UK">
-  <meta property="og:description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
+  <meta property="og:title" content="Brand Rating & Reviews — GoNoGo United Kingdom">
+  <meta property="og:description" content="Independent brand rating and reviews on GoNoGo UK. 100-point scoring breakdown, customer reviews, and verdict.">
   <meta property="og:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -15,11 +16,10 @@
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="GoNoGo United Kingdom">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Brand Rating — GoNoGo UK">
-  <meta name="twitter:description" content="Detailed brand rating and review on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, and verdict.">
+  <meta name="twitter:title" content="Brand Rating & Reviews — GoNoGo United Kingdom">
+  <meta name="twitter:description" content="Independent brand rating and reviews on GoNoGo UK. 100-point scoring breakdown, customer reviews, and verdict.">
   <meta name="twitter:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
-  <meta name="robots" content="index, follow">
-  <title>Brand Rating — GoNoGo United Kingdom</title>
+  <title>Brand Rating & Reviews — GoNoGo United Kingdom</title>
   <link rel="icon" href="favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
@@ -85,68 +85,88 @@
         return;
       }
 
-      document.title = brand.name + ' — GoNoGo United Kingdom';
+      // === SEO: Dynamic meta tags optimised for brand name searches ===
+      var verdictLabel = brand.verdict === 'GO' ? 'Go' : (brand.verdict === 'NOGO' ? 'No\u2011Go' : 'Caution');
+      var seoTitle = brand.name + ' Reviews & Rating (' + brand.overallScore + '/100) \u2014 GoNoGo United Kingdom';
+      var brandUrl = 'https://www.gonogo.co.uk/brand.html?id=' + encodeURIComponent(brand.id || brandId);
+      var metaDesc = brand.name + ' scored ' + brand.overallScore + '/100 (' + verdictLabel + ') in ' + brand.categoryName + ' on GoNoGo. ' + (brand.overview ? brand.overview.substring(0, 120) : 'See the full 100-point breakdown, strengths, concerns, pricing, and user reviews.');
 
-      // Dynamic SEO meta tags
-      var metaDesc = (brand.overview || (brand.name + ' rated ' + brand.overallScore + '/100 (' + brand.verdict + ') in ' + brand.categoryName + '.'));
-      var metaTag = document.querySelector('meta[name="description"]');
-      if (!metaTag) {
-        metaTag = document.createElement('meta');
-        metaTag.name = 'description';
-        document.head.appendChild(metaTag);
+      document.title = seoTitle;
+
+      function setMeta(attr, attrVal, content) {
+        var el = document.querySelector('meta[' + attr + '="' + attrVal + '"]');
+        if (!el) { el = document.createElement('meta'); el.setAttribute(attr, attrVal); document.head.appendChild(el); }
+        el.content = content;
       }
-      metaTag.content = metaDesc.substring(0, 160);
-
-      // Open Graph
-      function setOG(prop, val) {
-        var el = document.querySelector('meta[property="og:' + prop + '"]');
-        if (!el) {
-          el = document.createElement('meta');
-          el.setAttribute('property', 'og:' + prop);
-          document.head.appendChild(el);
-        }
-        el.content = val;
+      setMeta('name', 'description', metaDesc.substring(0, 160));
+      setMeta('name', 'keywords', brand.name + ', ' + brand.name + ' reviews, ' + brand.name + ' rating, ' + brand.name + ' UK, ' + brand.categoryName + ' ratings, GoNoGo ' + brand.name);
+      setMeta('property', 'og:title', seoTitle);
+      setMeta('property', 'og:description', metaDesc.substring(0, 160));
+      setMeta('property', 'og:type', 'article');
+      setMeta('property', 'og:url', brandUrl);
+      setMeta('name', 'twitter:title', seoTitle);
+      setMeta('name', 'twitter:description', metaDesc.substring(0, 160));
+      if (brand.logo) {
+        setMeta('property', 'og:image', brand.logo);
+        setMeta('name', 'twitter:image', brand.logo);
       }
-      setOG('title', brand.name + ' — GoNoGo United Kingdom');
-      setOG('description', metaDesc.substring(0, 160));
-      setOG('type', 'article');
-      setOG('url', window.location.href);
 
-      // JSON-LD structured data
+      var canonicalEl = document.querySelector('link[rel="canonical"]');
+      if (canonicalEl) canonicalEl.href = brandUrl;
+
+      // === SEO: Organization + AggregateRating JSON-LD ===
       var starRating = Math.round((brand.overallScore / 20) * 10) / 10;
       var jsonLD = {
         '@context': 'https://schema.org',
-        '@type': 'Review',
-        'itemReviewed': {
-          '@type': 'Organization',
-          'name': brand.name,
-          'url': brand.website || '',
-          'image': brand.logo || '',
-          'description': brand.overview || ''
-        },
-        'reviewRating': {
-          '@type': 'Rating',
+        '@type': 'Organization',
+        'name': brand.name,
+        'url': brand.website || brandUrl,
+        'aggregateRating': {
+          '@type': 'AggregateRating',
           'ratingValue': starRating,
           'bestRating': 5,
-          'worstRating': 1
+          'worstRating': 1,
+          'ratingCount': 1,
+          'reviewCount': 1
         },
-        'author': {
-          '@type': 'Organization',
-          'name': 'GoNoGo Ratings and Reviews',
-          'url': 'https://www.gonogo.co.uk'
-        },
-        'reviewBody': brand.ratingSummary || metaDesc,
-        'publisher': {
-          '@type': 'Organization',
-          'name': 'GoNoGo United Kingdom',
-          'url': 'https://www.gonogo.co.uk',
-          'logo': 'https://www.gonogo.co.uk/android-chrome-512x512.png'
+        'review': {
+          '@type': 'Review',
+          'author': {
+            '@type': 'Organization',
+            'name': 'GoNoGo Ratings and Reviews',
+            'url': 'https://www.gonogo.co.uk'
+          },
+          'reviewRating': {
+            '@type': 'Rating',
+            'ratingValue': starRating,
+            'bestRating': 5,
+            'worstRating': 1
+          },
+          'reviewBody': brand.ratingSummary || metaDesc
         }
       };
+      if (brand.logo) jsonLD.logo = brand.logo;
+      if (brand.overview) jsonLD.description = brand.overview;
+
       var ldScript = document.createElement('script');
       ldScript.type = 'application/ld+json';
       ldScript.textContent = JSON.stringify(jsonLD);
       document.head.appendChild(ldScript);
+
+      // === SEO: BreadcrumbList JSON-LD ===
+      var breadcrumbLD = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+          { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://www.gonogo.co.uk/' },
+          { '@type': 'ListItem', 'position': 2, 'name': brand.categoryName, 'item': 'https://www.gonogo.co.uk/category.html?cat=' + brand.categorySlug },
+          { '@type': 'ListItem', 'position': 3, 'name': brand.name, 'item': brandUrl }
+        ]
+      };
+      var bcScript = document.createElement('script');
+      bcScript.type = 'application/ld+json';
+      bcScript.textContent = JSON.stringify(breadcrumbLD);
+      document.head.appendChild(bcScript);
 
       var logoHTML = Components.renderLogo(brand, 'brand-logo brand-logo-hero');
 
