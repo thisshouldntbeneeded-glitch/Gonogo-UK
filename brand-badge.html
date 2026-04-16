@@ -161,9 +161,12 @@
       var slug = window.brandSlug || '';
       var siteUrl = window.siteUrl || LIVE_PUBLIC_BASE_URL;
       var isTop = verdict === 'TOP PERFORMER';
+      var ringColor = '#11a551';
+      var numColor = '#d4af37';
       var vc = isTop ? '#d4af37' : verdict === 'NOGO' ? '#e74c3c' : '#11a551';
       var vcDim = isTop ? 'rgba(212,175,55,0.15)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.15)' : 'rgba(17,165,81,0.15)';
       var vcBorder = isTop ? 'rgba(212,175,55,0.35)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.35)' : 'rgba(17,165,81,0.35)';
+      var logoUrl = siteUrl + '/favicon-32x32.png';
       var brandUrl = siteUrl + '/brand.html?id=' + encodeURIComponent(slug);
       var verdictLabel = isTop ? 'Top Performer' : (verdict === 'NOGO' ? 'No Go' : 'Go');
       var circ = 150.796;
@@ -185,12 +188,12 @@
             '<div style="position:relative;width:60px;height:60px;flex-shrink:0;">' +
               '<svg width="60" height="60" style="position:absolute;top:0;left:0;" viewBox="0 0 60 60">' +
                 '<circle cx="30" cy="30" r="26" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="3.5"/>' +
-                '<circle cx="30" cy="30" r="26" fill="none" stroke="' + vc + '" stroke-width="3.5" ' +
+                '<circle cx="30" cy="30" r="26" fill="none" stroke="' + ringColor + '" stroke-width="3.5" ' +
                   'stroke-dasharray="163.4" stroke-dashoffset="' + (163.4 * (1 - score/100)).toFixed(1) + '" ' +
                   'stroke-linecap="round" transform="rotate(-90 30 30)"/>' +
               '</svg>' +
               '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;">' +
-                '<span style="font-size:19px;font-weight:800;color:' + vc + ';line-height:1;letter-spacing:-0.02em;">' + score + '</span>' +
+                '<span style="font-size:19px;font-weight:800;color:' + numColor + ';line-height:1;letter-spacing:-0.02em;">' + score + '</span>' +
                 '<span style="font-size:8px;color:rgba(255,255,255,0.28);font-weight:600;letter-spacing:0.04em;">/100</span>' +
               '</div>' +
             '</div>' +
@@ -206,7 +209,10 @@
                 '<span style="width:5px;height:5px;border-radius:50%;background:' + vc + ';flex-shrink:0;"></span>' +
                 '<span style="font-size:10px;font-weight:700;color:' + vc + ';letter-spacing:0.06em;text-transform:uppercase;">' + verdictLabel + '</span>' +
               '</div>' +
-              '<div style="font-size:8.5px;color:rgba(255,255,255,0.25);letter-spacing:0.05em;text-transform:uppercase;">Rated by GoNoGo</div>' +
+              '<div style="display:flex;align-items:center;gap:4px;">' +
+                '<img src="' + logoUrl + '" width="14" height="14" style="border-radius:3px;flex-shrink:0;" alt="GoNoGo">' +
+                '<span style="font-size:8.5px;color:rgba(255,255,255,0.25);letter-spacing:0.05em;text-transform:uppercase;">Rated by GoNoGo</span>' +
+              '</div>' +
             '</div>' +
 
           '</a>';
@@ -219,8 +225,10 @@
           'background:#0d0d0d;border-radius:99px;border:1px solid rgba(255,255,255,0.09);' +
           'box-shadow:0 2px 12px rgba(0,0,0,0.4);font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;">' +
 
+            '<img src="' + logoUrl + '" width="16" height="16" style="border-radius:3px;flex-shrink:0;" alt="GoNoGo">' +
+
             '<div style="display:flex;align-items:baseline;gap:1px;">' +
-              '<span style="font-size:20px;font-weight:800;color:' + vc + ';line-height:1;letter-spacing:-0.03em;">' + score + '</span>' +
+              '<span style="font-size:20px;font-weight:800;color:' + numColor + ';line-height:1;letter-spacing:-0.03em;">' + score + '</span>' +
               '<span style="font-size:9px;color:rgba(255,255,255,0.28);font-weight:600;">/100</span>' +
             '</div>' +
 
@@ -242,12 +250,15 @@
           'border:1px solid rgba(255,255,255,0.09);box-shadow:0 4px 16px rgba(0,0,0,0.5);' +
           'font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;position:relative;overflow:hidden;">' +
 
-            '<div style="position:absolute;inset:0;border-radius:14px;border:2px solid ' + vc + ';opacity:0.25;"></div>' +
+            '<div style="position:absolute;inset:0;border-radius:14px;border:2px solid ' + ringColor + ';opacity:0.25;"></div>' +
             '<div style="text-align:center;position:relative;z-index:1;">' +
-              '<div style="font-size:26px;font-weight:800;color:' + vc + ';line-height:1;letter-spacing:-0.03em;">' + score + '</div>' +
-              '<div style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.28);letter-spacing:0.08em;text-transform:uppercase;margin-top:3px;">GoNoGo</div>' +
+              '<div style="font-size:26px;font-weight:800;color:' + numColor + ';line-height:1;letter-spacing:-0.03em;">' + score + '</div>' +
+              '<div style="display:flex;align-items:center;justify-content:center;gap:3px;margin-top:3px;">' +
+                '<img src="' + logoUrl + '" width="10" height="10" style="border-radius:2px;" alt="">' +
+                '<span style="font-size:8px;font-weight:700;color:rgba(255,255,255,0.28);letter-spacing:0.08em;text-transform:uppercase;">GoNoGo</span>' +
+              '</div>' +
             '</div>' +
-            '<div style="position:absolute;top:-18px;right:-18px;width:52px;height:52px;border-radius:50%;background:' + vc + ';opacity:0.1;"></div>' +
+            '<div style="position:absolute;top:-18px;right:-18px;width:52px;height:52px;border-radius:50%;background:' + ringColor + ';opacity:0.1;"></div>' +
 
           '</a>';
       }
