@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoNoGo UK – Blog Management</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="admin-content" style="display:none">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title" id="page-title">Blog Posts</h1>
+        <p class="text-sm text-secondary" id="page-subtitle">Create and manage blog posts</p>
+      </div>
+      <div id="header-actions">
+        <button class="btn btn-primary" onclick="showEditor()"><i class="fa-solid fa-plus"></i> New Post</button>
+      </div>
+    </div>
+
+    <!-- Post List View -->
+    <div id="posts-list">
+      <div id="posts-grid" style="display:grid;gap:var(--space-4)">
+        <div class="text-sm text-muted" style="text-align:center;padding:var(--space-8) 0">Loading...</div>
+      </div>
+    </div>
+
+    <!-- Editor View -->
+    <div id="editor-view" style="display:none">
+      <div class="card" style="padding:var(--space-6)">
+        <div style="display:grid;gap:var(--space-4)">
+          <div>
+            <label class="text-sm text-muted" style="display:block;margin-bottom:var(--space-1)">Title</label>
+            <input type="text" id="ed-title" class="form-input" placeholder="Post title" style="width:100%;padding:10px 14px;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:var(--text-base)">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+            <div>
+              <label class="text-sm text-muted" style="display:block;margin-bottom:var(--space-1)">Slug</label>
+              <input type="text" id="ed-slug" class="form-input" placeholder="auto-generated-from-title" style="width:100%;padding:10px 14px;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:var(--text-sm)">
+            </div>
+            <div>
+              <label class="text-sm text-muted" style="display:block;margin-bottom:var(--space-1)">Author</label>
+              <input type="text" id="ed-author" class="form-input" value="GoNoGo Team" style="width:100%;padding:10px 14px;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:var(--text-sm)">
+            </div>
+          </div>
+          <div>
+            <label class="text-sm text-muted" style="display:block;margin-bottom:var(--space-1)">Cover Image URL <span class="text-xs">(optional)</span></label>
+            <input type="text" id="ed-cover" class="form-input" placeholder="https://..." style="width:100%;padding:10px 14px;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:var(--text-sm)">
+          </div>
+          <div>
+            <label class="text-sm text-muted" style="display:block;margin-bottom:var(--space-1)">Excerpt <span class="text-xs">(shown on listing)</span></label>
+            <textarea id="ed-excerpt" rows="2" placeholder="A brief summary..." style="width:100%;padding:10px 14px;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:var(--text-sm);resize:vertical;font-family:inherit"></textarea>
+          </div>
+          <div>
+            <label class="text-sm text-muted" style="display:block;margin-bottom:var(--space-2)">Content <span class="text-xs">(HTML supported)</span></label>
+            <div id="toolbar" style="display:flex;gap:4px;margin-bottom:var(--space-2);flex-wrap:wrap">
+              <button type="button" class="tb" onclick="fmt('bold')" title="Bold"><i class="fa-solid fa-bold"></i></button>
+              <button type="button" class="tb" onclick="fmt('italic')" title="Italic"><i class="fa-solid fa-italic"></i></button>
+              <button type="button" class="tb" onclick="fmt('underline')" title="Underline"><i class="fa-solid fa-underline"></i></button>
+              <span style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px"></span>
+              <button type="button" class="tb" onclick="fmt('formatBlock','<h2>')" title="Heading 2">H2</button>
+              <button type="button" class="tb" onclick="fmt('formatBlock','<h3>')" title="Heading 3">H3</button>
+              <button type="button" class="tb" onclick="fmt('formatBlock','<p>')" title="Paragraph">P</button>
+              <span style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px"></span>
+              <button type="button" class="tb" onclick="fmt('insertUnorderedList')" title="Bullet List"><i class="fa-solid fa-list-ul"></i></button>
+              <button type="button" class="tb" onclick="fmt('insertOrderedList')" title="Numbered List"><i class="fa-solid fa-list-ol"></i></button>
+              <button type="button" class="tb" onclick="insertLink()" title="Link"><i class="fa-solid fa-link"></i></button>
+              <button type="button" class="tb" onclick="insertImage()" title="Image"><i class="fa-solid fa-image"></i></button>
+              <button type="button" class="tb" onclick="fmt('formatBlock','<blockquote>')" title="Quote"><i class="fa-solid fa-quote-left"></i></button>
+              <span style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px"></span>
+              <button type="button" class="tb" onclick="toggleSource()" title="HTML Source" id="btn-source"><i class="fa-solid fa-code"></i></button>
+            </div>
+            <div id="ed-content" contenteditable="true" style="min-height:400px;padding:var(--space-4);border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:var(--text-sm);line-height:1.7;outline:none;overflow-y:auto"></div>
+            <textarea id="ed-source" style="display:none;width:100%;min-height:400px;padding:var(--space-4);border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--green);font-size:var(--text-xs);font-family:monospace;line-height:1.6;resize:vertical"></textarea>
+          </div>
+          <div style="display:flex;gap:var(--space-3);justify-content:flex-end;padding-top:var(--space-3)">
+            <button class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+            <button class="btn btn-secondary" onclick="savePost('draft')"><i class="fa-solid fa-floppy-disk"></i> Save Draft</button>
+            <button class="btn btn-primary" onclick="savePost('published')"><i class="fa-solid fa-paper-plane"></i> Publish</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script src="data/helpers.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
+
+<script>
+  document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('blog');
+  if (Components.checkAdminAuth()) initBlog();
+
+  var editingId = null;
+  var sourceMode = false;
+  var allPosts = [];
+
+  async function initBlog() {
+    document.getElementById('admin-content').style.display = '';
+    await loadPosts();
+  }
+
+  async function loadPosts() {
+    try {
+      var posts = await GoNoGoAPI.supabaseRequest(
+        'blog_posts?region=eq.' + GoNoGoAPI.SITE_REGION +
+        '&select=id,title,slug,excerpt,author,status,sort_order,published_at,created_at,updated_at&order=sort_order.asc,created_at.desc'
+      );
+      allPosts = posts || [];
+      var grid = document.getElementById('posts-grid');
+      if (!posts || posts.length === 0) {
+        grid.innerHTML = '<div class="card" style="text-align:center;padding:var(--space-8)"><i class="fa-solid fa-pen-nib" style="font-size:36px;color:var(--green);opacity:0.4;margin-bottom:var(--space-3);display:block"></i><p class="text-sm text-muted">No posts yet. Click <strong>New Post</strong> to get started.</p></div>';
+        return;
+      }
+      grid.innerHTML = posts.map(function(p, idx) {
+        var date = p.published_at ? new Date(p.published_at).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'}) : 'Not published';
+        var badge = p.status === 'published'
+          ? '<span style="background:#1a3d2e;color:#11a551;font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px">Published</span>'
+          : '<span style="background:rgba(255,255,255,0.06);color:var(--text-muted);font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px">Draft</span>';
+        var upBtn = idx > 0 ? '<button class="btn btn-secondary btn-sm" onclick="movePost(' + idx + ',-1)" title="Move up"><i class="fa-solid fa-arrow-up"></i></button>' : '<button class="btn btn-secondary btn-sm" disabled style="opacity:0.3"><i class="fa-solid fa-arrow-up"></i></button>';
+        var downBtn = idx < posts.length - 1 ? '<button class="btn btn-secondary btn-sm" onclick="movePost(' + idx + ',1)" title="Move down"><i class="fa-solid fa-arrow-down"></i></button>' : '<button class="btn btn-secondary btn-sm" disabled style="opacity:0.3"><i class="fa-solid fa-arrow-down"></i></button>';
+        return '<div class="card" style="padding:var(--space-4) var(--space-5);display:flex;align-items:center;justify-content:space-between;gap:var(--space-4)">' +
+          '<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">' + upBtn + downBtn + '</div>' +
+          '<div style="flex:1;min-width:0">' +
+            '<div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-1)">' +
+              '<h3 style="font-size:var(--text-sm);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(p.title) + '</h3>' +
+              badge +
+            '</div>' +
+            '<div class="text-xs text-muted">' + esc(p.author || '') + ' · ' + date + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:var(--space-2);flex-shrink:0">' +
+            '<button class="btn btn-secondary btn-sm" onclick="editPost(\'' + p.id + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+            '<button class="btn btn-secondary btn-sm" style="color:var(--red-text,#e74c3c)" onclick="deletePost(\'' + p.id + '\',\'' + esc(p.title).replace(/'/g,'\\\'') + '\')"><i class="fa-solid fa-trash"></i></button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    } catch(e) {
+      console.error('Load posts error:', e);
+      Components.showToast('Error loading posts: ' + e.message, 'error');
+    }
+  }
+
+  function esc(s) { return Components.escapeHTML(s || ''); }
+
+  async function movePost(idx, direction) {
+    var swapIdx = idx + direction;
+    if (swapIdx < 0 || swapIdx >= allPosts.length) return;
+    var a = allPosts[idx];
+    var b = allPosts[swapIdx];
+    try {
+      var auth = GoNoGoAPI._getCallerAuth();
+      await GoNoGoAPI.supabaseRequest('rpc/admin_reorder_blog_posts', {
+        method: 'POST',
+        body: {
+          p_caller_id: auth.p_caller_id,
+          p_caller_hash: auth.p_caller_hash,
+          p_id_a: a.id, p_order_a: swapIdx,
+          p_id_b: b.id, p_order_b: idx
+        }
+      });
+      await loadPosts();
+    } catch(e) {
+      Components.showToast('Error reordering: ' + e.message, 'error');
+    }
+  }
+
+  function showEditor(post) {
+    editingId = post ? post.id : null;
+    document.getElementById('ed-title').value = post ? post.title : '';
+    document.getElementById('ed-slug').value = post ? post.slug : '';
+    document.getElementById('ed-author').value = post ? (post.author || 'GoNoGo Team') : 'GoNoGo Team';
+    document.getElementById('ed-cover').value = post ? (post.cover_image_url || '') : '';
+    document.getElementById('ed-excerpt').value = post ? (post.excerpt || '') : '';
+    document.getElementById('ed-content').innerHTML = post ? (post.content || '') : '';
+    document.getElementById('ed-source').value = '';
+    sourceMode = false;
+    document.getElementById('ed-content').style.display = '';
+    document.getElementById('ed-source').style.display = 'none';
+    document.getElementById('btn-source').style.background = '';
+
+    document.getElementById('posts-list').style.display = 'none';
+    document.getElementById('editor-view').style.display = '';
+    document.getElementById('page-title').textContent = post ? 'Edit Post' : 'New Post';
+    document.getElementById('page-subtitle').textContent = post ? 'Editing: ' + post.title : 'Write a new blog post';
+    document.getElementById('header-actions').style.display = 'none';
+  }
+
+  function cancelEdit() {
+    document.getElementById('posts-list').style.display = '';
+    document.getElementById('editor-view').style.display = 'none';
+    document.getElementById('page-title').textContent = 'Blog Posts';
+    document.getElementById('page-subtitle').textContent = 'Create and manage blog posts';
+    document.getElementById('header-actions').style.display = '';
+    editingId = null;
+  }
+
+  function slugify(text) {
+    return text.toLowerCase().trim()
+      .replace(/[^\w\s-]/g, '').replace(/[\s_]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  }
+
+  // Auto-generate slug from title
+  document.getElementById('ed-title').addEventListener('input', function() {
+    if (!editingId) {
+      document.getElementById('ed-slug').value = slugify(this.value);
+    }
+  });
+
+  function getContent() {
+    if (sourceMode) {
+      return document.getElementById('ed-source').value;
+    }
+    return document.getElementById('ed-content').innerHTML;
+  }
+
+  async function savePost(status) {
+    var title = document.getElementById('ed-title').value.trim();
+    var slug = document.getElementById('ed-slug').value.trim() || slugify(title);
+    var content = getContent().trim();
+
+    if (!title) { Components.showToast('Title is required', 'error'); return; }
+    if (!content) { Components.showToast('Content is required', 'error'); return; }
+    if (!slug) { Components.showToast('Slug is required', 'error'); return; }
+
+    var payload = {
+      title: title,
+      slug: slug,
+      excerpt: document.getElementById('ed-excerpt').value.trim() || null,
+      content: content,
+      cover_image_url: document.getElementById('ed-cover').value.trim() || null,
+      author: document.getElementById('ed-author').value.trim() || 'GoNoGo Team',
+      region: GoNoGoAPI.SITE_REGION,
+      status: status,
+      updated_at: new Date().toISOString()
+    };
+
+    if (status === 'published' && !editingId) {
+      payload.published_at = new Date().toISOString();
+    }
+    if (status === 'published' && editingId) {
+      // Keep existing published_at unless it was a draft being published
+      payload.published_at = new Date().toISOString();
+    }
+
+    try {
+      var auth = GoNoGoAPI._getCallerAuth();
+      await GoNoGoAPI.supabaseRequest('rpc/admin_save_blog_post', {
+        method: 'POST',
+        body: {
+          p_caller_id: auth.p_caller_id,
+          p_caller_hash: auth.p_caller_hash,
+          p_id: editingId || null,
+          p_data: payload
+        }
+      });
+      Components.showToast(status === 'published' ? 'Post published!' : 'Draft saved!', 'success');
+      cancelEdit();
+      await loadPosts();
+    } catch(e) {
+      Components.showToast('Error saving: ' + e.message, 'error');
+    }
+  }
+
+  async function editPost(id) {
+    try {
+      var posts = await GoNoGoAPI.supabaseRequest('blog_posts?id=eq.' + id + '&select=*&limit=1');
+      if (posts && posts.length > 0) showEditor(posts[0]);
+    } catch(e) {
+      Components.showToast('Error loading post: ' + e.message, 'error');
+    }
+  }
+
+  async function deletePost(id, title) {
+    if (!confirm('Delete "' + title + '"? This cannot be undone.')) return;
+    try {
+      var auth = GoNoGoAPI._getCallerAuth();
+      await GoNoGoAPI.supabaseRequest('rpc/admin_delete_blog_post', {
+        method: 'POST',
+        body: { p_caller_id: auth.p_caller_id, p_caller_hash: auth.p_caller_hash, p_id: id }
+      });
+      Components.showToast('Post deleted', 'success');
+      await loadPosts();
+    } catch(e) {
+      Components.showToast('Error deleting: ' + e.message, 'error');
+    }
+  }
+
+  // Toolbar functions
+  function fmt(cmd, val) {
+    document.execCommand(cmd, false, val || null);
+    document.getElementById('ed-content').focus();
+  }
+
+  function insertLink() {
+    var url = prompt('Enter URL:');
+    if (url) fmt('createLink', url);
+  }
+
+  function insertImage() {
+    var url = prompt('Enter image URL:');
+    if (url) fmt('insertImage', url);
+  }
+
+  function toggleSource() {
+    var rich = document.getElementById('ed-content');
+    var src = document.getElementById('ed-source');
+    var btn = document.getElementById('btn-source');
+    if (!sourceMode) {
+      src.value = rich.innerHTML;
+      rich.style.display = 'none';
+      src.style.display = '';
+      btn.style.background = 'var(--green)';
+      btn.style.color = '#fff';
+      sourceMode = true;
+    } else {
+      rich.innerHTML = src.value;
+      src.style.display = 'none';
+      rich.style.display = '';
+      btn.style.background = '';
+      btn.style.color = '';
+      sourceMode = false;
+    }
+  }
+</script>
+
+<style>
+  .tb {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: var(--text-secondary);
+    padding: 6px 10px;
+    border-radius: var(--radius-sm, 4px);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.15s;
+  }
+  .tb:hover { background: rgba(255,255,255,0.12); color: var(--text-primary); }
+  #ed-content:focus { border-color: var(--green); }
+  #ed-content h2 { font-size: 1.3em; font-weight: 700; margin: 0.8em 0 0.4em; }
+  #ed-content h3 { font-size: 1.1em; font-weight: 700; margin: 0.6em 0 0.3em; }
+  #ed-content p { margin-bottom: 0.6em; }
+  #ed-content a { color: var(--green); }
+  #ed-content blockquote { border-left: 3px solid var(--green); padding-left: 12px; color: var(--text-muted); }
+  #ed-content img { max-width: 100%; border-radius: 6px; }
+</style>
+</body>
+</html>

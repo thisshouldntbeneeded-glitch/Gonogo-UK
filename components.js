@@ -132,6 +132,7 @@ const Components = {
       { href: 'admin-api.html', label: 'API Portal', icon: 'fa-plug', id: 'api' },
       { href: 'admin-settings.html', label: 'Settings', icon: 'fa-gear', id: 'settings' },
       { href: 'admin-scoring.html', label: 'Scoring Engine', icon: 'fa-scale-balanced', id: 'scoring' },
+      { href: 'admin-blog.html', label: 'Blog', icon: 'fa-pen-nib', id: 'blog' },
       { href: 'admin-users.html', label: 'Public Users', icon: 'fa-users', id: 'users' }
     ];
 
@@ -141,7 +142,7 @@ const Components = {
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1a3d2e;color:#11a551;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
-          <i class="fa-solid fa-globe"></i> South Africa
+          <i class="fa-solid fa-globe"></i> United Kingdom
         </div>
         <nav class="admin-sidebar-nav">
           ${links.map(l => `
@@ -371,10 +372,12 @@ const Components = {
               <a href="index.html">Home</a>
               <a href="compare.html">Compare</a>
               <a href="about.html">About</a>
+              <a href="blog.html">Blog</a>
+              <a href="faq.html">FAQ</a>
               <a href="privacy.html">Privacy Policy</a>
               <a href="cookies.html">Cookie Policy</a>
               <a href="terms.html">Terms & Conditions</a>
-              <a href="https://www.gonogo.co.uk" target="_blank" rel="noopener noreferrer">GoNoGo UK</a>
+              <a href="https://www.gonogo.co.za" target="_blank" rel="noopener noreferrer">GoNoGo SA</a>
             </div>
             <div class="footer-attribution">
               &copy; 2026 GoNoGo Ratings and Reviews Ltd. All rights reserved.
@@ -1168,7 +1171,7 @@ const Components = {
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1a3d2e;color:#11a551;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
-          <i class="fa-solid fa-globe"></i> South Africa
+          <i class="fa-solid fa-globe"></i> United Kingdom
         </div>
         <div style="padding:8px 16px;margin-top:4px;font-size:var(--text-sm);color:var(--text-secondary);font-weight:600;">
           <i class="fa-solid fa-building" style="color:var(--green);margin-right:6px;"></i> ${brandName}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Insights, guides, and updates from the GoNoGo United Kingdom team — helping consumers make smarter brand decisions.">
+<meta name="keywords" content="GoNoGo blog, brand reviews, UK consumer insights">
+<link rel="canonical" href="https://www.gonogo.co.uk/blog">
+<meta property="og:title" content="Blog — GoNoGo United Kingdom">
+<meta property="og:description" content="Insights, guides, and updates from the GoNoGo United Kingdom team.">
+<meta property="og:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.gonogo.co.uk/blog">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GoNoGo United Kingdom">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Blog — GoNoGo United Kingdom">
+<meta name="twitter:description" content="Insights, guides, and updates from the GoNoGo United Kingdom team.">
+<meta name="twitter:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
+<meta name="robots" content="index, follow">
+<title>Blog — GoNoGo United Kingdom</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>(function(){try{var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');}catch(e){}})()</script>
+</head>
+<body>
+<div id="nav"></div>
+
+<section class="hero-section" style="padding:var(--space-10) 0 var(--space-6)">
+  <div class="container">
+    <h1 style="font-size:var(--text-2xl);font-weight:800;margin-bottom:var(--space-2)">Blog</h1>
+    <p class="text-secondary" style="font-size:var(--text-base);max-width:600px">Insights, guides, and updates to help you make smarter brand decisions.</p>
+  </div>
+</section>
+
+<section style="padding:0 0 var(--space-10)">
+  <div class="container">
+    <div id="blog-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:var(--space-6)">
+      <div class="text-sm text-muted" style="text-align:center;padding:var(--space-10) 0">Loading posts...</div>
+    </div>
+    <div id="blog-empty" style="display:none;text-align:center;padding:var(--space-10) 0">
+      <i class="fa-solid fa-pen-nib" style="font-size:48px;color:var(--green);opacity:0.4;margin-bottom:var(--space-4);display:block"></i>
+      <p class="text-secondary">No posts yet — check back soon.</p>
+    </div>
+  </div>
+</section>
+
+<div id="footer"></div>
+
+<script src="data/helpers.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
+<script>
+  document.getElementById('nav').innerHTML = Components.renderPublicNav('blog');
+  Components.initTheme();
+  Components.initPublicAuth();
+  document.getElementById('footer').innerHTML = Components.renderFooter();
+
+  (async function() {
+    try {
+      var posts = await GoNoGoAPI.supabaseRequest(
+        'blog_posts?status=eq.published&region=eq.' + GoNoGoAPI.SITE_REGION +
+        '&select=title,slug,excerpt,cover_image_url,author,published_at,sort_order&order=sort_order.asc,published_at.desc'
+      );
+      var grid = document.getElementById('blog-grid');
+      if (!posts || posts.length === 0) {
+        grid.style.display = 'none';
+        document.getElementById('blog-empty').style.display = '';
+        return;
+      }
+      grid.innerHTML = posts.map(function(p) {
+        var date = p.published_at ? new Date(p.published_at).toLocaleDateString('en-GB', { year:'numeric', month:'long', day:'numeric' }) : '';
+        var img = p.cover_image_url
+          ? '<div style="height:200px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;overflow:hidden"><img src="' + Components.escapeHTML(p.cover_image_url) + '" alt="" style="width:100%;height:100%;object-fit:cover"></div>'
+          : '<div style="height:200px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;background:linear-gradient(135deg,var(--green),#065f28);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-pen-nib" style="font-size:48px;color:rgba(255,255,255,0.3)"></i></div>';
+        return '<a href="blog-post.html?slug=' + encodeURIComponent(p.slug) + '" class="card" style="text-decoration:none;color:inherit;padding:0;overflow:hidden;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s" onmouseover="this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,0.3)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">' +
+          img +
+          '<div style="padding:var(--space-4) var(--space-5) var(--space-5)">' +
+            '<div class="text-xs text-muted" style="margin-bottom:var(--space-2)">' + Components.escapeHTML(p.author || '') + (date ? ' · ' + date : '') + '</div>' +
+            '<h3 style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-2);line-height:1.4">' + Components.escapeHTML(p.title) + '</h3>' +
+            (p.excerpt ? '<p class="text-sm text-secondary" style="line-height:1.6">' + Components.escapeHTML(p.excerpt) + '</p>' : '') +
+          '</div>' +
+        '</a>';
+      }).join('');
+    } catch(e) {
+      console.error('Blog load error:', e);
+      document.getElementById('blog-grid').innerHTML = '<p class="text-sm text-muted" style="text-align:center">Unable to load posts.</p>';
+    }
+  })();
+</script>
+</body>
+</html>
