@@ -81,38 +81,7 @@
   }
   </script>
 
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is GoNoGo UK?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "GoNoGo is an independent brand ratings platform for the United Kingdom that uses a transparent 100-point scoring framework to rate brands across categories like banking, broadband, utilities, travel, and insurance. It provides structured, data-driven ratings to help consumers compare brands objectively."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How does GoNoGo compare to Trustpilot?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "While Trustpilot focuses on user-submitted reviews, GoNoGo provides structured 100-point brand scores across multiple evaluation categories including Compliance, Customer Satisfaction, Product Value, Innovation, Customer Support, and Accessibility. This makes brand comparisons more objective and data-driven."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Is GoNoGo free for UK consumers?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, GoNoGo is completely free for consumers. You can browse brand ratings, compare brands side by side, read reviews, and make informed decisions at no cost."
-        }
-      }
-    ]
-  }
-  </script>
+
 </head>
 <body>
   <div id="nav"></div>
@@ -481,48 +450,7 @@
         </div>
       </div>
     </section>
-    <section class="section" id="faq">
-      <div class="container" style="max-width:800px;">
-        <div class="section-header">
-          <div style="margin-bottom:var(--space-3);">
-            <span class="badge badge-go" style="padding:6px 12px;">
-              <i class="fa-solid fa-circle-question"></i>
-              FAQ
-            </span>
-          </div>
-          <h2 class="section-title" style="font-size:var(--text-2xl);letter-spacing:-0.03em;">
-            Frequently Asked Questions
-          </h2>
-        </div>
 
-        <div style="display:flex;flex-direction:column;gap:var(--space-4);">
-          <div class="card" style="padding:var(--space-5);">
-            <h3 style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-2);">What is GoNoGo UK?</h3>
-            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;margin:0;">
-              GoNoGo is an independent brand ratings platform for the United Kingdom that uses a transparent 100-point scoring framework to rate brands across categories like banking, broadband, utilities, travel, and insurance. It provides structured, data-driven ratings to help consumers compare brands objectively.
-            </p>
-          </div>
-          <div class="card" style="padding:var(--space-5);">
-            <h3 style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-2);">How does GoNoGo compare to Trustpilot?</h3>
-            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;margin:0;">
-              While Trustpilot focuses on user-submitted reviews, GoNoGo provides structured 100-point brand scores across multiple evaluation categories including Compliance, Customer Satisfaction, Product Value, Innovation, Customer Support, and Accessibility. This makes brand comparisons more objective and data-driven.
-            </p>
-          </div>
-          <div class="card" style="padding:var(--space-5);">
-            <h3 style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-2);">Is GoNoGo free for UK consumers?</h3>
-            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;margin:0;">
-              Yes, GoNoGo is completely free for consumers. You can browse brand ratings, compare brands side by side, read reviews, and make informed decisions at no cost. Businesses can also claim and manage their brand profile.
-            </p>
-          </div>
-          <div class="card" style="padding:var(--space-5);">
-            <h3 style="font-size:var(--text-base);font-weight:700;margin-bottom:var(--space-2);">What categories does GoNoGo cover in the UK?</h3>
-            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;margin:0;">
-              GoNoGo rates UK brands across banking, insurance, broadband, utilities, travel, mobile networks, business software, and more. New categories are added regularly.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
 
   </main>
 
@@ -547,21 +475,6 @@
     Components.initPublicAuth();
     document.getElementById('footer').innerHTML = Components.renderFooter();
 
-    var categoryDescriptions = {
-      'banking': 'Digital banks, traditional banks, and credit cards.',
-      'mobile': 'Coverage, plans, pricing, and customer service.',
-      'broadband-fiber': 'Broadband, fibre, speed delivery, and support.',
-      'insurance': 'Home, motor, travel, and life cover providers.',
-      'utilities': 'Energy providers, tariffs, and service standards.',
-      'airlines': 'Flight quality, reliability, and passenger experience.',
-      'streaming': 'Video, music, content libraries, and pricing.',
-      'meal-delivery': 'Meal kits, prepared meals, and delivery services.',
-      'travel': 'Booking platforms, holidays, and travel deals.',
-      'hr-software': 'HR management, payroll, and employee tools.',
-      'accounting-software': 'Accounting, invoicing, and reporting platforms.',
-      'e-commerce': 'Ecommerce platforms, online stores, and marketplaces.'
-    };
-
     var categoryColors = {
       'banking': '#3b82f6',
       'mobile': '#2563eb',
@@ -584,7 +497,7 @@
 
         var industryGrid = document.getElementById('industry-grid');
         industryGrid.innerHTML = categories.map(function (cat) {
-          var desc = categoryDescriptions[cat.id] || (cat.brandCount + ' brands reviewed');
+          var desc = cat.description || (cat.brandCount + ' brands reviewed');
           var color = categoryColors[cat.id] || '#3b82f6';
           return ''
             + '<a href="category.html?cat=' + cat.id + '" class="industry-card-v2">'
