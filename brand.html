@@ -175,13 +175,14 @@
         var name = entry[0], data = entry[1];
         var pct = Math.round((data.score / data.max) * 100);
         var color = getScoreColor(pct);
-        return '<div class="category-card">' +
+        return '<div class="category-card" data-category="' + name + '">' +
           '<div class="category-card-header">' +
             '<span class="category-card-name">' + name + '</span>' +
             '<span class="category-card-score" style="color:' + color + '">' + data.score + '/' + data.max + '</span>' +
           '</div>' +
           Components.renderScoreBar(data.score, data.max) +
           '<p class="category-card-desc">' + data.description + '</p>' +
+          '<div class="granular-detail" style="display:none"></div>' +
         '</div>';
       }).join('');
 
@@ -589,7 +590,54 @@
       };
 
       await loadReviews();
+
+      // Load granular per-criterion scores (progressive enhancement)
+      loadGranularScores(brand.id);
     })();
+
+    function loadGranularScores(brandSlug) {
+      GoNoGoAPI.getBrandGranularScores(brandSlug).then(function(grouped) {
+        if (!grouped) return;
+        document.querySelectorAll('.category-card[data-category]').forEach(function(card) {
+          var cat = card.getAttribute('data-category');
+          var data = grouped[cat];
+          if (!data || !data.criteria.length) return;
+
+          // Make card expandable
+          var header = card.querySelector('.category-card-header');
+          header.style.cursor = 'pointer';
+          var chevron = document.createElement('span');
+          chevron.className = 'granular-chevron';
+          chevron.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+          header.appendChild(chevron);
+
+          // Build detail HTML
+          var detailEl = card.querySelector('.granular-detail');
+          var html = '<div class="granular-criteria">';
+          data.criteria.forEach(function(c) {
+            var pct = c.max > 0 ? Math.round((c.score / c.max) * 100) : 0;
+            var barColor = pct >= 75 ? 'var(--green)' : pct >= 50 ? 'var(--orange)' : 'var(--red,#e74c3c)';
+            html += '<div class="granular-row">' +
+              '<div class="granular-row-header">' +
+                '<span class="granular-sub">' + c.subcategory + '</span>' +
+                '<span class="granular-pts" style="color:' + barColor + '">' + c.score + '/' + c.max + '</span>' +
+              '</div>' +
+              '<div class="granular-bar-track"><div class="granular-bar-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div>' +
+              (c.evidence ? '<p class="granular-evidence">' + c.evidence + '</p>' : '') +
+            '</div>';
+          });
+          html += '</div>';
+          detailEl.innerHTML = html;
+
+          // Toggle handler
+          header.addEventListener('click', function() {
+            var open = detailEl.style.display !== 'none';
+            detailEl.style.display = open ? 'none' : 'block';
+            chevron.classList.toggle('open', !open);
+          });
+        });
+      });
+    }
 
     function renderStars(score) {
       var val = parseFloat(score) || 0;

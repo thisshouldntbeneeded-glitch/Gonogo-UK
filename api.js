@@ -866,6 +866,42 @@ getBrandUser: function () {
       });
     },
 
+    // Granular per-criterion scores (brand_scores + scoring_templates)
+    getBrandGranularScores: function (brandSlug) {
+      return supabaseRequest(
+        'brand_scores?brand_slug=eq.' + encodeURIComponent(brandSlug) +
+        '&select=score,evidence,source_url,scoring_templates(category,subcategory,point_description,max_points,sort_order)'
+      ).then(function (rows) {
+        if (!rows || !rows.length) return null;
+        // Group by category
+        var grouped = {};
+        rows.forEach(function (r) {
+          var t = r.scoring_templates;
+          if (!t) return;
+          var cat = t.category;
+          if (!grouped[cat]) grouped[cat] = { criteria: [], earned: 0, max: 0 };
+          var s = parseFloat(r.score) || 0;
+          var m = parseFloat(t.max_points) || 0;
+          grouped[cat].earned += s;
+          grouped[cat].max += m;
+          grouped[cat].criteria.push({
+            subcategory: t.subcategory,
+            description: t.point_description,
+            score: s,
+            max: m,
+            evidence: r.evidence || '',
+            source: r.source_url || '',
+            sort: t.sort_order || 0
+          });
+        });
+        // Sort criteria within each category
+        Object.keys(grouped).forEach(function (cat) {
+          grouped[cat].criteria.sort(function (a, b) { return a.sort - b.sort; });
+        });
+        return grouped;
+      }).catch(function () { return null; });
+    },
+
     getBrandReviews: function (brandName) {
       return reviewsRequest('reviews?brand_name=eq.' + encodeURIComponent(brandName) + '&status=eq.approved&order=created_at.desc')
         .then(function (data) {
