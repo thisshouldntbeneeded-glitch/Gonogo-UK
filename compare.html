@@ -182,8 +182,6 @@
         if (id1 || id2) updateComparison();
       }
 
-      renderPage();
-
       window.onCategoryChange = function() {
         selectedCategory = document.getElementById('category-filter').value;
         var id1 = document.getElementById('brand1').value;
@@ -534,6 +532,8 @@ resultEl.innerHTML = verdictBannerHtml + brandCardsHtml + ratingSummaryHtml + ra
         panel.classList.toggle('open');
       };
 
+      // Render after all functions are defined
+      renderPage();
     })();
   </script>
 </body>
