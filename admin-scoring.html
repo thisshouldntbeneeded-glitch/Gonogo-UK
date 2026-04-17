@@ -261,10 +261,22 @@ function loadSectorList() {
   var body = document.getElementById('page-body');
   body.innerHTML = '<div class="kpi-grid" style="margin-bottom:var(--space-5)"><div class="kpi-card"><div class="kpi-label">Loading sectors...</div></div></div>';
 
-  sbFetch('scoring_templates?select=sector_slug,sector_name,max_points&order=sector_slug,sort_order')
-    .then(function(rows) {
+  // Fetch both scoring templates and which sectors have UK brands
+  Promise.all([
+    sbFetch('scoring_templates?select=sector_slug,sector_name,max_points&order=sector_slug,sort_order'),
+    sbFetch('brands?region=eq.' + GoNoGoAPI.SITE_REGION + '&select=category_slug')
+  ])
+    .then(function(results) {
+      var rows = results[0] || [];
+      var brandRows = results[1] || [];
+      // Build set of sector slugs that have brands in this region
+      var activeSectors = {};
+      brandRows.forEach(function(b) { if (b.category_slug) activeSectors[b.category_slug] = true; });
+
       var sectors = {};
-      (rows || []).forEach(function(r) {
+      rows.forEach(function(r) {
+        // Only include sectors that have brands in this region
+        if (!activeSectors[r.sector_slug]) return;
         if (!sectors[r.sector_slug]) sectors[r.sector_slug] = { slug: r.sector_slug, name: r.sector_name, count: 0, total: 0 };
         sectors[r.sector_slug].count++;
         sectors[r.sector_slug].total += parseFloat(r.max_points) || 0;

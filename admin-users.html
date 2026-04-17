@@ -125,9 +125,12 @@
       document.getElementById('admin-content').style.display = 'block';
 
       try {
-        allUsers = await GoNoGoAPI.supabaseRequest(
-          'user_accounts?select=id,email,display_name,region,email_confirmed_at,last_sign_in_at,created_at,banned_until,meta_display_name,meta_region,priorities,persona,persona_set_at&order=created_at.desc'
-        );
+        var auth = GoNoGoAPI._getCallerAuth();
+        allUsers = await GoNoGoAPI.supabaseRequest('rpc/admin_list_public_users', {
+          method: 'POST',
+          body: { p_caller_id: auth.p_caller_id, p_caller_hash: auth.p_caller_hash }
+        });
+        allUsers = allUsers || [];
       } catch (e) {
         console.error('Error loading users:', e);
         allUsers = [];
@@ -200,7 +203,7 @@
       // Category frequency (count how often each cat appears as a priority)
       var catCounts = {};
       var catFirst = {};
-      var catNames = { product_value: 'Product Value', innovation: 'Innovation', customer_support: 'Customer Support', compliance: 'Compliance', sustainability: 'Sustainability', satisfaction: 'Customer Satisfaction' };
+      var catNames = { product_value: 'Product Value', innovation: 'Innovation', customer_support: 'Customer Support', compliance: 'Compliance', accessibility: 'Accessibility & Security', satisfaction: 'Customer Satisfaction' };
       Object.keys(catNames).forEach(function(k) { catCounts[k] = 0; catFirst[k] = 0; });
       withPersona.forEach(function(u) {
         u.priorities.forEach(function(k) { catCounts[k] = (catCounts[k] || 0) + 1; });
