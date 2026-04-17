@@ -548,10 +548,25 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid var(--green-dim);
 }
 
-.badge-top-performer {
+.verdict-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+.verdict-top-performer {
+  background: rgba(212,160,23,0.12);
+  color: #d4a017;
+}
+.verdict-go {
   background: var(--green-bg);
   color: var(--green-text);
-  border: 1px solid var(--green-dim);
+}
+.verdict-nogo {
+  background: var(--red-bg);
+  color: var(--red-text);
 }
 
 .badge-score {

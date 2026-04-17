@@ -203,7 +203,7 @@
       reviews.forEach(function(review) {
         var verdictUpper = (review.verdict || '').toUpperCase();
         if (verdictUpper === 'GO WITH CAUTION' || verdictUpper === 'CAUTION') verdictUpper = 'GO';
-        var verdictClass = verdictUpper === 'TOP PERFORMER' ? 'badge-go' : verdictUpper === 'GO' ? 'badge-go' : verdictUpper === 'NOGO' ? 'badge-nogo' : 'badge-go';
+        var verdictClass = verdictUpper === 'TOP PERFORMER' ? 'badge-top-performer' : verdictUpper === 'GO' ? 'badge-go' : verdictUpper === 'NOGO' ? 'badge-nogo' : 'badge-go';
         var verdictIcon = verdictUpper === 'TOP PERFORMER' ? 'fa-trophy' : verdictUpper === 'GO' ? 'fa-circle-check' : verdictUpper === 'NOGO' ? 'fa-circle-xmark' : 'fa-circle-check';
         var statusBadge = review.status === 'approved'
           ? '<span style="font-size:10px;color:var(--green-text);"><i class="fa-solid fa-check-circle"></i> Approved</span>'

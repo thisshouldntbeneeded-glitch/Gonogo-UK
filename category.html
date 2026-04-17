@@ -224,7 +224,7 @@
         function renderBranchCard(b, i) {
           var stagger = i < 6 ? ' stagger-' + (i + 1) : '';
           var scoreColor = getScoreColor(b.total_score);
-          var verdictClass = b.verdict === 'NOGO' ? 'nogo' : 'go';
+          var verdictClass = b.verdict === 'TOP PERFORMER' ? 'top-performer' : b.verdict === 'NOGO' ? 'nogo' : 'go';
 
           return '<a href="branch.html?id=' + b.branch_id + '" class="brand-card animate-in' + stagger + '" style="text-decoration:none">' +
             '<div class="brand-card-top">' +
