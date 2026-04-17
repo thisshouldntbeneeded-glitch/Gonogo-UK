@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoNoGo SA – Categories</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .cat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:var(--space-4); }
+    .cat-card { padding:var(--space-4) var(--space-5); border-radius:var(--radius-lg); background:var(--surface-1); border:1px solid var(--border-primary); transition:border-color 0.15s,transform 0.15s; cursor:pointer; }
+    .cat-card:hover { border-color:rgba(17,165,81,0.3); transform:translateY(-2px); }
+    .move-btn { background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;line-height:1;transition:color 0.15s,background 0.15s; }
+    .move-btn:hover { color:var(--green);background:rgba(17,165,81,0.1); }
+    .move-btn:disabled { opacity:0.2;cursor:default;background:none;color:var(--text-muted); }
+    .cat-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
+    .cat-meta { font-size:var(--text-xs); color:var(--text-muted); margin-top:var(--space-1); }
+    .cat-badge { font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px;background:rgba(17,165,81,0.12);color:var(--green); }
+    .cat-badge.branch { background:rgba(14,165,233,0.12);color:#0ea5e9; }
+
+    /* Edit panel */
+    .edit-panel { background:var(--surface-1); border:1px solid var(--border-primary); border-radius:var(--radius-lg); padding:var(--space-5) var(--space-6); margin-bottom:var(--space-6); }
+    .fg { margin-bottom:var(--space-4); }
+    .fg label { display:block;font-size:var(--text-xs);color:var(--text-muted);margin-bottom:var(--space-1);font-weight:600; }
+    .fg input, .fg textarea { width:100%;padding:10px 14px;border-radius:var(--radius-md);border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:var(--text-primary);font-size:var(--text-sm);font-family:inherit; }
+    .fg textarea { resize:vertical; }
+    .color-row { display:flex;gap:8px;flex-wrap:wrap;align-items:center; }
+    .csw { width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color 0.15s,transform 0.15s; }
+    .csw:hover, .csw.active { border-color:#fff;transform:scale(1.15); }
+
+    /* SEO preview */
+    .seo-box { padding:var(--space-3);background:var(--bg-primary);border:1px solid var(--border-primary);border-radius:var(--radius-md);margin-top:var(--space-2); }
+    .seo-title { font-size:var(--text-base);font-weight:600;color:#1a0dab;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .seo-url { font-size:var(--text-xs);color:#006621;margin-bottom:4px; }
+    .seo-desc { font-size:var(--text-xs);color:var(--text-secondary);line-height:1.5; }
+  </style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="admin-content" style="display:none">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title" id="page-title">Categories</h1>
+        <p class="text-sm text-secondary" id="page-subtitle">Manage industry categories and their settings</p>
+      </div>
+      <div id="header-actions">
+        <button class="btn btn-primary" onclick="showAdd()"><i class="fa-solid fa-plus"></i> New Category</button>
+      </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="kpi-grid" style="margin-bottom:var(--space-6)" id="cat-kpis"></div>
+
+    <!-- Edit/Add panel (hidden by default) -->
+    <div id="edit-panel" class="edit-panel" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4)">
+        <h3 style="font-size:var(--text-base);font-weight:700;margin:0" id="ep-title">Add Category</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeEdit()"><i class="fa-solid fa-xmark"></i> Close</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+        <div class="fg"><label>Category Name</label><input type="text" id="ep-name" placeholder="e.g. Telecommunications" oninput="updateSlugPreview()"></div>
+        <div class="fg"><label>Slug <span style="font-weight:400">(auto-generated)</span></label><input type="text" id="ep-slug" placeholder="auto-generated" style="opacity:0.7"></div>
+      </div>
+      <div class="fg"><label>Description <span style="font-weight:400">(optional — used for SEO)</span></label><textarea id="ep-desc" rows="2" placeholder="Brief description of this category"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+        <div class="fg">
+          <label>Icon</label>
+          <div style="display:flex;align-items:center;gap:var(--space-2)">
+            <div id="ep-icon-preview" style="width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:rgba(255,255,255,0.06)"><i class="fa-solid fa-tag"></i></div>
+            <input type="text" id="ep-icon" value="fa-tag" placeholder="fa-building-columns" oninput="updateIconPreview()" style="flex:1">
+          </div>
+          <p class="text-xs text-muted" style="margin-top:4px"><a href="https://fontawesome.com/search?o=r&m=free&s=solid" target="_blank" rel="noopener" style="color:var(--green)">Browse icons</a></p>
+        </div>
+        <div class="fg">
+          <label>Icon Colour</label>
+          <div class="color-row" id="ep-colors">
+            <div class="csw active" data-c="#11a551" style="background:#11a551" onclick="pickClr(this)"></div>
+            <div class="csw" data-c="#0ea5e9" style="background:#0ea5e9" onclick="pickClr(this)"></div>
+            <div class="csw" data-c="#f59e0b" style="background:#f59e0b" onclick="pickClr(this)"></div>
+            <div class="csw" data-c="#ef4444" style="background:#ef4444" onclick="pickClr(this)"></div>
+            <div class="csw" data-c="#8b5cf6" style="background:#8b5cf6" onclick="pickClr(this)"></div>
+            <div class="csw" data-c="#ec4899" style="background:#ec4899" onclick="pickClr(this)"></div>
+            <div class="csw" data-c="#14b8a6" style="background:#14b8a6" onclick="pickClr(this)"></div>
+            <div class="csw" data-c="#f97316" style="background:#f97316" onclick="pickClr(this)"></div>
+          </div>
+          <input type="hidden" id="ep-color" value="#11a551">
+        </div>
+      </div>
+      <div class="fg">
+        <label style="display:flex;align-items:center;gap:var(--space-2);cursor:pointer">
+          <input type="checkbox" id="ep-branch" style="width:18px;height:18px;accent-color:var(--green)">
+          Branch/location category
+        </label>
+        <p class="text-xs text-muted" style="margin-top:2px">e.g. hospitals, airports, traffic departments — location-specific rather than national brands</p>
+      </div>
+
+      <!-- SEO Preview -->
+      <div style="margin-top:var(--space-3);border-top:1px solid var(--border-primary);padding-top:var(--space-3)">
+        <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-1)"><i class="fa-solid fa-magnifying-glass" style="color:var(--green);font-size:12px"></i><span class="text-xs" style="font-weight:700">SEO Preview</span></div>
+        <div class="seo-box">
+          <div class="seo-title" id="seo-title">Category Name Ratings &amp; Reviews — GoNoGo South Africa</div>
+          <div class="seo-url" id="seo-url">www.gonogo.co.za/category.html?cat=...</div>
+          <div class="seo-desc" id="seo-desc">Compare brands in this category in South Africa. Independent ratings powered by a transparent 100-point scoring framework.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-4)">
+        <button class="btn btn-secondary" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-primary" id="ep-save" onclick="saveCat()"><i class="fa-solid fa-check"></i> Save Category</button>
+      </div>
+    </div>
+
+    <!-- Category grid -->
+    <div class="cat-grid" id="cat-grid">
+      <div class="text-sm text-muted" style="text-align:center;padding:var(--space-8) 0">Loading...</div>
+    </div>
+  </main>
+</div>
+
+<script src="data/helpers.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
+<script>
+  document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('categories');
+  if (Components.checkAdminAuth()) initPage();
+
+  var allCats = [];
+  var brandCounts = {};
+  var editingSlug = null;
+
+  async function initPage() {
+    document.getElementById('admin-content').style.display = '';
+    await loadAll();
+  }
+
+  async function loadAll() {
+    try {
+      var cats = await GoNoGoAPI.supabaseRequest(
+        'categories?region=eq.' + GoNoGoAPI.SITE_REGION + '&select=*&order=sort_order,name'
+      );
+      allCats = cats || [];
+
+      // Count brands per category
+      var brands = await GoNoGoAPI.supabaseRequest(
+        'brands?region=eq.' + GoNoGoAPI.SITE_REGION + '&select=category_slug'
+      );
+      brandCounts = {};
+      (brands || []).forEach(function(b) {
+        brandCounts[b.category_slug] = (brandCounts[b.category_slug] || 0) + 1;
+      });
+
+      renderKPIs();
+      renderGrid();
+    } catch(e) {
+      console.error('Load error:', e);
+    }
+  }
+
+  function renderKPIs() {
+    var total = allCats.length;
+    var totalBrands = 0;
+    Object.keys(brandCounts).forEach(function(k) { totalBrands += brandCounts[k]; });
+    var withBrands = allCats.filter(function(c) { return (brandCounts[c.slug] || 0) > 0; }).length;
+    var empty = total - withBrands;
+    document.getElementById('cat-kpis').innerHTML =
+      '<div class="kpi-card"><div class="kpi-label">Categories</div><div class="kpi-value">' + total + '</div></div>' +
+      '<div class="kpi-card"><div class="kpi-label">Total Brands</div><div class="kpi-value">' + totalBrands + '</div></div>' +
+      '<div class="kpi-card"><div class="kpi-label">Active</div><div class="kpi-value">' + withBrands + '</div></div>' +
+      '<div class="kpi-card"><div class="kpi-label">Empty</div><div class="kpi-value">' + empty + '</div></div>';
+  }
+
+  function renderGrid() {
+    var grid = document.getElementById('cat-grid');
+    if (allCats.length === 0) {
+      grid.innerHTML = '<div class="text-sm text-muted" style="text-align:center;padding:var(--space-8)">No categories yet.</div>';
+      return;
+    }
+    grid.innerHTML = allCats.map(function(c, idx) {
+      var cnt = brandCounts[c.slug] || 0;
+      var typeLabel = c.category_type === 'branch' ? '<span class="cat-badge branch">Branch</span>' : '';
+      var upDis = idx === 0 ? ' disabled' : '';
+      var dnDis = idx === allCats.length - 1 ? ' disabled' : '';
+      return '<div class="cat-card" style="display:flex;align-items:center;gap:var(--space-3)">' +
+        '<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">' +
+          '<button class="move-btn"' + upDis + ' onclick="event.stopPropagation();moveCategory(' + idx + ',-1)" title="Move up"><i class="fa-solid fa-chevron-up"></i></button>' +
+          '<button class="move-btn"' + dnDis + ' onclick="event.stopPropagation();moveCategory(' + idx + ',1)" title="Move down"><i class="fa-solid fa-chevron-down"></i></button>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="editCat(\'' + esc(c.slug) + '\')">' +
+          '<div style="display:flex;align-items:center;gap:var(--space-3)">' +
+            '<div class="cat-icon" style="background:' + (c.icon_color || '#11a551') + '20;color:' + (c.icon_color || '#11a551') + '"><i class="fa-solid ' + esc(c.icon || 'fa-tag') + '"></i></div>' +
+            '<div style="flex:1;min-width:0">' +
+              '<div style="display:flex;align-items:center;gap:var(--space-2)">' +
+                '<span style="font-weight:700;font-size:var(--text-sm)">' + esc(c.name) + '</span>' +
+                typeLabel +
+              '</div>' +
+              '<div class="cat-meta">' + cnt + ' brand' + (cnt !== 1 ? 's' : '') + ' · ' + esc(c.slug) + '</div>' +
+            '</div>' +
+          '</div>' +
+          (c.description ? '<div class="text-xs text-muted" style="margin-top:var(--space-2);line-height:1.5">' + esc(c.description) + '</div>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+  }
+
+  function esc(s) { return Components.escapeHTML(s || ''); }
+
+  function slugify(t) {
+    return t.toLowerCase().trim().replace(/[^\w\s-]/g,'').replace(/[\s_]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+  }
+
+  function showAdd() {
+    editingSlug = null;
+    document.getElementById('ep-title').textContent = 'Add Category';
+    document.getElementById('ep-name').value = '';
+    document.getElementById('ep-slug').value = '';
+    document.getElementById('ep-desc').value = '';
+    document.getElementById('ep-icon').value = 'fa-tag';
+    document.getElementById('ep-color').value = '#11a551';
+    document.getElementById('ep-branch').checked = false;
+    resetColorSwatches('#11a551');
+    updateIconPreview();
+    updateSlugPreview();
+    document.getElementById('edit-panel').style.display = '';
+    document.getElementById('ep-name').focus();
+  }
+
+  function editCat(slug) {
+    var cat = allCats.find(function(c) { return c.slug === slug; });
+    if (!cat) return;
+    editingSlug = slug;
+    document.getElementById('ep-title').textContent = 'Edit — ' + cat.name;
+    document.getElementById('ep-name').value = cat.name;
+    document.getElementById('ep-slug').value = cat.slug;
+    document.getElementById('ep-desc').value = cat.description || '';
+    document.getElementById('ep-icon').value = cat.icon || 'fa-tag';
+    document.getElementById('ep-color').value = cat.icon_color || '#11a551';
+    document.getElementById('ep-branch').checked = cat.category_type === 'branch';
+    resetColorSwatches(cat.icon_color || '#11a551');
+    updateIconPreview();
+    updateSlugPreview();
+    document.getElementById('edit-panel').style.display = '';
+    document.getElementById('edit-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function closeEdit() {
+    document.getElementById('edit-panel').style.display = 'none';
+    editingSlug = null;
+  }
+
+  function updateSlugPreview() {
+    var name = document.getElementById('ep-name').value.trim();
+    if (!editingSlug) document.getElementById('ep-slug').value = slugify(name);
+    document.getElementById('seo-title').textContent = (name || 'Category Name') + ' Ratings & Reviews — GoNoGo South Africa';
+    document.getElementById('seo-url').textContent = 'www.gonogo.co.za/category.html?cat=' + (document.getElementById('ep-slug').value || '...');
+    var desc = document.getElementById('ep-desc').value.trim();
+    document.getElementById('seo-desc').textContent = desc || ('Compare ' + (name || 'brands') + ' in South Africa. Independent ratings powered by a transparent 100-point scoring framework.');
+  }
+
+  function updateIconPreview() {
+    var icon = document.getElementById('ep-icon').value.trim() || 'fa-tag';
+    document.getElementById('ep-icon-preview').innerHTML = '<i class="fa-solid ' + icon + '"></i>';
+  }
+
+  function pickClr(el) {
+    document.querySelectorAll('.csw').forEach(function(s) { s.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('ep-color').value = el.getAttribute('data-c');
+  }
+
+  function resetColorSwatches(color) {
+    document.querySelectorAll('.csw').forEach(function(s) {
+      s.classList.toggle('active', s.getAttribute('data-c') === color);
+    });
+  }
+
+  async function saveCat() {
+    var name = document.getElementById('ep-name').value.trim();
+    var slug = document.getElementById('ep-slug').value.trim() || slugify(name);
+    if (!name || !slug) { Components.showToast('Name is required', 'error'); return; }
+
+    var payload = {
+      name: name,
+      slug: slug,
+      icon: document.getElementById('ep-icon').value.trim() || 'fa-tag',
+      icon_color: document.getElementById('ep-color').value || '#11a551',
+      description: document.getElementById('ep-desc').value.trim() || null,
+      category_type: document.getElementById('ep-branch').checked ? 'branch' : 'brand',
+      region: GoNoGoAPI.SITE_REGION
+    };
+
+    var btn = document.getElementById('ep-save');
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+    try {
+      var auth = GoNoGoAPI._getCallerAuth();
+      var catSlug = editingSlug || payload.slug;
+      if (!editingSlug) payload.scoring_categories = [];
+      await GoNoGoAPI.supabaseRequest('rpc/admin_save_category', {
+        method: 'POST',
+        body: {
+          p_caller_id: auth.p_caller_id,
+          p_caller_hash: auth.p_caller_hash,
+          p_slug: catSlug,
+          p_data: payload
+        }
+      });
+      Components.showToast(editingSlug ? 'Category updated' : 'Category created', 'success');
+      closeEdit();
+      await loadAll();
+    } catch(e) {
+      Components.showToast('Error: ' + e.message, 'error');
+    }
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Save Category';
+  }
+
+  async function moveCategory(idx, dir) {
+    var swapIdx = idx + dir;
+    if (swapIdx < 0 || swapIdx >= allCats.length) return;
+    var a = allCats[idx], b = allCats[swapIdx];
+    try {
+      var auth = GoNoGoAPI._getCallerAuth();
+      await GoNoGoAPI.supabaseRequest('rpc/admin_reorder_categories', {
+        method: 'POST',
+        body: {
+          p_caller_id: auth.p_caller_id,
+          p_caller_hash: auth.p_caller_hash,
+          p_slug_a: a.slug,
+          p_order_a: b.sort_order,
+          p_slug_b: b.slug,
+          p_order_b: a.sort_order
+        }
+      });
+      await loadAll();
+    } catch(e) {
+      Components.showToast('Reorder failed: ' + e.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>
