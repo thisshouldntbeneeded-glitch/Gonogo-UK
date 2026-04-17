@@ -253,6 +253,7 @@
                   '<i class="fa-solid ' + brand.categoryIcon + '"></i> ' + brand.categoryName +
                 '</span>' +
               '</div>' +
+              (brand.lastUpdated ? '<p style="font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-2)"><i class="fa-solid fa-clock-rotate-left" style="opacity:0.6"></i> Last updated ' + Components.formatDate(brand.lastUpdated) + '</p>' : '') +
               '<div style="display:flex;gap:var(--space-3);margin-top:var(--space-3);flex-wrap:wrap">' +
                 '<a href="compare.html?brands=' + brand.id + '" class="btn btn-secondary btn-sm"><i class="fa-solid fa-code-compare"></i> Compare</a>' +
                 (brand.website ? '<a href="' + brand.website + '" target="_blank" rel="noopener noreferrer" class="btn btn-ghost btn-sm"><i class="fa-solid fa-arrow-up-right-from-square"></i> Website</a>' : '') +
@@ -325,6 +326,10 @@
                 '<div class="form-group" id="review-name-group">' +
                   '<label class="form-label">Your Name</label>' +
                   '<input type="text" id="review-name" placeholder="Enter your name">' +
+                '</div>' +
+                '<div class="form-group">' +
+                  '<label class="form-label">Branch / Location <span class="text-xs text-muted">(optional)</span></label>' +
+                  '<input type="text" id="review-branch" placeholder="e.g. Sandton, Cape Town CBD">' +
                 '</div>' +
                 '<div class="form-group">' +
                   '<label class="form-label">Your Verdict</label>' +
@@ -546,6 +551,7 @@
             '<div class="comment-header">' +
               '<div style="display:flex;align-items:center;gap:var(--space-2)">' +
                 '<span class="comment-author">' + (r.reviewer_name || r.reviewername || 'Anonymous') + '</span>' +
+                (r.branch ? '<span class="text-xs text-muted" style="opacity:0.7"><i class="fa-solid fa-location-dot" style="font-size:10px"></i> ' + (r.branch) + '</span>' : '') +
                 verdictHtml +
               '</div>' +
               '<span class="comment-date">' + (r.date || '') + '</span>' +
@@ -588,6 +594,7 @@
           return;
         }
         try {
+          var branchVal = document.getElementById('review-branch').value.trim();
           var reviewData = {
             category: brand.categorySlug,
             brand_name: brand.name,
@@ -595,6 +602,7 @@
             review_text: text,
             verdict: selectedVerdict
           };
+          if (branchVal) reviewData.branch = branchVal;
           // Attach user_id if signed in
           if (Components._currentUser) {
             reviewData.user_id = Components._currentUser.id;
@@ -604,6 +612,7 @@
             document.getElementById('review-name').value = '';
           }
           document.getElementById('review-text').value = '';
+          document.getElementById('review-branch').value = '';
           selectedVerdict = null;
           document.querySelectorAll('.verdict-btn').forEach(function(b) {
             b.style.border = '2px solid var(--border-primary)';

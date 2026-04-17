@@ -450,6 +450,7 @@ var GoNoGoAPI = (function () {
 
       if (reviewData.verdict) body.verdict = reviewData.verdict;
       if (reviewData.user_id) body.user_id = reviewData.user_id;
+      if (reviewData.branch) body.branch = reviewData.branch;
 
       return reviewsRequest('reviews', {
         method: 'POST',
@@ -475,6 +476,7 @@ var GoNoGoAPI = (function () {
               reviewername: r.reviewer_name,
               reviewtext: r.review_text,
               verdict: r.verdict || '',
+              branch: r.branch || '',
               date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
@@ -510,6 +512,7 @@ var GoNoGoAPI = (function () {
               reviewtext: r.review_text,
               ReviewText: r.review_text,
               verdict: r.verdict || '',
+              branch: r.branch || '',
               createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               created_at: r.created_at,
               status: r.status,

@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html lang="en-GB">
+<html lang="en-ZA">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GoNoGo UK – Review Moderation</title>
+  <title>GoNoGo SA – Review Moderation</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -41,21 +46,21 @@
     </div>
 
     <div style="padding:var(--space-6) 0;text-align:center">
-      <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom</p>
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo South Africa</p>
     </div>
   </main>
 </div>
+  <script src="data/data_partA.js"></script>
+  <script src="data/data_partB.js"></script>
+  <script src="data/data_partC.js"></script>
+  <script src="data/data_partD.js"></script>
+  <script src="data/data_partE.js"></script>
+  <script src="data/data_partF.js"></script>
+  <script src="data/data.js"></script>
+  <script src="data/helpers.js"></script>
+  <script src="components.js"></script>
+  <script src="api.js"></script>
 
-<script src="data/data_partA.js"></script>
-<script src="data/data_partB.js"></script>
-<script src="data/data_partC.js"></script>
-<script src="data/data_partD.js"></script>
-<script src="data/data_partE.js"></script>
-<script src="data/data_partF.js"></script>
-<script src="data/data.js"></script>
-<script src="data/helpers.js"></script>
-<script src="components.js"></script>
-<script src="api.js"></script>
 
 <script>
   document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('comments');
@@ -67,16 +72,17 @@
     document.getElementById('admin-content').style.display = '';
     try {
       var reviews = await GoNoGoAPI.getAllReviews();
-      allComments = (reviews || []).map(function (r) {
+      allComments = reviews.map(function (r) {
         return {
           id: r.id,
           author: r.reviewername || r.ReviewerName || 'Anonymous',
           text: r.reviewtext || r.ReviewText || '',
           verdict: r.verdict || '',
-          date: r.createdat || r.createdAt || '',
+          date: r.createdat || '',
           brandName: r.brandname || r.BrandName || '',
           category: r.category || '',
-          status: (r.status || r.Status || 'pending').toLowerCase()
+          branch: r.branch || '',
+          status: r.status || r.Status || 'pending'
         };
       });
     } catch (e) {
@@ -84,13 +90,13 @@
       allComments = [];
     }
 
+    // Populate brand filter
     var brandFilter = document.getElementById('brand-filter');
-    brandFilter.innerHTML = '<option value="">All Brands</option>';
     var seen = {};
     allComments.forEach(function (c) {
       if (!seen[c.brandName] && c.brandName) {
         seen[c.brandName] = true;
-        brandFilter.innerHTML += '<option value="' + c.brandName.replace(/"/g, '&quot;') + '">' + c.brandName + '</option>';
+        brandFilter.innerHTML += '<option value="' + c.brandName + '">' + c.brandName + '</option>';
       }
     });
 
@@ -100,10 +106,9 @@
 
   function updateKPIs() {
     var total = allComments.length;
-    var pending = allComments.filter(function(c){return c.status === 'pending';}).length;
-    var approved = allComments.filter(function(c){return c.status === 'approved';}).length;
-    var rejected = allComments.filter(function(c){return c.status === 'rejected';}).length;
-
+    var pending = allComments.filter(function(c){return c.status==='pending'}).length;
+    var approved = allComments.filter(function(c){return c.status==='approved'}).length;
+    var rejected = allComments.filter(function(c){return c.status==='rejected'}).length;
     document.getElementById('comment-kpis').innerHTML =
       '<div class="kpi-card"><div class="kpi-label">Total</div><div class="kpi-value">'+total+'</div></div>'+
       '<div class="kpi-card"><div class="kpi-label">Pending</div><div class="kpi-value" style="color:'+(pending>0?'var(--orange-text)':'var(--green-text)')+'">'+pending+'</div></div>'+
@@ -117,13 +122,12 @@
     var filtered = allComments.filter(function (c) {
       return (!bf || c.brandName === bf) && (!sf || c.status === sf);
     });
-
+    // Pending first
     filtered.sort(function(a,b){
-      if (a.status === 'pending' && b.status !== 'pending') return -1;
-      if (b.status === 'pending' && a.status !== 'pending') return 1;
+      if(a.status==='pending'&&b.status!=='pending')return -1;
+      if(b.status==='pending'&&a.status!=='pending')return 1;
       return 0;
     });
-
     document.getElementById('comment-count').textContent = filtered.length + ' reviews';
     renderComments(filtered);
   }
@@ -131,20 +135,12 @@
   function renderComments(data) {
     var container = document.getElementById('comments-list');
     if (!data.length) {
-      container.innerHTML =
-        '<div style="text-align:center;padding:var(--space-10)">'+
-          '<i class="fa-solid fa-comments" style="font-size:var(--text-2xl);color:var(--text-faint);display:block;margin-bottom:var(--space-3)"></i>'+
-          '<p class="text-sm text-muted">No reviews match your filters.</p>'+
-        '</div>';
+      container.innerHTML = '<div style="text-align:center;padding:var(--space-10)"><i class="fa-solid fa-comments" style="font-size:var(--text-2xl);color:var(--text-faint);display:block;margin-bottom:var(--space-3)"></i><p class="text-sm text-muted">No reviews match your filters.</p></div>';
       return;
     }
-
     container.innerHTML = data.map(function (c) {
-      var border = c.status === 'pending' ? 'border-color:var(--orange-dim)' :
-                   c.status === 'rejected' ? 'border-color:var(--red-dim)' : '';
-      var badge = c.status === 'approved' ? 'freshness-fresh' :
-                  c.status === 'pending' ? 'freshness-stale' : 'freshness-outdated';
-
+      var border = c.status==='pending' ? 'border-color:var(--orange-dim)' : c.status==='rejected' ? 'border-color:var(--red-dim)' : '';
+      var badge = c.status==='approved' ? 'freshness-fresh' : c.status==='pending' ? 'freshness-stale' : 'freshness-outdated';
       var actions = '';
       if (c.status === 'pending') {
         actions =
@@ -159,23 +155,14 @@
           '<button class="btn btn-ghost btn-sm" onclick="moderateComment(\''+c.id+'\',\'approved\')"><i class="fa-solid fa-check"></i> Approve</button>'+
           '<button class="btn btn-ghost btn-sm" onclick="moderateComment(\''+c.id+'\',\'pending\')"><i class="fa-solid fa-clock"></i> Reset</button>';
       }
-
-      var verdictChip = '';
-      if (c.verdict === 'GO') {
-        verdictChip = '<span style="color:var(--green-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-check"></i> Go</span>';
-      } else if (c.verdict === 'NOGO') {
-        verdictChip = '<span style="color:var(--red-text,#e74c3c);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-xmark"></i> No Go</span>';
-      } else if (c.verdict) {
-        verdictChip = '<span style="color:var(--orange-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-exclamation"></i> '+c.verdict+'</span>';
-      }
-
       return '<div class="comment-card" style="'+border+'">'+
         '<div class="comment-header">'+
           '<div style="display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap">'+
-            '<span class="comment-author">'+(c.author || 'Anonymous')+'</span>'+
-            verdictChip+
+            '<span class="comment-author">'+c.author+'</span>'+
+            (c.branch ? '<span class="text-xs text-muted"><i class="fa-solid fa-location-dot" style="font-size:10px"></i> '+c.branch+'</span>' : '')+
+            (c.verdict==='GO' ? '<span style="color:var(--green-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-check"></i> Go</span>' : c.verdict==='NOGO' ? '<span style="color:var(--red-text,#e74c3c);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-xmark"></i> No Go</span>' : '') +
             '<span class="text-xs text-muted">on <strong>'+c.brandName+'</strong></span>'+
-            (c.category ? '<span class="text-xs text-muted">'+c.category+'</span>' : '')+
+            '<span class="text-xs text-muted">'+c.category+'</span>'+
             '<span class="freshness-badge '+badge+'">'+c.status+'</span>'+
           '</div>'+
           '<span class="comment-date">'+c.date+'</span>'+
