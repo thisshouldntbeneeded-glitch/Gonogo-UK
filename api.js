@@ -8,7 +8,7 @@ var GoNoGoAPI = (function () {
 
   var SUPABASE_URL = 'https://fnpxaneextqidbessnej.supabase.co';
   var SUPABASE_ANON_KEY = 'sb_publishable_132Gl37kwIXtdJc5VHtGCw_iXPxa6cW';
-  var SITE_REGION = 'za';
+  var SITE_REGION = 'uk';
 
   var REVIEWS_SUPABASE_URL = 'https://kkpbzttwljxvyjbvggqr.supabase.co';
   var REVIEWS_SUPABASE_KEY = 'sb_publishable_y5JnEvpF37HMKB2rcWbrog_6Oe0KYJW';
