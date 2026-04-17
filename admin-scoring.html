@@ -950,7 +950,13 @@ function handleCSVUpload(event) {
       var slugList = Object.keys(brandSlugs);
       var rollupPromises = slugList.map(function(slug) { return rollupBrandScores(slug); });
       return Promise.all(rollupPromises);
-    }).then(function() {
+    }).then(function(results) {
+      // Warn about any brands that were skipped (not found in brands table)
+      var skipped = (results || []).filter(function(r) { return r && r.skipped; });
+      if (skipped.length) {
+        var names = skipped.map(function(r) { return r.slug; }).join(', ');
+        Components.showToast('Scores saved but rollup skipped for ' + skipped.length + ' brand(s) not in brands table: ' + names, 'error');
+      }
       // Reload current brand view if one is selected
       var sel = document.getElementById('brand-selector');
       if (sel && sel.value) loadBrandScores();
@@ -994,8 +1000,17 @@ function deleteCategoryScores() {
 // ROLLUP: framework_breakdown + scoring_breakdown
 // ══════════════════════════════════════════
 function rollupBrandScores(brandSlug) {
-  return sbFetch('brand_scores?brand_slug=eq.' + encodeURIComponent(brandSlug) + '&select=template_id,score')
+  // First verify the brand exists — skip rollup if not (avoids FK error on insert)
+  return sbFetch('brands?slug=eq.' + encodeURIComponent(brandSlug) + '&region=eq.za&select=slug&limit=1')
+    .then(function(brands) {
+      if (!brands || !brands.length) {
+        console.warn('rollup skipped: brand "' + brandSlug + '" not found in brands table');
+        return { skipped: true, slug: brandSlug };
+      }
+      return sbFetch('brand_scores?brand_slug=eq.' + encodeURIComponent(brandSlug) + '&select=template_id,score');
+    })
     .then(function(scores) {
+      if (scores && scores.skipped) return scores;
       // Group by category using sectorTemplates
       var catTotals = {};
       sectorTemplates.forEach(function(t) {
