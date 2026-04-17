@@ -143,7 +143,7 @@ const Components = {
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1a3d2e;color:#11a551;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
-          <i class="fa-solid fa-globe"></i> South Africa
+          <i class="fa-solid fa-globe"></i> United Kingdom
         </div>
         <nav class="admin-sidebar-nav">
           ${links.map(l => `
@@ -1179,7 +1179,7 @@ const Components = {
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1a3d2e;color:#11a551;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
-          <i class="fa-solid fa-globe"></i> South Africa
+          <i class="fa-solid fa-globe"></i> United Kingdom
         </div>
         <div style="padding:8px 16px;margin-top:4px;font-size:var(--text-sm);color:var(--text-secondary);font-weight:600;">
           <i class="fa-solid fa-building" style="color:var(--green);margin-right:6px;"></i> ${brandName}
