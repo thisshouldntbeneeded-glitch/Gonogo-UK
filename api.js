@@ -477,7 +477,7 @@ var GoNoGoAPI = (function () {
               reviewtext: r.review_text,
               verdict: r.verdict || '',
               branch: r.branch || '',
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });
@@ -513,7 +513,7 @@ var GoNoGoAPI = (function () {
               ReviewText: r.review_text,
               verdict: r.verdict || '',
               branch: r.branch || '',
-              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               created_at: r.created_at,
               status: r.status,
               Status: r.status
@@ -854,7 +854,7 @@ var GoNoGoAPI = (function () {
               review_text: r.review_text,
               verdict: r.verdict || '',
               created_at: r.created_at,
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });

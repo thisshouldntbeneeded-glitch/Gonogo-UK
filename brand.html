@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html lang="en-ZA">
+<html lang="en-GB">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Independent brand rating and reviews on GoNoGo South Africa. See the full 100-point scoring breakdown, customer reviews, strengths, concerns, and verdict.">
+  <meta name="description" content="Independent brand rating and reviews on GoNoGo UK. See the full 100-point scoring breakdown, customer reviews, strengths, concerns, and verdict.">
   <meta name="keywords" content="brand rating South Africa, brand review, GoNoGo score, company reviews, South Africa brand comparison">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <link rel="canonical" href="https://www.gonogo.co.za/brand">
-  <meta property="og:title" content="Brand Rating & Reviews — GoNoGo South Africa">
-  <meta property="og:description" content="Independent brand rating and reviews on GoNoGo South Africa. 100-point scoring breakdown, customer reviews, and verdict.">
+  <meta property="og:title" content="Brand Rating & Reviews — GoNoGo UK">
+  <meta property="og:description" content="Independent brand rating and reviews on GoNoGo UK. 100-point scoring breakdown, customer reviews, and verdict.">
   <meta property="og:image" content="https://www.gonogo.co.za/logos/og-share.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:url" content="https://www.gonogo.co.za/brand">
   <meta property="og:type" content="article">
-  <meta property="og:site_name" content="GoNoGo South Africa">
+  <meta property="og:site_name" content="GoNoGo UK">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Brand Rating & Reviews — GoNoGo South Africa">
-  <meta name="twitter:description" content="Independent brand rating and reviews on GoNoGo South Africa. 100-point scoring breakdown, customer reviews, and verdict.">
+  <meta name="twitter:title" content="Brand Rating & Reviews — GoNoGo UK">
+  <meta name="twitter:description" content="Independent brand rating and reviews on GoNoGo UK. 100-point scoring breakdown, customer reviews, and verdict.">
   <meta name="twitter:image" content="https://www.gonogo.co.za/logos/og-share.jpg">
-  <title>Brand Rating & Reviews — GoNoGo South Africa</title>
+  <title>Brand Rating & Reviews — GoNoGo UK</title>
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
@@ -89,7 +89,7 @@
 
       // === SEO: Dynamic meta tags optimised for brand name searches ===
       var verdictLabel = brand.verdict === 'TOP PERFORMER' ? 'Top Performer' : (brand.verdict === 'NOGO' ? 'No\u2011Go' : 'Go');
-      var seoTitle = brand.name + ' Reviews & Rating (' + brand.overallScore + '/100) \u2014 GoNoGo South Africa';
+      var seoTitle = brand.name + ' Reviews & Rating (' + brand.overallScore + '/100) \u2014 GoNoGo UK';
       var brandUrl = 'https://www.gonogo.co.za/brand.html?id=' + encodeURIComponent(brand.id || brandId);
       var metaDesc = brand.name + ' scored ' + brand.overallScore + '/100 (' + verdictLabel + ') in ' + brand.categoryName + ' on GoNoGo. ' + (brand.overview ? brand.overview.substring(0, 120) : 'See the full 100-point breakdown, strengths, concerns, pricing, and user reviews.');
 
@@ -536,7 +536,7 @@
                     '</span>' +
                     (reply.created_at
                       ? '<span style="margin-left:auto;font-size:var(--text-xs);color:var(--text-muted)">' +
-                          new Date(reply.created_at).toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" }) +
+                          new Date(reply.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) +
                         '</span>'
                       : '') +
                   '</div>' +

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-ZA">
+<html lang="en-GB">
 <head>
 <!--
    ______                            __
@@ -218,7 +218,7 @@
 
       <div style="padding:var(--space-6) 0;text-align:center;">
         <p class="text-xs text-muted">
-          &copy; 2026 GoNoGo South Africa
+          &copy; 2026 GoNoGo UK
         </p>
       </div>
     </main>
@@ -607,7 +607,7 @@
       var log = document.getElementById('modal-log');
       var entry = document.createElement('div');
       entry.className = 'log-entry' + (type ? ' ' + type : '');
-      var timestamp = new Date().toLocaleTimeString('en-ZA', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      var timestamp = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
       entry.textContent = (message ? '[' + timestamp + '] ' + message : '');
       log.appendChild(entry);
       log.scrollTop = log.scrollHeight;
