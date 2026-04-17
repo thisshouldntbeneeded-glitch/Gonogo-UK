@@ -7,9 +7,10 @@ const SITE_URL = 'https://www.gonogo.co.uk';
 
 export default async function handler(req, res) {
   try {
-    const [cats, brands] = await Promise.all([
+    const [cats, brands, blogPosts] = await Promise.all([
       sbGet('categories?select=slug'),
-      sbGet('brands?select=slug,category_slug,last_updated&order=last_updated.desc')
+      sbGet('brands?select=slug,category_slug,last_updated&order=last_updated.desc'),
+      sbGet('blog_posts?status=eq.published&region=eq.uk&select=slug,published_at,updated_at&order=published_at.desc')
     ]);
 
     const today = new Date().toISOString().split('T')[0];
@@ -24,6 +25,8 @@ export default async function handler(req, res) {
     xml += url(SITE_URL + '/about', today, '0.5', 'monthly');
     xml += url(SITE_URL + '/privacy', today, '0.3', 'monthly');
     xml += url(SITE_URL + '/terms', today, '0.3', 'monthly');
+    xml += url(SITE_URL + '/faq', today, '0.5', 'monthly');
+    xml += url(SITE_URL + '/cookies', today, '0.3', 'monthly');
 
     // Category pages
     for (const cat of cats) {
@@ -34,6 +37,15 @@ export default async function handler(req, res) {
     for (const brand of brands) {
       const lastmod = brand.last_updated || today;
       xml += url(SITE_URL + '/brand?id=' + brand.slug, lastmod, '0.7', 'weekly');
+    }
+
+    // Blog listing
+    xml += url(SITE_URL + '/blog.html', today, '0.7', 'daily');
+
+    // Blog posts
+    for (const post of blogPosts) {
+      const lastmod = (post.updated_at || post.published_at || today).split('T')[0];
+      xml += url(SITE_URL + '/blog-post.html?slug=' + post.slug, lastmod, '0.7', 'weekly');
     }
 
     xml += '</urlset>';
