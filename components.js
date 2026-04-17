@@ -1464,6 +1464,13 @@ const Components = {
       '<div class="auth-forgot">' +
         '<a href="#" onclick="Components.showForgotPassword(); return false;">Forgot your password?</a>' +
       '</div>' +
+      '<div style="position:relative;text-align:center;margin:var(--space-4) 0;color:var(--text-muted);font-size:var(--text-xs)">' +
+        '<span style="background:var(--bg-card);padding:0 var(--space-3);position:relative;z-index:1">or</span>' +
+        '<div style="position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border-subtle)"></div>' +
+      '</div>' +
+      '<button class="btn btn-ghost w-full" onclick="Components.showMagicLinkSignIn()" style="border:1px solid var(--border-primary)">' +
+        '<i class="fa-solid fa-wand-magic-sparkles" style="margin-right:6px"></i> Sign in with magic link' +
+      '</button>' +
       '<div class="auth-footer">' +
         'Don\'t have an account? <a href="#" onclick="Components.switchAuthTab(\'signup\'); return false;">Create one</a>' +
       '</div>'
@@ -1474,34 +1481,17 @@ const Components = {
     return (
       '<div class="form-group">' +
         '<label class="form-label">Display Name</label>' +
-        '<input type="text" id="auth-name" placeholder="How you want to appear" onkeydown="if(event.key===\'Enter\')Components.publicSignUp()">' +
+        '<input type="text" id="auth-name" placeholder="How you want to appear" onkeydown="if(event.key===\'Enter\'){var e=document.getElementById(\'auth-email\');if(e)e.focus();}">' +
       '</div>' +
       '<div class="form-group">' +
         '<label class="form-label">Email</label>' +
         '<input type="email" id="auth-email" placeholder="you@example.com" onkeydown="if(event.key===\'Enter\')Components.publicSignUp()">' +
       '</div>' +
-      '<div class="form-group">' +
-        '<label class="form-label">Password</label>' +
-        '<div style="position:relative">' +
-          '<input type="password" id="auth-password" placeholder="Min 6 characters" onkeydown="if(event.key===\'Enter\')Components.publicSignUp()">' +
-          '<button type="button" class="password-eye" onclick="Components._togglePasswordVis(\'auth-password\')" aria-label="Show password">' +
-            '<i class="fa-solid fa-eye"></i>' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
-      '<div class="form-group">' +
-        '<label class="form-label">Confirm Password</label>' +
-        '<div style="position:relative">' +
-          '<input type="password" id="auth-password-confirm" placeholder="Re-enter password" onkeydown="if(event.key===\'Enter\')Components.publicSignUp()">' +
-          '<button type="button" class="password-eye" onclick="Components._togglePasswordVis(\'auth-password-confirm\')" aria-label="Show password">' +
-            '<i class="fa-solid fa-eye"></i>' +
-          '</button>' +
-        '</div>' +
-      '</div>' +
       '<div class="auth-error" id="auth-error"></div>' +
       '<button class="btn btn-primary w-full" id="auth-submit-btn" onclick="Components.publicSignUp()">' +
-        '<i class="fa-solid fa-user-plus"></i> Create Account' +
+        '<i class="fa-solid fa-wand-magic-sparkles"></i> Send Magic Link' +
       '</button>' +
+      '<p class="text-xs text-muted" style="text-align:center;margin-top:var(--space-3);line-height:1.5">We\&#39;ll email you a secure sign-in link.<br>No password needed.</p>' +
       '<div class="auth-footer">' +
         'Already have an account? <a href="#" onclick="Components.switchAuthTab(\'signin\'); return false;">Sign in</a>' +
       '</div>'
@@ -1547,71 +1537,122 @@ const Components = {
     }
   },
 
-  async publicSignUp() {
+  showMagicLinkSignIn() {
+    var area = document.getElementById('auth-form-area');
+    if (!area) return;
+    var tabs = document.querySelector('.auth-tabs');
+    if (tabs) tabs.style.display = 'none';
+
+    area.innerHTML =
+      '<div style="text-align:center;margin-bottom:var(--space-4)">' +
+        '<i class="fa-solid fa-wand-magic-sparkles" style="font-size:36px;color:var(--green);display:block;margin-bottom:var(--space-3)"></i>' +
+        '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-2)">Magic link sign-in</h3>' +
+        '<p class="text-sm text-secondary">Enter your email and we\'ll send you a link to sign in instantly.</p>' +
+      '</div>' +
+      '<div class="form-group">' +
+        '<label class="form-label">Email</label>' +
+        '<input type="email" id="auth-magic-email" placeholder="you@example.com" onkeydown="if(event.key===\'Enter\')Components.sendMagicLink()">' +
+      '</div>' +
+      '<div class="auth-error" id="auth-error"></div>' +
+      '<button class="btn btn-primary w-full" id="auth-submit-btn" onclick="Components.sendMagicLink()">' +
+        '<i class="fa-solid fa-paper-plane"></i> Send Magic Link' +
+      '</button>' +
+      '<div class="auth-footer" style="margin-top:var(--space-4)">' +
+        '<a href="#" onclick="Components.backToSignIn(); return false;"><i class="fa-solid fa-arrow-left" style="margin-right:4px"></i> Back to Sign In</a>' +
+      '</div>';
+    setTimeout(function() {
+      var inp = document.getElementById('auth-magic-email');
+      if (inp) inp.focus();
+    }, 100);
+  },
+
+  async sendMagicLink() {
     if (!supabaseAuth) return;
-    var name = document.getElementById('auth-name').value.trim();
-    var email = document.getElementById('auth-email').value.trim();
-    var password = document.getElementById('auth-password').value;
-    var confirm = document.getElementById('auth-password-confirm').value;
+    var email = document.getElementById('auth-magic-email').value.trim();
     var errEl = document.getElementById('auth-error');
     var btn = document.getElementById('auth-submit-btn');
 
-    if (!name || !email || !password) {
-      errEl.textContent = 'Please fill in all fields.';
-      errEl.style.display = 'block';
-      return;
-    }
-    if (password.length < 6) {
-      errEl.textContent = 'Password must be at least 6 characters.';
-      errEl.style.display = 'block';
-      return;
-    }
-    if (password !== confirm) {
-      errEl.textContent = 'Passwords do not match.';
+    if (!email) {
+      errEl.textContent = 'Please enter your email address.';
       errEl.style.display = 'block';
       return;
     }
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating account...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
     errEl.style.display = 'none';
 
     try {
-      var res = await supabaseAuth.auth.signUp({
+      var res = await supabaseAuth.auth.signInWithOtp({
         email: email,
-        password: password,
         options: {
-          data: { display_name: name, region: SITE_REGION },
-          emailRedirectTo: window.location.origin + '/account#persona'
+          emailRedirectTo: window.location.origin + '/account#persona',
+          shouldCreateUser: false
         }
       });
       if (res.error) throw res.error;
 
-      // Check if email confirmation is required
-      if (res.data.user && res.data.user.identities && res.data.user.identities.length === 0) {
-        errEl.textContent = 'An account with this email already exists.';
-        errEl.style.display = 'block';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
-        return;
-      }
+      document.getElementById('auth-form-area').innerHTML =
+        '<div style="text-align:center;padding:var(--space-6) 0">' +
+          '<i class="fa-solid fa-envelope-circle-check" style="font-size:48px;color:var(--green);margin-bottom:var(--space-4);display:block"></i>' +
+          '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-3)">Check your inbox</h3>' +
+          '<p class="text-sm text-secondary" style="margin-bottom:var(--space-4)">' +
+            'If an account exists for <strong>' + Components.escapeHTML(email) + '</strong>, we\'ve sent a magic link. Click it to sign in.' +
+          '</p>' +
+          '<button class="btn btn-ghost" onclick="Components.closeAuthModal()">Close</button>' +
+        '</div>';
+    } catch (err) {
+      errEl.textContent = err.message || 'Failed to send magic link. Please try again.';
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Magic Link';
+    }
+  },
+
+  async publicSignUp() {
+    if (!supabaseAuth) return;
+    var name = document.getElementById('auth-name').value.trim();
+    var email = document.getElementById('auth-email').value.trim();
+    var errEl = document.getElementById('auth-error');
+    var btn = document.getElementById('auth-submit-btn');
+
+    if (!name || !email) {
+      errEl.textContent = 'Please enter your name and email.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending link...';
+    errEl.style.display = 'none';
+
+    try {
+      var res = await supabaseAuth.auth.signInWithOtp({
+        email: email,
+        options: {
+          data: { display_name: name, region: SITE_REGION },
+          emailRedirectTo: window.location.origin + '/account#persona',
+          shouldCreateUser: true
+        }
+      });
+      if (res.error) throw res.error;
 
       // Show confirmation message
       document.getElementById('auth-form-area').innerHTML =
         '<div style="text-align:center;padding:var(--space-6) 0">' +
           '<i class="fa-solid fa-envelope-circle-check" style="font-size:48px;color:var(--green);margin-bottom:var(--space-4);display:block"></i>' +
-          '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-3)">Check your email</h3>' +
+          '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-3)">Check your inbox</h3>' +
           '<p class="text-sm text-secondary" style="margin-bottom:var(--space-4)">' +
-            'We\'ve sent a confirmation link to <strong>' + Components.escapeHTML(email) + '</strong>. ' +
-            'Click the link to activate your account.' +
+            'We\'ve sent a magic link to <strong>' + Components.escapeHTML(email) + '</strong>. ' +
+            'Click it to sign in \u2014 no password needed.' +
           '</p>' +
           '<button class="btn btn-ghost" onclick="Components.closeAuthModal()">Close</button>' +
         '</div>';
     } catch (err) {
-      errEl.textContent = err.message || 'Sign up failed. Please try again.';
+      errEl.textContent = err.message || 'Failed to send magic link. Please try again.';
       errEl.style.display = 'block';
       btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Create Account';
+      btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Send Magic Link';
     }
   },
 
