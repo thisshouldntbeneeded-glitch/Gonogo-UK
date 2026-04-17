@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    .cat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:var(--space-4); }
-    .cat-card { padding:var(--space-4) var(--space-5); border-radius:var(--radius-lg); background:var(--surface-1); border:1px solid var(--border-primary); transition:border-color 0.15s,transform 0.15s; cursor:pointer; }
-    .cat-card:hover { border-color:rgba(17,165,81,0.3); transform:translateY(-2px); }
-    .move-btn { background:none;border:none;color:var(--text-muted);cursor:pointer;padding:4px 6px;border-radius:6px;font-size:14px;line-height:1;transition:color 0.15s,background 0.15s; }
-    .move-btn:hover { color:var(--green);background:rgba(17,165,81,0.1); }
-    .move-btn:disabled { opacity:0.2;cursor:default;background:none;color:var(--text-muted); }
+    .cat-grid { display:flex; flex-direction:column; gap:var(--space-2); }
+    .cat-card { display:flex; align-items:center; gap:var(--space-3); padding:var(--space-3) var(--space-4); border-radius:var(--radius-lg); background:var(--surface-1); border:1px solid var(--border-primary); transition:border-color 0.15s,box-shadow 0.15s; }
+    .cat-card:hover { border-color:rgba(17,165,81,0.3); }
+    .cat-card.dragging { opacity:0.4; }
+    .cat-card.drag-over { border-color:var(--green); box-shadow:0 0 0 1px var(--green); }
+    .drag-handle { cursor:grab; color:var(--text-muted); padding:4px 2px; font-size:16px; flex-shrink:0; }
+    .drag-handle:active { cursor:grabbing; }
     .cat-icon { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0; }
     .cat-meta { font-size:var(--text-xs); color:var(--text-muted); margin-top:var(--space-1); }
     .cat-badge { font-size:10px;font-weight:600;padding:2px 8px;border-radius:12px;background:rgba(17,165,81,0.12);color:var(--green); }
@@ -108,6 +109,7 @@
 
       <div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-4)">
         <button class="btn btn-secondary" onclick="closeEdit()">Cancel</button>
+        <button class="btn btn-sm" id="ep-delete" style="background:var(--red);color:#fff;border:none;display:none" onclick="deleteCat()"><i class="fa-solid fa-trash"></i> Delete</button>
         <button class="btn btn-primary" id="ep-save" onclick="saveCat()"><i class="fa-solid fa-check"></i> Save Category</button>
       </div>
     </div>
@@ -181,13 +183,8 @@
     grid.innerHTML = allCats.map(function(c, idx) {
       var cnt = brandCounts[c.slug] || 0;
       var typeLabel = c.category_type === 'branch' ? '<span class="cat-badge branch">Branch</span>' : '';
-      var upDis = idx === 0 ? ' disabled' : '';
-      var dnDis = idx === allCats.length - 1 ? ' disabled' : '';
-      return '<div class="cat-card" style="display:flex;align-items:center;gap:var(--space-3)">' +
-        '<div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0">' +
-          '<button class="move-btn"' + upDis + ' onclick="event.stopPropagation();moveCategory(' + idx + ',-1)" title="Move up"><i class="fa-solid fa-chevron-up"></i></button>' +
-          '<button class="move-btn"' + dnDis + ' onclick="event.stopPropagation();moveCategory(' + idx + ',1)" title="Move down"><i class="fa-solid fa-chevron-down"></i></button>' +
-        '</div>' +
+      return '<div class="cat-card" draggable="true" data-idx="' + idx + '">' +
+        '<div class="drag-handle" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></div>' +
         '<div style="flex:1;min-width:0;cursor:pointer" onclick="editCat(\'' + esc(c.slug) + '\')">' +
           '<div style="display:flex;align-items:center;gap:var(--space-3)">' +
             '<div class="cat-icon" style="background:' + (c.icon_color || '#11a551') + '20;color:' + (c.icon_color || '#11a551') + '"><i class="fa-solid ' + esc(c.icon || 'fa-tag') + '"></i></div>' +
@@ -199,10 +196,10 @@
               '<div class="cat-meta">' + cnt + ' brand' + (cnt !== 1 ? 's' : '') + ' · ' + esc(c.slug) + '</div>' +
             '</div>' +
           '</div>' +
-          (c.description ? '<div class="text-xs text-muted" style="margin-top:var(--space-2);line-height:1.5">' + esc(c.description) + '</div>' : '') +
         '</div>' +
       '</div>';
     }).join('');
+    initDragAndDrop();
   }
 
   function esc(s) { return Components.escapeHTML(s || ''); }
@@ -214,6 +211,7 @@
   function showAdd() {
     editingSlug = null;
     document.getElementById('ep-title').textContent = 'Add Category';
+    document.getElementById('ep-delete').style.display = 'none';
     document.getElementById('ep-name').value = '';
     document.getElementById('ep-slug').value = '';
     document.getElementById('ep-desc').value = '';
@@ -231,7 +229,8 @@
     var cat = allCats.find(function(c) { return c.slug === slug; });
     if (!cat) return;
     editingSlug = slug;
-    document.getElementById('ep-title').textContent = 'Edit — ' + cat.name;
+    document.getElementById('ep-title').textContent = 'Edit \u2014 ' + cat.name;
+    document.getElementById('ep-delete').style.display = '';
     document.getElementById('ep-name').value = cat.name;
     document.getElementById('ep-slug').value = cat.slug;
     document.getElementById('ep-desc').value = cat.description || '';
@@ -316,26 +315,87 @@
     btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-check"></i> Save Category';
   }
 
-  async function moveCategory(idx, dir) {
-    var swapIdx = idx + dir;
-    if (swapIdx < 0 || swapIdx >= allCats.length) return;
-    var a = allCats[idx], b = allCats[swapIdx];
+  // ── Drag and Drop ──
+  var dragSrcIdx = null;
+
+  function initDragAndDrop() {
+    var cards = document.querySelectorAll('.cat-card[draggable]');
+    cards.forEach(function(card) {
+      card.addEventListener('dragstart', function(e) {
+        dragSrcIdx = parseInt(card.getAttribute('data-idx'));
+        card.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', function() {
+        card.classList.remove('dragging');
+        document.querySelectorAll('.cat-card').forEach(function(c) { c.classList.remove('drag-over'); });
+      });
+      card.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        card.classList.add('drag-over');
+      });
+      card.addEventListener('dragleave', function() {
+        card.classList.remove('drag-over');
+      });
+      card.addEventListener('drop', function(e) {
+        e.preventDefault();
+        card.classList.remove('drag-over');
+        var dropIdx = parseInt(card.getAttribute('data-idx'));
+        if (dragSrcIdx === null || dragSrcIdx === dropIdx) return;
+        // Reorder in memory
+        var moved = allCats.splice(dragSrcIdx, 1)[0];
+        allCats.splice(dropIdx, 0, moved);
+        // Assign new sort_order values
+        allCats.forEach(function(c, i) { c.sort_order = i + 1; });
+        renderGrid();
+        saveSortOrder();
+      });
+    });
+  }
+
+  async function saveSortOrder() {
     try {
       var auth = GoNoGoAPI._getCallerAuth();
+      var orders = allCats.map(function(c) { return { slug: c.slug, sort_order: c.sort_order }; });
       await GoNoGoAPI.supabaseRequest('rpc/admin_reorder_categories', {
         method: 'POST',
         body: {
           p_caller_id: auth.p_caller_id,
           p_caller_hash: auth.p_caller_hash,
-          p_slug_a: a.slug,
-          p_order_a: b.sort_order,
-          p_slug_b: b.slug,
-          p_order_b: a.sort_order
+          p_orders: orders
         }
       });
+    } catch(e) {
+      Components.showToast('Failed to save order: ' + e.message, 'error');
+    }
+  }
+
+  // ── Delete Category ──
+  async function deleteCat() {
+    if (!editingSlug) return;
+    var cat = allCats.find(function(c) { return c.slug === editingSlug; });
+    var cnt = brandCounts[editingSlug] || 0;
+    if (cnt > 0) {
+      Components.showToast('Cannot delete — ' + cnt + ' brand(s) still linked. Remove them first.', 'error');
+      return;
+    }
+    if (!confirm('Delete "' + (cat ? cat.name : editingSlug) + '"? This cannot be undone.')) return;
+    try {
+      var auth = GoNoGoAPI._getCallerAuth();
+      await GoNoGoAPI.supabaseRequest('rpc/admin_delete_category', {
+        method: 'POST',
+        body: {
+          p_caller_id: auth.p_caller_id,
+          p_caller_hash: auth.p_caller_hash,
+          p_slug: editingSlug
+        }
+      });
+      Components.showToast('Category deleted', 'success');
+      closeEdit();
       await loadAll();
     } catch(e) {
-      Components.showToast('Reorder failed: ' + e.message, 'error');
+      Components.showToast('Delete failed: ' + e.message, 'error');
     }
   }
 </script>
