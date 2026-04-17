@@ -1223,12 +1223,19 @@ const Components = {
       // Show welcome modal for anonymous visitors (once per session)
       if (!session) Components._maybeShowWelcome();
     });
+    var _hadSessionOnLoad = null; // null = not yet known
     supabaseAuth.auth.onAuthStateChange(async function(event, session) {
       Components._currentUser = session ? session.user : null;
       Components._userPriorities = null;
       Components._updateNavAuth();
-      // After email confirmation redirect, nudge to persona builder if not set
-      if (event === 'SIGNED_IN' && session && !window.location.pathname.includes('/account')) {
+      // Track whether user was already signed in when the page loaded
+      if (event === 'INITIAL_SESSION') {
+        _hadSessionOnLoad = !!session;
+        return;
+      }
+      // Only nudge to persona on a genuine new sign-in (user was NOT signed in on page load)
+      if (event === 'SIGNED_IN' && _hadSessionOnLoad === false && session && !window.location.pathname.includes('/account')) {
+        _hadSessionOnLoad = true; // don't redirect again
         var pris = await Components.loadUserPriorities();
         if (!pris) {
           window.location.href = '/account#persona';
