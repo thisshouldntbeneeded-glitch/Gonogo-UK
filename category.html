@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-GB">
+<html lang="en-ZA">
 <head>
 <!--
    ______                            __
@@ -13,31 +13,41 @@
 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Compare and rate UK brands by industry. Independent 100-point scores, side-by-side comparisons, and transparent ratings on GoNoGo.">
-<meta name="keywords" content="brand comparison UK, industry ratings, company reviews, GoNoGo ratings, UK brand rankings">
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
-<link rel="canonical" href="https://www.gonogo.co.uk/category">
-<meta property="og:title" content="Brand Ratings by Industry — GoNoGo United Kingdom">
-<meta property="og:description" content="Compare and rate UK brands by industry. Independent 100-point scores and transparent ratings.">
-<meta property="og:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://www.gonogo.co.uk/category">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="GoNoGo United Kingdom">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Brand Ratings by Industry — GoNoGo United Kingdom">
-<meta name="twitter:description" content="Compare and rate UK brands by industry. Independent 100-point scores and transparent ratings.">
-<meta name="twitter:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
-  <title>Brand Ratings by Industry — GoNoGo United Kingdom</title>
-   <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="site.webmanifest">
-  <script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.classList.add('light-mode');}})();</script>
+  <meta name="description" content="Compare and rate South African brands by industry. Independent 100-point scores, side-by-side comparisons, and transparent ratings on GoNoGo.">
+  <meta name="keywords" content="brand comparison South Africa, industry ratings, company reviews, GoNoGo ratings, South Africa brand rankings">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://www.gonogo.co.za/category">
+  <meta property="og:title" content="Brand Ratings by Industry — GoNoGo South Africa">
+  <meta property="og:description" content="Compare and rate South African brands by industry. Independent 100-point scores and transparent ratings.">
+  <meta property="og:image" content="https://www.gonogo.co.za/logos/og-share.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://www.gonogo.co.za/category">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoNoGo South Africa">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Brand Ratings by Industry — GoNoGo South Africa">
+  <meta name="twitter:description" content="Compare and rate South African brands by industry. Independent 100-point scores and transparent ratings.">
+  <meta name="twitter:image" content="https://www.gonogo.co.za/logos/og-share.jpg">
+  <title>Brand Ratings by Industry — GoNoGo South Africa</title>
+
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('gonogo_theme');
+        if (t === 'light' || (!t && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+          document.documentElement.classList.add('light-mode');
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <div id="nav"></div>
@@ -45,6 +55,7 @@
     <div style="text-align:center;padding:var(--space-10);color:var(--text-muted)">Loading...</div>
   </div>
   <div id="footer"></div>
+
   <script src="data/data_partA.js"></script>
   <script src="data/data_partB.js"></script>
   <script src="data/data_partC.js"></script>
@@ -61,20 +72,21 @@
   <script>
     var slug = Components.getParam('cat');
     document.getElementById('footer').innerHTML = Components.renderFooter();
+    Components.initTheme();
+    Components.initPublicAuth();
 
-    var CATEGORY_DESCRIPTIONS = {
-      'Compliance': 'Regulatory adherence, licensing, legal standing, and industry standard compliance.',
-      'Customer Satisfaction': 'User reviews, ratings, complaint resolution, and overall customer sentiment.',
-      'Product Value': 'Quality of products/services relative to price, features, and market competitiveness.',
-      'Innovation': 'Investment in new technology, service improvements, and forward-thinking initiatives.',
-      'Customer Support': 'Responsiveness, availability, resolution quality, and support channel accessibility.',
-      'Accessibility & Security': 'Ease of access across platforms, data protection, privacy practices, and inclusive design.',
-      'Service Offering': 'Range, quality, and competitiveness of services provided to customers.',
-      'Market Presence': 'Brand visibility, market share, and reputation within the industry.',
-      'Digital Experience': 'Quality of online platforms, apps, and digital customer interactions.',
-      'Transparency': 'Clarity of pricing, terms, and communication with customers.',
-      'Sustainability': 'Environmental and social responsibility practices and commitments.'
-    };
+    var STANDARD_FRAMEWORK = [
+      { name: 'Compliance', max: 15, description: 'Regulatory adherence, licensing, legal standing, and industry standard compliance.' },
+      { name: 'Customer Satisfaction', max: 25, description: 'User reviews, ratings, complaint resolution, and overall customer sentiment.' },
+      { name: 'Product Value', max: 30, description: 'Quality of products/services relative to price, features, and market competitiveness.' },
+      { name: 'Innovation', max: 10, description: 'Investment in new technology, service improvements, and forward-thinking initiatives.' },
+      { name: 'Customer Support', max: 10, description: 'Responsiveness, availability, resolution quality, and support channel accessibility.' },
+      { name: 'Accessibility & Security', max: 10, description: 'Ease of access across platforms, data protection, privacy practices, and inclusive design.' }
+    ];
+
+    function getCategoryFramework() {
+      return STANDARD_FRAMEWORK;
+    }
 
     function renderFrameworkHTML(scoringCategories) {
       return (scoringCategories || []).map(function(sc) {
@@ -94,91 +106,205 @@
 
     (async function() {
       if (!slug) {
-        // Show all categories grid
         document.getElementById('nav').innerHTML = Components.renderPublicNav('');
-        document.title = 'All Industries — GoNoGo United Kingdom';
+        Components.updateThemeIcon();
+        document.title = 'All Industries — GoNoGo South Africa';
+
         var categories = await GoNoGoAPI.getCategoriesWithBrands();
+
         document.getElementById('page-content').innerHTML =
           '<section class="section"><div class="container">' +
             '<div class="section-header">' +
               '<h1 class="section-title">All Industries</h1>' +
-              '<p class="section-subtitle">Browse ' + categories.length + ' United Kingdom industries</p>' +
+              '<p class="section-subtitle">Browse ' + categories.length + ' South African industries</p>' +
             '</div>' +
             '<div class="industry-grid">' +
               categories.map(function(cat) {
+                var itemLabel = cat.categoryType === 'branch' ? 'branch' : 'brand';
+                var itemLabelPlural = cat.brandCount !== 1 ? (itemLabel === 'branch' ? 'es' : 's') : '';
                 return '<a href="category.html?cat=' + cat.id + '" class="industry-card ' + (cat.hasBrands ? '' : 'no-data') + '">' +
                   '<i class="fa-solid ' + cat.icon + '" style="color:' + (cat.icon_color || 'var(--green)') + '"></i>' +
                   '<div class="name">' + cat.name + '</div>' +
-                  '<div class="count">' + cat.brandCount + ' brand' + (cat.brandCount !== 1 ? 's' : '') + '</div>' +
+                  '<div class="count">' + cat.brandCount + ' ' + itemLabel + itemLabelPlural + '</div>' +
                 '</a>';
               }).join('') +
             '</div>' +
           '</div></section>';
-      } else {
-        // Load category data
-        var allCats = await GoNoGoAPI.getCategories();
-        var catInfo = null;
-        for (var i = 0; i < allCats.length; i++) {
-          if (allCats[i].id === slug) { catInfo = allCats[i]; break; }
+
+        return;
+      }
+
+      var allCats = await GoNoGoAPI.getCategories();
+      var catInfo = null;
+
+      for (var i = 0; i < allCats.length; i++) {
+        if (allCats[i].id === slug) {
+          catInfo = allCats[i];
+          break;
         }
+      }
 
-        if (!catInfo) {
-          document.getElementById('nav').innerHTML = Components.renderPublicNav('');
-          document.getElementById('page-content').innerHTML =
-            '<section class="section"><div class="container" style="text-align:center">' +
-              '<h1 class="section-title">Category Not Found</h1>' +
-              '<p class="section-subtitle" style="margin-bottom:var(--space-6)">The category "' + slug + '" does not exist.</p>' +
-              '<a href="index.html" class="btn btn-primary"><i class="fa-solid fa-house"></i> Back to Home</a>' +
-            '</div></section>';
-          return;
+      if (!catInfo) {
+        document.getElementById('nav').innerHTML = Components.renderPublicNav('');
+        Components.updateThemeIcon();
+        document.getElementById('page-content').innerHTML =
+          '<section class="section"><div class="container" style="text-align:center">' +
+            '<h1 class="section-title">Category Not Found</h1>' +
+            '<p class="section-subtitle" style="margin-bottom:var(--space-6)">The category "' + slug + '" does not exist.</p>' +
+            '<a href="index.html" class="btn btn-primary"><i class="fa-solid fa-house"></i> Back to Home</a>' +
+          '</div></section>';
+        return;
+      }
+
+      document.getElementById('nav').innerHTML = Components.renderPublicNav(slug);
+      Components.updateThemeIcon();
+
+      var isBranchCategory = catInfo.categoryType === 'branch';
+      var itemLabel = isBranchCategory ? 'branch' : 'brand';
+      var itemLabelPlural = isBranchCategory ? 'branches' : 'brands';
+
+      // === SEO: Dynamic meta tags for category pages ===
+      var seoTitle = catInfo.name + ' Ratings & Reviews — GoNoGo South Africa';
+      var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' ' + itemLabelPlural + ' in South Africa. Independent ' + catInfo.name.toLowerCase() + ' ratings using a transparent 100-point scoring framework on GoNoGo.';
+      var canonicalUrl = 'https://www.gonogo.co.za/category.html?cat=' + slug;
+
+      document.title = seoTitle;
+
+      function setMeta(attr, attrVal, content) {
+        var el = document.querySelector('meta[' + attr + '="' + attrVal + '"]');
+        if (!el) { el = document.createElement('meta'); el.setAttribute(attr, attrVal); document.head.appendChild(el); }
+        el.content = content;
+      }
+      setMeta('name', 'description', catDesc);
+      setMeta('name', 'keywords', catInfo.name + ' South Africa, ' + catInfo.name.toLowerCase() + ' ratings, ' + catInfo.name.toLowerCase() + ' comparison, best ' + catInfo.name.toLowerCase() + ' South Africa, GoNoGo ' + catInfo.name.toLowerCase());
+      setMeta('property', 'og:title', seoTitle);
+      setMeta('property', 'og:description', catDesc);
+      setMeta('property', 'og:url', canonicalUrl);
+      setMeta('name', 'twitter:title', seoTitle);
+      setMeta('name', 'twitter:description', catDesc);
+
+      var canonicalEl = document.querySelector('link[rel="canonical"]');
+      if (canonicalEl) canonicalEl.href = canonicalUrl;
+
+      // === SEO: JSON-LD structured data for category ===
+      var catJsonLD = {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        'name': catInfo.name + ' Brand Ratings — GoNoGo South Africa',
+        'description': catDesc,
+        'url': canonicalUrl,
+        'isPartOf': {
+          '@type': 'WebSite',
+          'name': 'GoNoGo South Africa',
+          'url': 'https://www.gonogo.co.za'
+        },
+        'about': {
+          '@type': 'Thing',
+          'name': catInfo.name + ' in South Africa'
         }
+      };
+      var catLdScript = document.createElement('script');
+      catLdScript.type = 'application/ld+json';
+      catLdScript.textContent = JSON.stringify(catJsonLD);
+      document.head.appendChild(catLdScript);
 
-        document.getElementById('nav').innerHTML = Components.renderPublicNav(slug);
-
-        // === SEO: Dynamic meta tags for category pages ===
-        var seoTitle = catInfo.name + ' Ratings & Reviews \u2014 GoNoGo United Kingdom';
-        var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' brands in the United Kingdom. Independent ' + catInfo.name.toLowerCase() + ' ratings using a transparent 100-point scoring framework on GoNoGo.';
-        var canonicalUrl = 'https://www.gonogo.co.uk/category.html?cat=' + slug;
-
-        document.title = seoTitle;
-
-        function setMeta(attr, attrVal, content) {
-          var el = document.querySelector('meta[' + attr + '="' + attrVal + '"]');
-          if (!el) { el = document.createElement('meta'); el.setAttribute(attr, attrVal); document.head.appendChild(el); }
-          el.content = content;
-        }
-        setMeta('name', 'description', catDesc);
-        setMeta('name', 'keywords', catInfo.name + ' UK, ' + catInfo.name.toLowerCase() + ' ratings, ' + catInfo.name.toLowerCase() + ' comparison, best ' + catInfo.name.toLowerCase() + ' UK, GoNoGo ' + catInfo.name.toLowerCase());
-        setMeta('property', 'og:title', seoTitle);
-        setMeta('property', 'og:description', catDesc);
-        setMeta('property', 'og:url', canonicalUrl);
-        setMeta('name', 'twitter:title', seoTitle);
-        setMeta('name', 'twitter:description', catDesc);
-
-        var canonicalEl = document.querySelector('link[rel="canonical"]');
-        if (canonicalEl) canonicalEl.href = canonicalUrl;
-
-        // === SEO: JSON-LD structured data for category ===
-        var catJsonLD = {
-          '@context': 'https://schema.org',
-          '@type': 'CollectionPage',
-          'name': catInfo.name + ' Brand Ratings \u2014 GoNoGo United Kingdom',
-          'description': catDesc,
-          'url': canonicalUrl,
-          'isPartOf': { '@type': 'WebSite', 'name': 'GoNoGo United Kingdom', 'url': 'https://www.gonogo.co.uk' },
-          'about': { '@type': 'Thing', 'name': catInfo.name + ' in the United Kingdom' }
-        };
-        var catLdScript = document.createElement('script');
-        catLdScript.type = 'application/ld+json';
-        catLdScript.textContent = JSON.stringify(catJsonLD);
-        document.head.appendChild(catLdScript);
-
-        var brands = await GoNoGoAPI.getBrandsByCategory(slug);
+      if (isBranchCategory) {
+        var branches = await GoNoGoAPI.getBranchesByCategory(slug);
         var currentSort = 'score-desc';
 
         window.sortBrands = function(key) {
           currentSort = key;
-          if (key === 'score-desc') brands.sort(function(a, b) { return b.overallScore - a.overallScore; });
+          if (key === 'score-desc') branches.sort(function(a, b) { return b.total_score - a.total_score; });
+          else if (key === 'score-asc') branches.sort(function(a, b) { return a.total_score - b.total_score; });
+          else if (key === 'name-asc') branches.sort(function(a, b) { return a.branch_name.localeCompare(b.branch_name); });
+          else if (key === 'name-desc') branches.sort(function(a, b) { return b.branch_name.localeCompare(a.branch_name); });
+          renderBranches();
+        };
+
+        function renderBranchCard(b, i) {
+          var stagger = i < 6 ? ' stagger-' + (i + 1) : '';
+          var scoreColor = getScoreColor(b.total_score);
+          var verdictClass = b.verdict === 'GO' ? 'go' : b.verdict === 'NOGO' ? 'nogo' : 'caution';
+
+          return '<a href="branch.html?id=' + b.branch_id + '" class="brand-card animate-in' + stagger + '" style="text-decoration:none">' +
+            '<div class="brand-card-top">' +
+              '<div style="width:48px;height:48px;border-radius:var(--radius-lg);background:var(--surface-3);display:flex;align-items:center;justify-content:center;font-size:var(--text-lg);flex-shrink:0">' +
+                '<i class="fa-solid fa-building-columns" style="color:var(--green)"></i>' +
+              '</div>' +
+              '<div class="brand-card-info">' +
+                '<div class="brand-card-name">' + b.branch_name + '</div>' +
+                '<div class="brand-card-meta">' +
+                  '<span class="verdict-badge verdict-' + verdictClass + '">' + b.verdict + '</span>' +
+                  '<span class="score-badge" style="color:' + scoreColor + '">' + b.total_score + '/100</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="brand-card-stats" style="font-size:var(--text-xs);color:var(--text-secondary)">' +
+              '<span><i class="fa-solid fa-map-marker-alt"></i> ' + b.province + '</span>' +
+              '<span><i class="fa-solid fa-user-tie"></i> ' + (b.manager || 'N/A') + '</span>' +
+            '</div>' +
+          '</a>';
+        }
+
+        function renderBranches() {
+          var grid = document.getElementById('brand-grid');
+          grid.innerHTML = branches.map(function(b, i) { return renderBranchCard(b, i); }).join('');
+          document.querySelectorAll('.sort-btn').forEach(function(btn) {
+            btn.classList.toggle('active', btn.dataset.sort === currentSort);
+          });
+        }
+
+        var frameworkHTML = renderFrameworkHTML(STANDARD_FRAMEWORK);
+
+        document.getElementById('page-content').innerHTML =
+          '<section class="section-sm" style="border-bottom:1px solid var(--border-primary)"><div class="container">' +
+            '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-2)">' +
+              '<a href="index.html" style="color:var(--text-muted);font-size:var(--text-sm)"><i class="fa-solid fa-arrow-left"></i> Home</a>' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-4)">' +
+              '<div style="width:56px;height:56px;border-radius:var(--radius-lg);background:var(--green-bg);border:1px solid var(--green-dim);display:flex;align-items:center;justify-content:center;font-size:var(--text-xl)">' +
+                '<i class="fa-solid ' + catInfo.icon + '" style="color:' + (catInfo.icon_color || 'var(--green)') + '"></i>' +
+              '</div>' +
+              '<div>' +
+                '<h1 style="font-size:var(--text-2xl);font-weight:800;letter-spacing:-0.02em">' + catInfo.name + '</h1>' +
+                '<p style="font-size:var(--text-sm);color:var(--text-secondary)">' + branches.length + ' branch' + (branches.length !== 1 ? 'es' : '') + ' reviewed</p>' +
+              '</div>' +
+            '</div>' +
+          '</div></section>' +
+          '<section class="section-sm" style="background:var(--surface-1);border-bottom:1px solid var(--border-primary)"><div class="container">' +
+            '<h2 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">Scoring Framework</h2>' +
+            '<p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-4)">Each ' + catInfo.name.toLowerCase() + ' branch is scored out of 100 across these weighted categories:</p>' +
+            '<div style="max-width:600px">' + frameworkHTML + '</div>' +
+          '</div></section>' +
+          '<section class="section"><div class="container">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-6)">' +
+              '<h2 style="font-size:var(--text-lg);font-weight:700">All Branches</h2>' +
+              '<div class="filter-pills">' +
+                '<button class="filter-pill sort-btn active" data-sort="score-desc" onclick="sortBrands(\'score-desc\')"><i class="fa-solid fa-arrow-down-wide-short"></i> Score ↓</button>' +
+                '<button class="filter-pill sort-btn" data-sort="score-asc" onclick="sortBrands(\'score-asc\')"><i class="fa-solid fa-arrow-up-wide-short"></i> Score ↑</button>' +
+                '<button class="filter-pill sort-btn" data-sort="name-asc" onclick="sortBrands(\'name-asc\')"><i class="fa-solid fa-arrow-down-a-z"></i> Name A–Z</button>' +
+                '<button class="filter-pill sort-btn" data-sort="name-desc" onclick="sortBrands(\'name-desc\')"><i class="fa-solid fa-arrow-up-z-a"></i> Name Z–A</button>' +
+              '</div>' +
+            '</div>' +
+            '<div class="brand-grid" id="brand-grid"></div>' +
+          '</div></section>';
+
+        renderBranches();
+      } else {
+        var brands = await GoNoGoAPI.getBrandsByCategory(slug);
+        var currentSort = 'score-desc';
+        var userPriorities = null;
+
+        window.sortBrands = function(key) {
+          currentSort = key;
+          if (key === 'for-you' && userPriorities) {
+            brands.sort(function(a, b) {
+              var sa = Components.personaWeightedScore(a.breakdown || [], userPriorities);
+              var sb = Components.personaWeightedScore(b.breakdown || [], userPriorities);
+              return sb - sa || b.overallScore - a.overallScore;
+            });
+          }
+          else if (key === 'score-desc') brands.sort(function(a, b) { return b.overallScore - a.overallScore; });
           else if (key === 'score-asc') brands.sort(function(a, b) { return a.overallScore - b.overallScore; });
           else if (key === 'name-asc') brands.sort(function(a, b) { return a.name.localeCompare(b.name); });
           else if (key === 'name-desc') brands.sort(function(a, b) { return b.name.localeCompare(a.name); });
@@ -187,7 +313,15 @@
 
         function renderBrands() {
           var grid = document.getElementById('brand-grid');
-          grid.innerHTML = brands.map(function(brand, i) { return Components.renderBrandCard(brand, i); }).join('');
+          grid.innerHTML = brands.map(function(brand, i) {
+            var card = Components.renderBrandCard(brand, i);
+            if (currentSort === 'for-you' && userPriorities) {
+              var match = Components.personaWeightedScore(brand.breakdown || [], userPriorities);
+              var matchBadge = '<div style="text-align:center;padding:4px 0 2px;font-size:11px;font-weight:600;color:var(--green)"><i class="fa-solid fa-fingerprint" style="margin-right:3px"></i>' + match + '% match</div>';
+              card = card.replace('</a>', matchBadge + '</a>');
+            }
+            return card;
+          }).join('');
           brands.forEach(function(brand) {
             Components.createRadarChart('radar-' + brand.id, brand, { showTicks: false, labelSize: 9, pointRadius: 2 });
           });
@@ -196,11 +330,7 @@
           });
         }
 
-        // Use the category's own scoring from Supabase, enriched with descriptions
-        var enrichedScoring = (catInfo.scoringCategories || []).map(function(sc) {
-          return { name: sc.name, max: sc.max, description: sc.description || CATEGORY_DESCRIPTIONS[sc.name] || '' };
-        });
-        var frameworkHTML = renderFrameworkHTML(enrichedScoring);
+        var frameworkHTML = renderFrameworkHTML(STANDARD_FRAMEWORK);
 
         document.getElementById('page-content').innerHTML =
           '<section class="section-sm" style="border-bottom:1px solid var(--border-primary)"><div class="container">' +
@@ -225,15 +355,44 @@
           '<section class="section"><div class="container">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-6)">' +
               '<h2 style="font-size:var(--text-lg);font-weight:700">All Brands</h2>' +
-              '<div class="filter-pills">' +
-                '<button class="filter-pill sort-btn active" data-sort="score-desc" onclick="sortBrands(\'score-desc\')"><i class="fa-solid fa-arrow-down-wide-short"></i> Score ↓</button>' +
-                '<button class="filter-pill sort-btn" data-sort="score-asc" onclick="sortBrands(\'score-asc\')"><i class="fa-solid fa-arrow-up-wide-short"></i> Score ↑</button>' +
-                '<button class="filter-pill sort-btn" data-sort="name-asc" onclick="sortBrands(\'name-asc\')"><i class="fa-solid fa-arrow-down-a-z"></i> Name A–Z</button>' +
-                '<button class="filter-pill sort-btn" data-sort="name-desc" onclick="sortBrands(\'name-desc\')"><i class="fa-solid fa-arrow-up-z-a"></i> Name Z–A</button>' +
+              '<div class="filter-pills" id="sort-pills">' +
+                '<button class="filter-pill sort-btn active" data-sort="score-desc" onclick="sortBrands(\'score-desc\')"><i class="fa-solid fa-arrow-down-wide-short"></i> Score \u2193</button>' +
+                '<button class="filter-pill sort-btn" data-sort="score-asc" onclick="sortBrands(\'score-asc\')"><i class="fa-solid fa-arrow-up-wide-short"></i> Score \u2191</button>' +
+                '<button class="filter-pill sort-btn" data-sort="name-asc" onclick="sortBrands(\'name-asc\')"><i class="fa-solid fa-arrow-down-a-z"></i> Name A\u2013Z</button>' +
+                '<button class="filter-pill sort-btn" data-sort="name-desc" onclick="sortBrands(\'name-desc\')"><i class="fa-solid fa-arrow-up-z-a"></i> Name Z\u2013A</button>' +
               '</div>' +
             '</div>' +
+            '<div id="persona-cta"></div>' +
             '<div class="brand-grid" id="brand-grid"></div>' +
           '</div></section>';
+
+        // Load persona and enhance if available
+        (async function() {
+          var pris = await Components.loadUserPriorities();
+          var pills = document.getElementById('sort-pills');
+          var cta = document.getElementById('persona-cta');
+          if (pris) {
+            userPriorities = pris;
+            // Add "For You" pill at the start
+            var forYouBtn = document.createElement('button');
+            forYouBtn.className = 'filter-pill sort-btn';
+            forYouBtn.dataset.sort = 'for-you';
+            forYouBtn.onclick = function() { sortBrands('for-you'); };
+            forYouBtn.innerHTML = '<i class="fa-solid fa-fingerprint"></i> For You';
+            forYouBtn.style.cssText = 'background:var(--green);color:#fff;border-color:var(--green);';
+            pills.insertBefore(forYouBtn, pills.firstChild);
+          } else if (!Components._currentUser && cta) {
+            // Subtle CTA for anonymous users
+            cta.innerHTML =
+              '<div style="background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-lg);padding:var(--space-4) var(--space-5);margin-bottom:var(--space-6);display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap">' +
+                '<div style="flex:1;min-width:200px">' +
+                  '<div style="font-weight:700;font-size:var(--text-sm);margin-bottom:2px"><i class="fa-solid fa-fingerprint" style="color:var(--green);margin-right:var(--space-2)"></i>Personalised rankings</div>' +
+                  '<div style="font-size:var(--text-xs);color:var(--text-secondary)">Create a free account and tell us what matters most to you. We\u2019ll re-rank brands based on your priorities.</div>' +
+                '</div>' +
+                '<button class="btn btn-sm" onclick="Components.showAuthModal()" style="background:var(--green);color:#fff;white-space:nowrap">Get Started</button>' +
+              '</div>';
+          }
+        })();
 
         renderBrands();
       }

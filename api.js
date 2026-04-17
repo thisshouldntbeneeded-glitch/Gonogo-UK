@@ -132,6 +132,7 @@ var GoNoGoAPI = (function () {
       reviewed_at: row.reviewed_at || '',
       created_at: row.created_at || '',
       internal_score_justification: row.internal_score_justification || '',
+      breakdown: row.framework_breakdown || [],
       scoring_breakdown: row.scoring_breakdown || null,
       is_active: row.is_active !== false,
       status: row.status || 'live'
@@ -477,7 +478,7 @@ var GoNoGoAPI = (function () {
               reviewtext: r.review_text,
               verdict: r.verdict || '',
               branch: r.branch || '',
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });
@@ -513,7 +514,7 @@ var GoNoGoAPI = (function () {
               ReviewText: r.review_text,
               verdict: r.verdict || '',
               branch: r.branch || '',
-              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              createdat: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               created_at: r.created_at,
               status: r.status,
               Status: r.status
@@ -854,7 +855,7 @@ var GoNoGoAPI = (function () {
               review_text: r.review_text,
               verdict: r.verdict || '',
               created_at: r.created_at,
-              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+              date: r.created_at ? new Date(r.created_at).toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
               status: r.status
             };
           });

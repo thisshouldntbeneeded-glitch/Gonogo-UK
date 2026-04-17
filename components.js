@@ -1,4 +1,4 @@
-// GoNoGo UK — Shared Components
+// GoNoGo SA — Shared Components
 // Reusable rendering functions for public and admin pages
 
 const LOGO_URL = 'logos/gonogo-square.jpg';
@@ -127,6 +127,7 @@ const Components = {
     const links = [
       { href: 'admin.html', label: 'Dashboard', icon: 'fa-gauge', id: 'dashboard' },
       { href: 'admin-brands.html', label: 'Brands', icon: 'fa-tags', id: 'brands' },
+      { href: 'admin-categories.html', label: 'Categories', icon: 'fa-folder-open', id: 'categories' },
       { href: 'admin-comments.html', label: 'Comments', icon: 'fa-comments', id: 'comments' },
       { href: 'admin-research.html', label: 'Research', icon: 'fa-flask', id: 'research' },
       { href: 'admin-api.html', label: 'API Portal', icon: 'fa-plug', id: 'api' },
@@ -142,7 +143,7 @@ const Components = {
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1a3d2e;color:#11a551;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
-          <i class="fa-solid fa-globe"></i> United Kingdom
+          <i class="fa-solid fa-globe"></i> South Africa
         </div>
         <nav class="admin-sidebar-nav">
           ${links.map(l => `
@@ -235,7 +236,7 @@ const Components = {
     banner.className = 'cookie-banner';
     banner.id = 'cookie-banner';
     banner.innerHTML =
-      '<p>We use essential cookies to keep this site working and optional analytics cookies to understand how it is used and improve our content. Google Analytics will only run if you click "Accept". By choosing an option you are making an informed choice under the UK General Data Protection Regulation (UK GDPR). For details, please see our <a href="privacy.html">Privacy Policy</a> and <a href="cookies.html">Cookie Policy</a>.</p>' +
+      '<p>We use essential cookies to keep this site working and optional analytics cookies to understand how it is used and improve our content. Google Analytics will only run if you click "Accept". By choosing an option you are making an informed choice under the Protection of Personal Information Act (POPIA). For details, please see our <a href="privacy.html">Privacy Policy</a> and <a href="cookies.html">Cookie Policy</a>.</p>' +
       '<div class="cookie-banner-buttons">' +
         '<button class="cookie-btn-reject" onclick="Components.cookieReject()">Reject</button>' +
         '<button class="cookie-btn-accept" onclick="Components.cookieAccept()">Accept</button>' +
@@ -377,7 +378,7 @@ const Components = {
               <a href="privacy.html">Privacy Policy</a>
               <a href="cookies.html">Cookie Policy</a>
               <a href="terms.html">Terms & Conditions</a>
-              <a href="https://www.gonogo.co.za" target="_blank" rel="noopener noreferrer">GoNoGo SA</a>
+              <a href="https://www.gonogo.co.uk" target="_blank" rel="noopener noreferrer">GoNoGo UK</a>
             </div>
             <div class="footer-attribution">
               &copy; 2026 GoNoGo Ratings and Reviews Ltd. All rights reserved.
@@ -723,7 +724,7 @@ const Components = {
   formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
   },
 
   formatRelativeDate(dateStr) {
@@ -1178,7 +1179,7 @@ const Components = {
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1a3d2e;color:#11a551;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">
-          <i class="fa-solid fa-globe"></i> United Kingdom
+          <i class="fa-solid fa-globe"></i> South Africa
         </div>
         <div style="padding:8px 16px;margin-top:4px;font-size:var(--text-sm);color:var(--text-secondary);font-weight:600;">
           <i class="fa-solid fa-building" style="color:var(--green);margin-right:6px;"></i> ${brandName}
@@ -1218,9 +1219,17 @@ const Components = {
       // Show welcome modal for anonymous visitors (once per session)
       if (!session) Components._maybeShowWelcome();
     });
-    supabaseAuth.auth.onAuthStateChange(function(event, session) {
+    supabaseAuth.auth.onAuthStateChange(async function(event, session) {
       Components._currentUser = session ? session.user : null;
+      Components._userPriorities = null;
       Components._updateNavAuth();
+      // After email confirmation redirect, nudge to persona builder if not set
+      if (event === 'SIGNED_IN' && session && !window.location.pathname.includes('/account')) {
+        var pris = await Components.loadUserPriorities();
+        if (!pris) {
+          window.location.href = '/account#persona';
+        }
+      }
     });
   },
 
@@ -1683,9 +1692,59 @@ const Components = {
   async publicSignOut() {
     if (!supabaseAuth) return;
     await supabaseAuth.auth.signOut();
+    Components._userPriorities = null;
     Components.showToast('You have been signed out.');
-    // Close dropdown if open
     var dd = document.getElementById('auth-dropdown-desktop');
     if (dd) dd.classList.remove('open');
+  },
+
+  // ============================================================
+  // PERSONA — shared across pages
+  // ============================================================
+  _userPriorities: null,
+  _CAT_MAP: {
+    compliance: 'Compliance', satisfaction: 'Customer Satisfaction',
+    product_value: 'Product Value', innovation: 'Innovation',
+    customer_support: 'Customer Support', accessibility: 'Accessibility & Security'
+  },
+
+  async loadUserPriorities() {
+    if (this._userPriorities) return this._userPriorities;
+    if (!supabaseAuth || !this._currentUser) return null;
+    try {
+      var sess = await supabaseAuth.auth.getSession();
+      if (!sess.data.session) return null;
+      var r = await fetch(
+        'https://fnpxaneextqidbessnej.supabase.co/rest/v1/profiles?id=eq.' + this._currentUser.id + '&select=priorities',
+        { headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZucHhhbmVleHRxaWRiZXNzbmVqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5NzI5NzUsImV4cCI6MjA4ODU0ODk3NX0.dX140oHkk_AfBjFPo-MfJvMVJLsJ7WJJZGAIJBeC10I', 'Authorization': 'Bearer ' + sess.data.session.access_token } }
+      );
+      var rows = await r.json();
+      if (rows && rows.length && rows[0].priorities && rows[0].priorities.length >= 3) {
+        this._userPriorities = rows[0].priorities;
+        return this._userPriorities;
+      }
+    } catch (e) { /* silent */ }
+    return null;
+  },
+
+  personaWeightedScore(breakdown, priorities) {
+    if (!priorities || priorities.length < 3 || !breakdown || !breakdown.length) return 0;
+    var weights = [3, 2, 1], total = 0, maxW = 0;
+    for (var i = 0; i < 3; i++) {
+      var catName = this._CAT_MAP[priorities[i]];
+      if (!catName) continue;
+      for (var j = 0; j < breakdown.length; j++) {
+        var bc = breakdown[j].category || '';
+        if (bc === catName || bc.replace(' & ', ' &amp; ') === catName || bc.replace('&amp;', '&') === catName) {
+          var parts = (breakdown[j].score || '').split('/');
+          if (parts.length === 2) {
+            var earned = parseFloat(parts[0]), max = parseFloat(parts[1]);
+            if (max > 0) { total += (earned / max) * weights[i]; maxW += weights[i]; }
+          }
+          break;
+        }
+      }
+    }
+    return maxW > 0 ? Math.round(total / maxW * 100) : 0;
   }
 };
