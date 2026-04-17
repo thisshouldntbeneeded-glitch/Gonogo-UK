@@ -1144,7 +1144,8 @@ const Components = {
       display_name: admin.display_name + ' (viewing ' + name + ')',
       role: 'admin',
       brand_slug: slug,
-      region: admin.region
+      region: admin.region,
+      tier: 'full'
     };
     Components._brandUser = user;
     GoNoGoStorage.set('brandUser', user);
@@ -1166,16 +1167,19 @@ const Components = {
   renderBrandSidebar(activePage) {
     const user = this.getBrandUser();
     const brandName = user ? Components.escapeHTML(user.display_name || user.brand_slug || 'Brand') : 'Brand Portal';
-    const links = [
-      { href: 'brand-dashboard.html', label: 'Dashboard', icon: 'fa-gauge', id: 'dashboard' },
-      { href: 'brand-reviews.html', label: 'Reviews', icon: 'fa-comments', id: 'reviews' },
-      { href: 'brand-badge.html', label: 'Score Badge', icon: 'fa-code', id: 'badge' },
-      { href: 'brand-qr.html', label: 'Review QR', icon: 'fa-qrcode', id: 'qr' }
+    const userTier = (user && user.tier) || 'basic';
+    const isFullAccess = userTier === 'full' || (user && user.role === 'admin');
+    const allLinks = [
+      { href: 'brand-dashboard.html', label: 'Dashboard', icon: 'fa-gauge', id: 'dashboard', fullOnly: true },
+      { href: 'brand-reviews.html', label: 'Reviews', icon: 'fa-comments', id: 'reviews', fullOnly: false },
+      { href: 'brand-badge.html', label: 'Score Badge', icon: 'fa-code', id: 'badge', fullOnly: true },
+      { href: 'brand-qr.html', label: 'Review QR', icon: 'fa-qrcode', id: 'qr', fullOnly: true }
     ];
+    const links = allLinks.filter(function(l) { return isFullAccess || !l.fullOnly; });
 
     return `
       <aside class="admin-sidebar" id="admin-sidebar">
-        <a href="brand-dashboard.html" class="logo">
+        <a href="${isFullAccess ? 'brand-dashboard.html' : 'brand-reviews.html'}" class="logo">
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1a2d4d;color:#3b82f6;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">

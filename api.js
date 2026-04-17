@@ -646,7 +646,7 @@ var GoNoGoAPI = (function () {
       });
     },
 
-    addBrandUser: function (email, password, displayName, brandSlug, region) {
+    addBrandUser: function (email, password, displayName, brandSlug, region, tier) {
       var auth = this._getCallerAuth();
       return this._hashPassword(password).then(function (hash) {
         return supabaseRequest('rpc/admin_add_brand_user', {
@@ -656,11 +656,20 @@ var GoNoGoAPI = (function () {
             p_hash: hash,
             p_display_name: displayName || '',
             p_brand_slug: brandSlug,
-            p_region: region || SITE_REGION
+            p_region: region || SITE_REGION,
+            p_tier: tier || 'basic'
           }, auth)
         });
       }).then(function (rows) {
         return { ok: true, user: rows && rows[0] ? rows[0] : null };
+      });
+    },
+
+    updateBrandTier: function (userId, tier) {
+      var auth = this._getCallerAuth();
+      return supabaseRequest('rpc/admin_update_brand_tier', {
+        method: 'POST',
+        body: Object.assign({ p_user_id: userId, p_tier: tier }, auth)
       });
     },
 

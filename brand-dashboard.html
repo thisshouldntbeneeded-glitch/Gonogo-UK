@@ -1099,7 +1099,12 @@
     document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('dashboard');
 
     if (Components.checkBrandAuth()) {
-      initBrandPage();
+      var _bu = Components.getBrandUser();
+      if (_bu && _bu.role !== 'admin' && _bu.tier !== 'full') {
+        window.location.href = 'brand-reviews.html';
+      } else {
+        initBrandPage();
+      }
     }
 
     var LIVE_PUBLIC_BASE_URL = 'https://www.gonogo.co.uk';
