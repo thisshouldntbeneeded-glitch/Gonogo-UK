@@ -271,6 +271,28 @@
     .pp-grid { grid-template-columns: 1fr; }
     .af-row { flex-direction: column; align-items: flex-start; }
   }
+  .reco-card {
+    display: block;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  }
+  .reco-card:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(17,165,81,0.3);
+    transform: translateY(-1px);
+  }
+  .reco-match {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--green);
+    background: rgba(17,165,81,0.12);
+    padding: 2px 8px;
+    border-radius: 12px;
+    white-space: nowrap;
+  }
 </style>
 </head>
 <body>
@@ -307,29 +329,29 @@
     // Categories & Persona engine
     // ═══════════════════════════════════════════════════════
     var CATS = [
-      { key: 'product_value',    name: 'Product Value',         icon: 'fa-solid fa-coins',          desc: 'Fair pricing, quality for money, transparent costs' },
-      { key: 'innovation',       name: 'Innovation',            icon: 'fa-solid fa-lightbulb',      desc: 'Tech-forward, inventive features, industry disruption' },
-      { key: 'customer_support', name: 'Customer Support',      icon: 'fa-solid fa-headset',        desc: 'Responsive help, issue resolution, human touch' },
-      { key: 'compliance',       name: 'Compliance',            icon: 'fa-solid fa-scale-balanced', desc: 'Regulatory adherence, ethical practices, data protection' },
-      { key: 'sustainability',   name: 'Sustainability',        icon: 'fa-solid fa-leaf',           desc: 'Environmental impact, social responsibility, ESG' },
-      { key: 'satisfaction',     name: 'Customer Satisfaction', icon: 'fa-solid fa-face-smile',     desc: 'Overall experience, loyalty, would-recommend score' }
+      { key: 'compliance',       name: 'Compliance & Regulation',   icon: 'fa-solid fa-scale-balanced', desc: 'Licensing, regulatory standing, industry body memberships, and legal compliance' },
+      { key: 'satisfaction',     name: 'Customer Satisfaction',     icon: 'fa-solid fa-face-smile',     desc: 'Real user feedback, review signals, complaint trends, and overall customer sentiment' },
+      { key: 'product_value',    name: 'Product Value',             icon: 'fa-solid fa-coins',          desc: 'Pricing fairness, feature depth, fee transparency, and value for money' },
+      { key: 'innovation',       name: 'Innovation',                icon: 'fa-solid fa-lightbulb',      desc: 'Technology adoption, digital experience, differentiation, and forward-thinking delivery' },
+      { key: 'customer_support', name: 'Customer Support',          icon: 'fa-solid fa-headset',        desc: 'Support access, responsiveness, issue resolution quality, and ease of getting help' },
+      { key: 'accessibility',    name: 'Accessibility & Security',  icon: 'fa-solid fa-shield-halved',  desc: 'Platform accessibility, security standards, privacy practices, and inclusive design' }
     ];
     var PERSONAS = {
       product_value:    { name: 'The Sharp Spender',      icon: '💰', tagline: 'You hold brands to account on value. Every pound must earn its place.' },
       innovation:       { name: 'The Early Adopter',      icon: '🚀', tagline: 'You chase what\'s next. If a brand isn\'t pushing boundaries, it\'s falling behind.' },
       customer_support: { name: 'The Experience Seeker',  icon: '🤝', tagline: 'You believe brands are only as good as how they treat people when things go wrong.' },
       compliance:       { name: 'The Watchdog',           icon: '🔍', tagline: 'Rules matter. You trust brands that play by the book and protect your rights.' },
-      sustainability:   { name: 'The Conscious Consumer', icon: '🌱', tagline: 'Planet over profit. You back brands making a genuine effort, not just greenwashing.' },
+      accessibility:     { name: 'The Access Advocate',    icon: '🔓', tagline: 'Everyone deserves access. You back brands that are secure, inclusive, and easy to reach.' },
       satisfaction:     { name: 'The Loyalist',           icon: '⭐', tagline: 'Results speak loudest. If a brand delivers consistently, you\'ll stick with it.' }
     };
     var COMBOS = {
       'product_value+innovation':       { name: 'The Smart Investor',       icon: '🧠', tagline: 'You want cutting-edge quality without the premium markup. Value meets vision.' },
       'product_value+customer_support':  { name: 'The Fair Dealer',         icon: '⚖️', tagline: 'Good value backed by great service — that\'s your non-negotiable baseline.' },
-      'innovation+sustainability':       { name: 'The Future Builder',      icon: '🌍', tagline: 'Innovation should serve the planet, not just shareholders. You demand both.' },
+      'innovation+accessibility':        { name: 'The Future Builder',      icon: '🌍', tagline: 'Innovation should serve everyone. You demand cutting-edge tech that\'s accessible and secure.' },
       'innovation+compliance':           { name: 'The Ethical Technologist',icon: '🔬', tagline: 'Move fast, but don\'t break trust. You want progress within guardrails.' },
       'customer_support+satisfaction':   { name: 'The People Person',       icon: '💬', tagline: 'Happy customers aren\'t an accident. You notice when brands genuinely care.' },
-      'sustainability+compliance':       { name: 'The Principled Buyer',    icon: '🏛️', tagline: 'Doing right by law and planet. You hold brands to the highest standard.' },
-      'sustainability+product_value':    { name: 'The Mindful Spender',     icon: '🧘', tagline: 'Sustainable shouldn\'t mean expensive. You seek impact-per-pound efficiency.' },
+      'accessibility+compliance':        { name: 'The Principled Buyer',    icon: '🏛️', tagline: 'Compliant and accessible. You hold brands to the highest standard on both fronts.' },
+      'accessibility+product_value':     { name: 'The Mindful Spender',     icon: '🧘', tagline: 'Good access shouldn\'t cost a premium. You seek reach-per-pound efficiency.' },
       'compliance+customer_support':     { name: 'The Trust Seeker',        icon: '🛡️', tagline: 'Compliant and caring — you need brands to earn trust at every touchpoint.' },
       'satisfaction+innovation':         { name: 'The Optimist',            icon: '✨', tagline: 'Great experiences powered by smart ideas. You\'re drawn to brands that delight.' },
       'satisfaction+product_value':      { name: 'The Pragmatist',          icon: '🎯', tagline: 'Does it work well? Is it worth it? If yes and yes, you\'re in.' }
@@ -495,6 +517,8 @@
 
           '</div>' + // acct-content
         '</div>'; // acct-layout
+      // Load recommendations after page render if persona exists
+      if (hasPers) setTimeout(function() { loadRecommendations(_profile.priorities); }, 50);
     })();
 
     // ═══════════════════════════════════════════════════════
@@ -507,8 +531,17 @@
           '<span class="t-badge"></span><span class="t-icon"><i class="' + c.icon + '"></i></span>' +
           '<div class="t-name">' + c.name + '</div><div class="t-desc">' + c.desc + '</div></div>';
       }).join('');
-      return '<h2><i class="fa-solid fa-fingerprint"></i> Your Consumer Persona</h2>' +
-        '<div class="pp-intro"><strong>What matters most to you when choosing a brand?</strong> Pick your top 3 in order of importance. We\'ll build your consumer persona and use it to tailor your GoNoGo experience.</div>' +
+      var isOnboarding = window.location.hash === '#persona' && !_profile;
+      var welcomeHTML = isOnboarding
+        ? '<div style="text-align:center;margin-bottom:var(--space-6);padding:var(--space-5) 0 0">' +
+            '<div style="font-size:40px;margin-bottom:var(--space-3)">\uD83D\uDC4B</div>' +
+            '<h2 style="font-size:var(--text-xl);font-weight:800;margin-bottom:var(--space-2)">Welcome to GoNoGo</h2>' +
+            '<p style="color:var(--text-secondary);font-size:var(--text-sm);max-width:42ch;margin:0 auto">Let\u2019s personalise your experience. Tell us what matters most when you\u2019re choosing a brand, and we\u2019ll rank them your way.</p>' +
+          '</div>'
+        : '';
+      return welcomeHTML +
+        '<h2><i class="fa-solid fa-fingerprint"></i> ' + (isOnboarding ? 'Choose What Matters to You' : 'Your Consumer Persona') + '</h2>' +
+        '<div class="pp-intro"><strong>Pick your top 3 priorities in order of importance.</strong> We\'ll build your consumer persona and use it to tailor your GoNoGo experience.</div>' +
         '<div class="pp-grid">' + tiles + '</div>' +
         '<div class="pp-counter" id="pp-count">Tap your <strong>first</strong> priority</div>' +
         '<div class="acct-toast" id="t-persona"></div>' +
@@ -537,6 +570,7 @@
         await patchProfile({ priorities: _picks, persona: persona.name, persona_set_at: new Date().toISOString(), updated_at: new Date().toISOString() });
         _profile = { priorities: _picks, persona: persona.name };
         document.getElementById('persona-card').innerHTML = renderPersonaResult(_picks);
+        loadRecommendations(_picks);
         // Remove the NEW badge from tab
         var badge = document.querySelector('.acct-tab[data-tab="persona"] .tab-badge');
         if (badge) badge.remove();
@@ -575,13 +609,133 @@
           '<div class="pr-chips">' + chips + '</div>' +
         '</div>' +
         '<div class="pri-bars">' + bars + '</div>' +
-        '<div style="text-align:center;padding-top:var(--space-5)">' +
+        '<div id="reco-section" style="margin-top:var(--space-6)">' +
+          '<div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-1)"><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--green)"></i><h3 style="font-size:var(--text-base);font-weight:700;margin:0">Recommended for You</h3></div>' +
+          '<p class="text-xs text-muted" style="margin-bottom:var(--space-4)">Top-scoring brands based on your priorities. Weighted by what matters most to you.</p>' +
+          '<div id="reco-grid" style="display:grid;gap:var(--space-3)"><div class="text-sm text-muted" style="text-align:center;padding:var(--space-4)"><i class="fa-solid fa-spinner fa-spin"></i> Finding your best matches...</div></div>' +
+        '</div>' +
+        '<div style="text-align:center;padding-top:var(--space-5);display:flex;justify-content:center;gap:var(--space-3);flex-wrap:wrap">' +
+          '<a href="index.html#categories" class="btn btn-primary"><i class="fa-solid fa-compass"></i> Browse Categories</a>' +
           '<button class="btn btn-sm btn-ghost" onclick="resetPersona()" style="color:var(--text-muted)"><i class="fa-solid fa-arrows-rotate"></i> Retake</button>' +
         '</div>';
     }
     function resetPersona() {
       _picks = [];
       document.getElementById('persona-card').innerHTML = renderPicker();
+    }
+
+    // ═══════════════════════════════════════════════════════
+    // Personalised recommendations
+    // ═══════════════════════════════════════════════════════
+    var CAT_MAP = {
+      compliance: 'Compliance', satisfaction: 'Customer Satisfaction',
+      product_value: 'Product Value', innovation: 'Innovation',
+      customer_support: 'Customer Support', accessibility: 'Accessibility & Security'
+    };
+
+    function parseScore(str) {
+      if (!str) return 0;
+      var parts = str.split('/');
+      if (parts.length !== 2) return 0;
+      var earned = parseFloat(parts[0]), max = parseFloat(parts[1]);
+      return max > 0 ? earned / max : 0;
+    }
+
+    function weightedScore(breakdown, priorities) {
+      var weights = [3, 2, 1];
+      var total = 0, maxW = 0;
+      for (var i = 0; i < priorities.length && i < 3; i++) {
+        var catName = CAT_MAP[priorities[i]];
+        if (!catName) continue;
+        for (var j = 0; j < breakdown.length; j++) {
+          if (breakdown[j].category === catName || breakdown[j].category === catName.replace(' & ', ' &amp; ')) {
+            total += parseScore(breakdown[j].score) * weights[i];
+            maxW += weights[i];
+            break;
+          }
+        }
+      }
+      return maxW > 0 ? total / maxW : 0;
+    }
+
+    async function loadRecommendations(priorities) {
+      var grid = document.getElementById('reco-grid');
+      if (!grid) return;
+      try {
+        var brands = await GoNoGoAPI.supabaseRequest(
+          'brands?region=eq.' + GoNoGoAPI.SITE_REGION +
+          '&select=slug,name,category_slug,logo_url,gonogo_score,framework_breakdown' +
+          '&framework_breakdown=not.is.null&order=gonogo_score.desc'
+        );
+        if (!brands || brands.length === 0) {
+          grid.innerHTML = '<div class="text-sm text-muted" style="text-align:center;padding:var(--space-4)">No scored brands available yet.</div>';
+          return;
+        }
+
+        var scored = brands.map(function(b) {
+          var fb = b.framework_breakdown;
+          if (typeof fb === 'string') try { fb = JSON.parse(fb); } catch(e) { fb = []; }
+          if (!Array.isArray(fb) || fb.length === 0) return null;
+          return { brand: b, match: weightedScore(fb, priorities), breakdown: fb };
+        }).filter(function(x) { return x && x.match > 0; });
+
+        scored.sort(function(a, b) { return b.match - a.match; });
+
+        var seenCats = {};
+        scored = scored.filter(function(item) {
+          var cat = item.brand.category_slug;
+          if (seenCats[cat]) return false;
+          seenCats[cat] = true;
+          return true;
+        });
+
+        var top = scored.slice(0, 6);
+        if (top.length === 0) {
+          grid.innerHTML = '<div class="text-sm text-muted" style="text-align:center;padding:var(--space-4)">Not enough scored brands to generate recommendations yet.</div>';
+          return;
+        }
+
+        var priCats = priorities.slice(0, 3).map(function(k) { return CAT_MAP[k]; });
+
+        grid.innerHTML = top.map(function(item) {
+          var b = item.brand;
+          var pct = Math.round(item.match * 100);
+          var catSlug = (b.category_slug || '').replace(/-/g, ' ').replace(/\b\w/g, function(l) { return l.toUpperCase(); });
+          var logo = b.logo_url
+            ? '<img src="' + Components.escapeHTML(b.logo_url) + '" alt="" style="width:36px;height:36px;border-radius:8px;object-fit:contain;background:rgba(255,255,255,0.06);flex-shrink:0">'
+            : '<div style="width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--green),#065f28);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:14px;color:#fff">' + (b.name || '?').charAt(0) + '</div>';
+
+          var miniBars = '';
+          for (var i = 0; i < priCats.length; i++) {
+            for (var j = 0; j < item.breakdown.length; j++) {
+              if (item.breakdown[j].category === priCats[i] || item.breakdown[j].category === priCats[i].replace(' & ', ' &amp; ')) {
+                var s = parseScore(item.breakdown[j].score);
+                var barPct = Math.round(s * 100);
+                var shortName = priCats[i].replace('Customer ', '').replace('Compliance & Regulation', 'Compliance').replace('Accessibility & Security', 'Access & Security');
+                miniBars += '<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-muted)"><span style="width:85px;text-align:right;flex-shrink:0">' + shortName + '</span><div style="flex:1;height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden"><div style="height:100%;width:' + barPct + '%;background:var(--green);border-radius:2px"></div></div><span style="width:28px">' + barPct + '%</span></div>';
+                break;
+              }
+            }
+          }
+
+          return '<a href="brand.html?id=' + encodeURIComponent(b.slug) + '" class="reco-card" style="text-decoration:none;color:inherit">' +
+            '<div style="display:flex;align-items:center;gap:var(--space-3)">' +
+              logo +
+              '<div style="flex:1;min-width:0">' +
+                '<div style="display:flex;align-items:center;gap:var(--space-2)">' +
+                  '<span style="font-weight:700;font-size:var(--text-sm)">' + Components.escapeHTML(b.name) + '</span>' +
+                  '<span class="reco-match">' + pct + '% match</span>' +
+                '</div>' +
+                '<div class="text-xs text-muted">' + catSlug + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div style="margin-top:var(--space-2);display:flex;flex-direction:column;gap:3px">' + miniBars + '</div>' +
+          '</a>';
+        }).join('');
+      } catch(e) {
+        console.error('Recommendations error:', e);
+        grid.innerHTML = '<div class="text-sm text-muted" style="text-align:center;padding:var(--space-4)">Unable to load recommendations.</div>';
+      }
     }
 
     // ═══════════════════════════════════════════════════════
