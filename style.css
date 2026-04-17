@@ -120,6 +120,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -1906,6 +1907,7 @@ textarea {
 .footer-links {
   display: flex;
   gap: var(--space-4);
+  flex-wrap: wrap;
 }
 
 .footer-links a {
@@ -2600,6 +2602,8 @@ textarea {
   flex-wrap: wrap;
   font-family: var(--font-body);
   animation: slideUp 0.3s ease-out;
+  max-width: 100vw;
+  box-sizing: border-box;
 }
 @keyframes slideUp {
   from { transform: translateY(100%); }
