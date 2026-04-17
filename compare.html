@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-GB">
+<html lang="en-ZA">
 <head>
 <!--
    ______                            __
@@ -13,29 +13,31 @@
 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Compare UK brands side by side on GoNoGo. See how they score across six categories.">
-<meta name="keywords" content="compare brands UK, brand comparison tool, side by side comparison">
-<link rel="canonical" href="https://www.gonogo.co.uk/compare">
-<meta property="og:title" content="Compare Brands — GoNoGo UK">
-<meta property="og:description" content="Compare UK brands side by side on GoNoGo. See how they score across six categories.">
-<meta property="og:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
+<meta name="description" content="Compare South African brands side by side. See how they score on Compliance, Customer Satisfaction, Product Value, and more.">
+<meta name="keywords" content="compare brands, brand comparison tool, South Africa, side by side comparison">
+<link rel="canonical" href="https://www.gonogo.co.za/compare">
+<meta property="og:title" content="Compare Brands — GoNoGo South Africa">
+<meta property="og:description" content="Compare South African brands side by side. See how they score on Compliance, Customer Satisfaction, Product Value, and more.">
+<meta property="og:image" content="https://www.gonogo.co.za/logos/og-share.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:url" content="https://www.gonogo.co.uk/compare">
+<meta property="og:url" content="https://www.gonogo.co.za/compare">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="GoNoGo United Kingdom">
+<meta property="og:site_name" content="GoNoGo South Africa">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Compare Brands — GoNoGo UK">
-<meta name="twitter:description" content="Compare UK brands side by side on GoNoGo. See how they score across six categories.">
-<meta name="twitter:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
+<meta name="twitter:title" content="Compare Brands — GoNoGo South Africa">
+<meta name="twitter:description" content="Compare South African brands side by side. See how they score on Compliance, Customer Satisfaction, Product Value, and more.">
+<meta name="twitter:image" content="https://www.gonogo.co.za/logos/og-share.jpg">
 <meta name="robots" content="index, follow">
-  <title>Compare Brands — GoNoGo United Kingdom</title>
-   <link rel="icon" href="favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="manifest" href="site.webmanifest">
-  <script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches)){document.documentElement.classList.add('light-mode');}})();</script>
+  <title>Compare Brands — GoNoGo South Africa</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})()</script>
 <style>
   .compare-winner { background: var(--green-bg); border: 1px solid var(--green-dim); border-radius: var(--radius-md); }
   .compare-similar { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); }
@@ -50,14 +52,28 @@
   .compare-verdict-banner { text-align: center; padding: var(--space-6); border-radius: var(--radius-lg); margin-bottom: var(--space-6); }
   .compare-summary-card { padding: var(--space-5); }
   .compare-summary-card p { font-size: var(--text-sm); color: var(--text-secondary); line-height: 1.7; margin: 0; }
+  /* Granular drill-down */
+  .cat-row-expandable { cursor:pointer; position:relative; }
+  .cat-row-expandable:hover { background:rgba(17,165,81,0.04); }
+  .cat-row-chevron { font-size:10px; color:var(--text-muted); transition:transform 0.2s; margin-left:4px; }
+  .cat-row-expandable.open .cat-row-chevron { transform:rotate(180deg); }
+  .granular-panel { display:none; border-top:1px dashed var(--border-subtle); padding:var(--space-3) var(--space-4); background:var(--surface-2); }
+  .granular-panel.open { display:block; }
+  .granular-criterion { display:grid; grid-template-columns:1fr auto 1fr; gap:var(--space-2); align-items:start; padding:var(--space-2) 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:var(--text-xs); }
+  .granular-criterion:last-child { border-bottom:none; }
+  .gc-score { font-weight:700; font-variant-numeric:tabular-nums; }
+  .gc-label { text-align:center; color:var(--text-muted); line-height:1.4; padding:0 var(--space-1); }
+  .gc-evidence { font-size:10px; color:var(--text-muted); line-height:1.4; margin-top:2px; }
+  .gc-left { text-align:right; }
+  .gc-right { text-align:left; }
   @media (max-width: 640px) {
     .compare-category-row { grid-template-columns: 1fr; gap: var(--space-1); text-align: center; }
     .compare-category-score.left, .compare-category-score.right { justify-content: center; }
     .compare-category-label { min-width: auto; }
+    .granular-criterion { grid-template-columns: 1fr; text-align:center; }
+    .gc-left, .gc-right { text-align:center; }
   }
 </style>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
   <div id="nav"></div>
@@ -75,10 +91,12 @@
   <script src="data/helpers.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-  <script src="components.js"></script>
+<script src="components.js"></script>
   <script src="api.js"></script>
     <script>
     document.getElementById('nav').innerHTML = Components.renderPublicNav('compare');
+    Components.initTheme();
+    Components.initPublicAuth();
     document.getElementById('footer').innerHTML = Components.renderFooter();
 
     var allBrandsCache = [];
@@ -125,9 +143,11 @@
 
       var brandsParam = Components.getParam('brands') || '';
       var preSelected = brandsParam.split(',').filter(Boolean);
-      var preId1 = preSelected[0] || '';
-      var preId2 = preSelected[1] || '';
+      // Default to an example comparison so users see the feature in action
+      var preId1 = preSelected[0] || 'avis-south-africa';
+      var preId2 = preSelected[1] || 'europcar-south-africa';
 
+      // Auto-detect category from pre-selected brands
       if (preId1) {
         var preBrand = allBrandsCache.find(function(b) { return b.id === preId1; });
         if (preBrand) selectedCategory = preBrand.categorySlug;
@@ -169,6 +189,7 @@
         var id1 = document.getElementById('brand1').value;
         var id2 = document.getElementById('brand2').value;
 
+        // Check if selected brands are still in the new category
         if (selectedCategory) {
           var b1InCat = allBrandsCache.find(function(b) { return b.id === id1 && b.categorySlug === selectedCategory; });
           var b2InCat = allBrandsCache.find(function(b) { return b.id === id2 && b.categorySlug === selectedCategory; });
@@ -221,7 +242,7 @@
 
         if (!b1 || !b2) return;
 
-        // Verdict Banner
+        // ========== Overall Verdict Banner ==========
         var scoreDiff = Math.abs(b1.overallScore - b2.overallScore);
         var leader = b1.overallScore >= b2.overallScore ? b1 : b2;
         var trailer = b1.overallScore >= b2.overallScore ? b2 : b1;
@@ -247,7 +268,7 @@
             '</div>';
         }
 
-        // Brand Cards
+        // ========== Brand Cards ==========
         var brandCardsHtml =
           '<div class="compare-grid" style="margin-bottom:var(--space-6)">' +
             '<div class="card" style="text-align:center">' +
@@ -274,7 +295,7 @@
             '</div>' +
           '</div>';
 
-        // Rating Summaries
+        // ========== Rating Summaries ==========
         var ratingSummaryHtml = '';
         if (b1.ratingSummary || b2.ratingSummary) {
           ratingSummaryHtml =
@@ -292,14 +313,14 @@
             '</div>';
         }
 
-        // Radar Chart
+        // ========== Radar Chart ==========
         var radarHtml =
           '<div class="card" style="margin-bottom:var(--space-6)">' +
             '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4);text-align:center">Score Overlay</h3>' +
             '<div style="height:340px;position:relative;max-width:500px;margin:0 auto"><canvas id="compare-radar"></canvas></div>' +
           '</div>';
 
-        // Key Differences
+        // ========== Key Differences ==========
         var allLabels = Object.keys(b1.categoryScores);
         var differences = [];
         allLabels.forEach(function(label) {
@@ -312,6 +333,7 @@
           differences.push({ label: label, pct1: pct1, pct2: pct2, diff: diff, winner: winner, s1: s1, s2: s2 });
         });
 
+        // Sort by largest difference
         var sortedDiffs = differences.slice().sort(function(a, b) { return b.diff - a.diff; });
 
         var keyDiffsHtml =
@@ -337,25 +359,28 @@
 
           var b1Highlight = d.winner === 'b1' ? 'compare-winner' : '';
           var b2Highlight = d.winner === 'b2' ? 'compare-winner' : '';
+          var safeLabel = d.label.replace(/[^a-zA-Z0-9]/g, '_');
 
           keyDiffsHtml +=
-            '<div class="compare-category-row">' +
+            '<div class="compare-category-row cat-row-expandable" data-cat="' + safeLabel + '" onclick="toggleGranular(this)">' +
               '<div class="compare-category-score left">' +
                 '<span style="padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);' + (b1Highlight ? 'background:var(--green-bg);' : '') + '">' +
                   '<span style="color:' + b1Color + '">' + (d.s1 ? d.s1.score + '/' + d.s1.max : 'N/A') + '</span>' +
                   ' <span style="color:var(--text-muted);font-size:var(--text-xs)">(' + d.pct1 + '%)</span>' +
                 '</span>' +
               '</div>' +
-              '<div class="compare-category-label">' + d.label + '<br>' + winnerChip + '</div>' +
+              '<div class="compare-category-label">' + d.label + ' <i class="fa-solid fa-chevron-down cat-row-chevron"></i><br>' + winnerChip + '</div>' +
               '<div class="compare-category-score right">' +
                 '<span style="padding:var(--space-1) var(--space-2);border-radius:var(--radius-sm);' + (b2Highlight ? 'background:var(--green-bg);' : '') + '">' +
                   '<span style="color:' + b2Color + '">' + (d.s2 ? d.s2.score + '/' + d.s2.max : 'N/A') + '</span>' +
                   ' <span style="color:var(--text-muted);font-size:var(--text-xs)">(' + d.pct2 + '%)</span>' +
                 '</span>' +
               '</div>' +
-            '</div>';
+            '</div>' +
+            '<div class="granular-panel" id="gp-' + safeLabel + '"></div>';
         });
 
+        // Overall row
         var overallB1Color = getScoreColor(b1.overallScore);
         var overallB2Color = getScoreColor(b2.overallScore);
         keyDiffsHtml +=
@@ -366,7 +391,7 @@
           '</div>' +
           '</div>';
 
-        // Category Comparison Bars
+        // ========== Category Comparison Bars (original) ==========
         var scoreRows = allLabels.map(function(label) {
           var s1 = b1.categoryScores[label];
           var s2 = b2.categoryScores[label];
@@ -404,7 +429,7 @@
             '</div>' +
           '</div>';
 
-        // Strengths & Concerns
+        // ========== Strengths & Concerns ==========
         var b1Strengths = b1.strengths.map(function(s) { return '<li><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> ' + s + '</li>'; }).join('');
         var b2Strengths = b2.strengths.map(function(s) { return '<li><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> ' + s + '</li>'; }).join('');
         var b1Concerns = b1.concerns.map(function(c) { return '<li><i class="fa-solid fa-triangle-exclamation" style="color:var(--orange)"></i> ' + c + '</li>'; }).join('');
@@ -426,11 +451,89 @@
             '</div>' +
           '</div>';
 
+        // ========== Assemble full output ==========
 resultEl.innerHTML = verdictBannerHtml + brandCardsHtml + ratingSummaryHtml + radarHtml + keyDiffsHtml + barComparisonHtml + strengthsHtml;
 
         if (radarChart) radarChart.destroy();
         radarChart = Components.createCompareRadarChart('compare-radar', b1, b2);
+
+        // Fetch granular scores for both brands and populate drill-down panels
+        loadGranularComparison(b1, b2);
       };
+
+      // ========== Granular Drill-Down ==========
+      var granularCache = {};
+      function normCat(s) { return s.replace(/&/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); }
+
+      async function loadGranularComparison(b1, b2) {
+        var g1 = await GoNoGoAPI.getBrandGranularScores(b1.id);
+        var g2 = await GoNoGoAPI.getBrandGranularScores(b2.id);
+        if (!g1 && !g2) return;
+
+        // Build normalised lookups
+        var norm1 = {}, norm2 = {};
+        if (g1) Object.keys(g1).forEach(function(k) { norm1[normCat(k)] = g1[k]; });
+        if (g2) Object.keys(g2).forEach(function(k) { norm2[normCat(k)] = g2[k]; });
+
+        // For each category in the comparison, match to granular data
+        document.querySelectorAll('.cat-row-expandable').forEach(function(row) {
+          var catKey = row.getAttribute('data-cat');
+          // Reconstruct the original label from the row text
+          var labelEl = row.querySelector('.compare-category-label');
+          var rawLabel = labelEl ? labelEl.textContent.split('\n')[0].trim() : '';
+          var nk = normCat(rawLabel);
+          var d1 = norm1[nk], d2 = norm2[nk];
+          if (!d1 && !d2) {
+            // No granular data — remove clickable styling
+            row.classList.remove('cat-row-expandable');
+            row.style.cursor = 'default';
+            var chev = row.querySelector('.cat-row-chevron');
+            if (chev) chev.remove();
+            return;
+          }
+          // Pre-build the panel HTML
+          var c1 = d1 ? d1.criteria : [];
+          var c2 = d2 ? d2.criteria : [];
+          // Merge criteria by subcategory+description
+          var allCriteria = {};
+          c1.forEach(function(c) { var key = (c.subcategory||'') + '|' + (c.description||''); allCriteria[key] = { desc: c.description, sub: c.subcategory, s1: c.score, m1: c.max, e1: c.evidence, sort: c.sort }; });
+          c2.forEach(function(c) { var key = (c.subcategory||'') + '|' + (c.description||''); if (!allCriteria[key]) allCriteria[key] = { desc: c.description, sub: c.subcategory, sort: c.sort }; allCriteria[key].s2 = c.score; allCriteria[key].m2 = c.max; allCriteria[key].e2 = c.evidence; });
+
+          var sorted = Object.values(allCriteria).sort(function(a,b) { return (a.sort||0) - (b.sort||0); });
+          var panelHtml = sorted.map(function(cr) {
+            var s1 = cr.s1 != null ? cr.s1 : '-';
+            var s2 = cr.s2 != null ? cr.s2 : '-';
+            var m = cr.m1 || cr.m2 || 0;
+            var c1 = s1 !== '-' ? getScoreColor(Math.round((s1/m)*100)) : 'var(--text-muted)';
+            var c2 = s2 !== '-' ? getScoreColor(Math.round((s2/m)*100)) : 'var(--text-muted)';
+            var winCls1 = (s1 !== '-' && s2 !== '-' && s1 > s2) ? 'color:var(--green-text);' : '';
+            var winCls2 = (s1 !== '-' && s2 !== '-' && s2 > s1) ? 'color:var(--green-text);' : '';
+            return '<div class="granular-criterion">' +
+              '<div class="gc-left">' +
+                '<span class="gc-score" style="' + winCls1 + '">' + s1 + '/' + m + '</span>' +
+                (cr.e1 ? '<div class="gc-evidence">' + Components.escapeHTML(cr.e1) + '</div>' : '') +
+              '</div>' +
+              '<div class="gc-label">' + Components.escapeHTML(cr.desc || cr.sub || '') + '</div>' +
+              '<div class="gc-right">' +
+                '<span class="gc-score" style="' + winCls2 + '">' + s2 + '/' + m + '</span>' +
+                (cr.e2 ? '<div class="gc-evidence">' + Components.escapeHTML(cr.e2) + '</div>' : '') +
+              '</div>' +
+            '</div>';
+          }).join('');
+
+          var panel = document.getElementById('gp-' + catKey);
+          if (panel) panel.innerHTML = panelHtml;
+        });
+      }
+
+      window.toggleGranular = function(row) {
+        var catKey = row.getAttribute('data-cat');
+        var panel = document.getElementById('gp-' + catKey);
+        if (!panel || !panel.innerHTML) return; // no granular data
+        row.classList.toggle('open');
+        panel.classList.toggle('open');
+      };
+
     })();
   </script>
 </body>
