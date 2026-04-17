@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GoNoGo SA — Scoring Engine</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ── Scoring-specific styles ── */
+.sector-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:var(--space-4); }
+.sector-card {
+  background:var(--color-surface,#1c1b19);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;
+  padding:20px;
+  cursor:pointer;
+  transition:border-color .2s, box-shadow .2s;
+}
+.sector-card:hover { border-color:rgba(34,197,94,0.4); box-shadow:0 4px 20px rgba(34,197,94,0.08); }
+.sector-card h3 { font-size:15px; font-weight:700; margin:0 0 8px; color:var(--color-text,#fff); }
+.sector-meta { display:flex; gap:12px; font-size:12px; color:var(--color-text-muted,rgba(255,255,255,0.55)); }
+.sector-meta span { display:flex; align-items:center; gap:4px; }
+.points-bar { height:6px; border-radius:3px; background:rgba(255,255,255,0.06); margin-top:12px; overflow:hidden; }
+.points-fill { height:100%; border-radius:3px; transition:width .3s; }
+
+/* Template table */
+.tmpl-table { width:100%; border-collapse:collapse; font-size:13px; }
+.tmpl-table th { text-align:left; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--color-text-muted,rgba(255,255,255,0.5)); padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.08); }
+.tmpl-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); color:var(--color-text,#fff); vertical-align:top; }
+.tmpl-table tr:hover td { background:rgba(255,255,255,0.02); }
+.cat-header td { font-weight:700; font-size:13px; color:var(--green-text,#22c55e); padding-top:18px; border-bottom:1px solid rgba(34,197,94,0.15); background:none !important; }
+.hard-fail-badge { font-size:10px; font-weight:700; color:var(--red-text,#ef4444); background:var(--red-bg,rgba(239,68,68,0.1)); border:1px solid var(--red-dim,rgba(239,68,68,0.2)); padding:2px 7px; border-radius:6px; white-space:nowrap; }
+.type-badge { font-size:10px; font-weight:600; padding:2px 7px; border-radius:6px; white-space:nowrap; }
+.type-binary { color:#60a5fa; background:rgba(96,165,250,0.1); border:1px solid rgba(96,165,250,0.2); }
+.type-partial { color:#a78bfa; background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.2); }
+.row-actions { display:flex; gap:4px; opacity:0; transition:opacity .15s; }
+.tmpl-table tr:hover .row-actions { opacity:1; }
+.row-actions button { width:28px; height:28px; border-radius:6px; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:12px; background:rgba(255,255,255,0.04); color:var(--color-text-muted); }
+.row-actions button:hover { background:rgba(255,255,255,0.1); color:#fff; }
+.row-actions button.del:hover { background:var(--red-bg); color:var(--red-text); }
+
+/* Points summary bar */
+.points-summary { display:flex; align-items:center; gap:16px; padding:16px 20px; background:var(--color-surface,#1c1b19); border:1px solid rgba(255,255,255,0.08); border-radius:12px; margin-bottom:var(--space-4); }
+.points-summary .pts-number { font-size:24px; font-weight:800; }
+.points-summary .pts-label { font-size:12px; color:var(--color-text-muted); }
+
+/* Modal overlay */
+.modal-backdrop { display:none; position:fixed; inset:0; z-index:900; background:rgba(0,0,0,0.55); backdrop-filter:blur(4px); align-items:center; justify-content:center; }
+.modal-backdrop.open { display:flex; }
+.modal { background:var(--color-surface,#1c1b19); border:1px solid rgba(255,255,255,0.1); border-radius:16px; width:min(560px,92vw); max-height:88vh; overflow-y:auto; box-shadow:0 24px 64px rgba(0,0,0,0.5); padding:0; }
+.modal-header { display:flex; justify-content:space-between; align-items:center; padding:20px 24px 16px; border-bottom:1px solid rgba(255,255,255,0.06); }
+.modal-header h2 { font-size:16px; font-weight:700; margin:0; color:var(--color-text,#fff); }
+.modal-close { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--color-text-muted,rgba(255,255,255,0.6)); cursor:pointer; border:none; background:none; }
+.modal-close:hover { background:rgba(255,255,255,0.06); color:#fff; }
+.modal-body { padding:20px 24px 24px; }
+.form-group { margin-bottom:14px; }
+.form-group label { display:block; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--color-text-muted,rgba(255,255,255,0.58)); margin-bottom:6px; }
+.form-group input, .form-group textarea, .form-group select { width:100%; padding:10px 12px; border-radius:10px; font-size:14px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--color-text,#fff); outline:none; box-sizing:border-box; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color:rgba(34,197,94,0.5); box-shadow:0 0 0 3px rgba(34,197,94,0.12); }
+.form-group textarea { min-height:60px; resize:vertical; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.form-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:20px; }
+
+/* Breadcrumb */
+.sc-breadcrumb { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--color-text-muted); margin-bottom:var(--space-4); }
+.sc-breadcrumb a { color:var(--green-text,#22c55e); text-decoration:none; cursor:pointer; }
+.sc-breadcrumb a:hover { text-decoration:underline; }
+
+/* Brand scoring */
+.score-input { width:70px; text-align:center; padding:6px 8px; border-radius:8px; font-size:13px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:var(--color-text,#fff); }
+.score-input:focus { border-color:rgba(34,197,94,0.5); }
+.evidence-input { width:100%; padding:6px 8px; border-radius:8px; font-size:12px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.03); color:var(--color-text,#fff); }
+.evidence-input:focus { border-color:rgba(34,197,94,0.4); }
+.brand-score-progress { display:flex; align-items:center; gap:12px; padding:12px 16px; background:rgba(34,197,94,0.05); border:1px solid rgba(34,197,94,0.15); border-radius:10px; margin-bottom:var(--space-4); }
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="admin-content" style="display:none">
+    <div class="admin-header" id="page-header">
+      <div>
+        <h1 class="admin-title" id="page-title">Scoring Engine</h1>
+        <p class="text-sm text-secondary" id="page-subtitle">Manage sector scoring templates and brand scores</p>
+      </div>
+      <div id="header-actions"></div>
+    </div>
+
+    <div id="page-body"></div>
+
+    <div style="padding:var(--space-6) 0;text-align:center">
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo South Africa</p>
+    </div>
+  </main>
+</div>
+
+<!-- Template Edit/Add Modal -->
+<div class="modal-backdrop" id="tmpl-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="tmpl-modal-title">Add Scoring Criterion</h2>
+      <button class="modal-close" onclick="closeModal('tmpl-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="tmpl-edit-id">
+      <input type="hidden" id="tmpl-edit-sector-slug">
+      <input type="hidden" id="tmpl-edit-sector-name">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Category</label>
+          <input type="text" id="tmpl-category" placeholder="e.g. Compliance" list="category-suggestions">
+          <datalist id="category-suggestions"></datalist>
+        </div>
+        <div class="form-group">
+          <label>Subcategory</label>
+          <input type="text" id="tmpl-subcategory" placeholder="e.g. Legitimacy">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Point Description</label>
+        <textarea id="tmpl-description" placeholder="Describe what this criterion measures..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Scoring Type</label>
+          <select id="tmpl-scoring-type">
+            <option value="Partial">Partial (range)</option>
+            <option value="Binary">Binary (yes/no)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Points</label>
+          <input type="number" id="tmpl-max-points" step="0.5" min="0" placeholder="5.0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Scoring Rule</label>
+        <input type="text" id="tmpl-scoring-rule" placeholder="e.g. 5.0 = strong, 2.5 = mixed, 0.0 = weak">
+      </div>
+      <div class="form-group">
+        <label>Source Examples</label>
+        <input type="text" id="tmpl-sources" placeholder="e.g. Reviews, public docs, news">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hard Fail?</label>
+          <select id="tmpl-hard-fail">
+            <option value="false">No</option>
+            <option value="true">Yes — zero score fails the brand</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Sort Order</label>
+          <input type="number" id="tmpl-sort-order" min="1" placeholder="Auto">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        <input type="text" id="tmpl-notes" placeholder="Optional internal notes">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('tmpl-modal')">Cancel</button>
+        <button class="btn btn-primary btn-sm" id="tmpl-save-btn" onclick="saveTemplate()"><i class="fa-solid fa-check"></i> Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal" style="width:min(400px,90vw)">
+    <div class="modal-header">
+      <h2>Confirm Delete</h2>
+      <button class="modal-close" onclick="closeModal('confirm-modal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-msg" style="color:var(--color-text-muted);font-size:14px;margin-bottom:20px"></p>
+      <div class="form-actions">
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('confirm-modal')">Cancel</button>
+        <button class="btn btn-sm" id="confirm-btn" style="background:var(--red-bg);color:var(--red-text);border:1px solid var(--red-dim)"><i class="fa-solid fa-trash"></i> Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="data/data_partA.js"></script>
+<script src="data/data_partB.js"></script>
+<script src="data/data_partC.js"></script>
+<script src="data/data_partD.js"></script>
+<script src="data/data_partE.js"></script>
+<script src="data/data_partF.js"></script>
+<script src="data/data.js"></script>
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════
+// GoNoGo SA — Scoring Engine (new)
+// ══════════════════════════════════════════════════════════════
+
+var SB_URL = 'https://fnpxaneextqidbessnej.supabase.co/rest/v1/';
+var SB_KEY = 'sb_publishable_132Gl37kwIXtdJc5VHtGCw_iXPxa6cW';
+
+function sbFetch(path, opts) {
+  opts = opts || {};
+  var headers = {
+    apikey: SB_KEY,
+    Authorization: 'Bearer ' + SB_KEY,
+    'Content-Type': 'application/json'
+  };
+  if (opts.prefer) headers['Prefer'] = opts.prefer;
+  else if (opts.method && opts.method !== 'GET') headers['Prefer'] = 'return=representation';
+  return fetch(SB_URL + path, {
+    method: opts.method || 'GET',
+    headers: headers,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  }).then(function(r) {
+    if (!r.ok) return r.text().then(function(t) { throw new Error('Supabase ' + r.status + ': ' + t); });
+    var ct = r.headers.get('content-type') || '';
+    if (ct.indexOf('json') !== -1) return r.json();
+    return r.text();
+  });
+}
+
+function esc(v) { return String(v == null ? '' : v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// ── State ──
+var currentView = 'sectors'; // 'sectors' | 'template' | 'brand-scoring'
+var currentSector = null;
+var sectorTemplates = [];
+var allBrands = [];
+var brandScores = {};
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('scoring');
+if (Components.checkAdminAuth()) initScoringPage();
+
+function initScoringPage() {
+  document.getElementById('admin-content').style.display = '';
+  loadSectorList();
+}
+
+// ══════════════════════════════════════════
+// VIEW 1: SECTOR LIST
+// ══════════════════════════════════════════
+function loadSectorList() {
+  currentView = 'sectors';
+  document.getElementById('page-title').textContent = 'Scoring Engine';
+  document.getElementById('page-subtitle').textContent = 'Manage sector scoring templates and brand scores';
+  document.getElementById('header-actions').innerHTML = '';
+
+  var body = document.getElementById('page-body');
+  body.innerHTML = '<div class="kpi-grid" style="margin-bottom:var(--space-5)"><div class="kpi-card"><div class="kpi-label">Loading sectors...</div></div></div>';
+
+  sbFetch('scoring_templates?select=sector_slug,sector_name,max_points&order=sector_slug,sort_order')
+    .then(function(rows) {
+      var sectors = {};
+      (rows || []).forEach(function(r) {
+        if (!sectors[r.sector_slug]) sectors[r.sector_slug] = { slug: r.sector_slug, name: r.sector_name, count: 0, total: 0 };
+        sectors[r.sector_slug].count++;
+        sectors[r.sector_slug].total += parseFloat(r.max_points) || 0;
+      });
+      var list = Object.values(sectors).sort(function(a,b) { return a.name.localeCompare(b.name); });
+      renderSectorList(list);
+    })
+    .catch(function(err) {
+      body.innerHTML = '<div class="text-sm text-muted" style="padding:var(--space-6);text-align:center"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red-text)"></i> Failed to load sectors: ' + esc(err.message) + '</div>';
+    });
+}
+
+function renderSectorList(sectors) {
+  var body = document.getElementById('page-body');
+  var at100 = sectors.filter(function(s) { return Math.abs(s.total - 100) < 0.1; }).length;
+
+  // KPIs
+  var kpis = '<div class="kpi-grid" style="margin-bottom:var(--space-5)">' +
+    '<div class="kpi-card"><div class="kpi-label">Sectors</div><div class="kpi-value">' + sectors.length + '</div></div>' +
+    '<div class="kpi-card"><div class="kpi-label">At 100 Points</div><div class="kpi-value" style="color:var(--green-text)">' + at100 + '</div></div>' +
+    '<div class="kpi-card"><div class="kpi-label">In Progress</div><div class="kpi-value" style="color:' + ((sectors.length - at100) > 0 ? 'var(--orange-text,#f59e0b)' : 'var(--green-text)') + '">' + (sectors.length - at100) + '</div></div>' +
+    '<div class="kpi-card"><div class="kpi-label">Total Criteria</div><div class="kpi-value">' + sectors.reduce(function(s,x){return s+x.count},0) + '</div></div>' +
+    '</div>';
+
+  // Cards
+  var cards = '<div class="sector-grid">';
+  sectors.forEach(function(s) {
+    var pct = Math.min(100, (s.total / 100) * 100);
+    var color = Math.abs(s.total - 100) < 0.1 ? 'var(--green-text,#22c55e)' : s.total > 100 ? 'var(--red-text,#ef4444)' : 'var(--orange-text,#f59e0b)';
+    cards += '<div class="sector-card" onclick="openSector(\'' + esc(s.slug) + '\',\'' + esc(s.name) + '\')">' +
+      '<h3>' + esc(s.name) + '</h3>' +
+      '<div class="sector-meta">' +
+        '<span><i class="fa-solid fa-list-check"></i> ' + s.count + ' criteria</span>' +
+        '<span style="color:' + color + '"><i class="fa-solid fa-bullseye"></i> ' + s.total.toFixed(1) + ' / 100</span>' +
+      '</div>' +
+      '<div class="points-bar"><div class="points-fill" style="width:' + pct + '%;background:' + color + '"></div></div>' +
+    '</div>';
+  });
+  cards += '</div>';
+
+  body.innerHTML = kpis + cards;
+}
+
+// ══════════════════════════════════════════
+// VIEW 2: SECTOR TEMPLATE EDITOR
+// ══════════════════════════════════════════
+function openSector(slug, name) {
+  currentView = 'template';
+  currentSector = { slug: slug, name: name };
+  document.getElementById('page-title').textContent = name;
+  document.getElementById('page-subtitle').innerHTML = '<div class="sc-breadcrumb"><a onclick="loadSectorList()">Sectors</a> <i class="fa-solid fa-chevron-right" style="font-size:10px"></i> ' + esc(name) + '</div>';
+  document.getElementById('header-actions').innerHTML =
+    '<button class="btn btn-sm" style="background:rgba(34,197,94,0.1);color:var(--green-text);border:1px solid rgba(34,197,94,0.2);margin-right:8px" onclick="openBrandScoring()"><i class="fa-solid fa-star-half-stroke"></i> Score Brands</button>' +
+    '<button class="btn btn-primary btn-sm" onclick="openAddTemplate()"><i class="fa-solid fa-plus"></i> Add Criterion</button>';
+
+  var body = document.getElementById('page-body');
+  body.innerHTML = '<div class="text-sm text-muted" style="padding:var(--space-6);text-align:center"><i class="fa-solid fa-spinner fa-spin"></i> Loading template...</div>';
+
+  sbFetch('scoring_templates?sector_slug=eq.' + encodeURIComponent(slug) + '&order=sort_order')
+    .then(function(rows) {
+      sectorTemplates = rows || [];
+      renderTemplateTable();
+    })
+    .catch(function(err) {
+      body.innerHTML = '<div class="text-sm text-muted" style="padding:var(--space-6);text-align:center"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red-text)"></i> ' + esc(err.message) + '</div>';
+    });
+}
+
+function renderTemplateTable() {
+  var body = document.getElementById('page-body');
+  var total = sectorTemplates.reduce(function(s,t) { return s + (parseFloat(t.max_points) || 0); }, 0);
+  var color = Math.abs(total - 100) < 0.1 ? 'var(--green-text)' : total > 100 ? 'var(--red-text)' : 'var(--orange-text,#f59e0b)';
+  var pct = Math.min(100, (total / 100) * 100);
+
+  var html = '<div class="points-summary">' +
+    '<div><span class="pts-number" style="color:' + color + '">' + total.toFixed(1) + '</span> <span class="pts-label">/ 100 points</span></div>' +
+    '<div style="flex:1"><div class="points-bar" style="height:8px"><div class="points-fill" style="width:' + pct + '%;background:' + color + '"></div></div></div>' +
+    '<span class="text-xs" style="color:' + color + '">' + sectorTemplates.length + ' criteria</span>' +
+  '</div>';
+
+  // Group by category
+  var categories = [];
+  var catMap = {};
+  sectorTemplates.forEach(function(t) {
+    if (!catMap[t.category]) { catMap[t.category] = []; categories.push(t.category); }
+    catMap[t.category].push(t);
+  });
+
+  html += '<div class="table-wrapper"><table class="tmpl-table"><thead><tr>' +
+    '<th style="width:25%">Subcategory</th>' +
+    '<th style="width:30%">Description</th>' +
+    '<th>Type</th>' +
+    '<th>Max Pts</th>' +
+    '<th>Rule</th>' +
+    '<th></th>' +
+  '</tr></thead><tbody>';
+
+  categories.forEach(function(cat) {
+    var catTotal = catMap[cat].reduce(function(s,t) { return s + (parseFloat(t.max_points)||0); }, 0);
+    html += '<tr class="cat-header"><td colspan="5"><i class="fa-solid fa-folder-open" style="margin-right:6px"></i> ' + esc(cat) + ' <span style="font-weight:400;font-size:11px;color:var(--color-text-muted);margin-left:8px">(' + catTotal.toFixed(1) + ' pts, ' + catMap[cat].length + ' items)</span></td><td></td></tr>';
+
+    catMap[cat].forEach(function(t) {
+      var typeClass = t.scoring_type === 'Binary' ? 'type-binary' : 'type-partial';
+      html += '<tr>' +
+        '<td>' + esc(t.subcategory) + (t.hard_fail ? ' <span class="hard-fail-badge">HARD FAIL</span>' : '') + '</td>' +
+        '<td style="font-size:12px;color:var(--color-text-muted)">' + esc(t.point_description) + '</td>' +
+        '<td><span class="type-badge ' + typeClass + '">' + esc(t.scoring_type) + '</span></td>' +
+        '<td style="font-weight:600">' + parseFloat(t.max_points).toFixed(1) + '</td>' +
+        '<td style="font-size:11px;color:var(--color-text-muted)">' + esc(t.scoring_rule) + '</td>' +
+        '<td><div class="row-actions">' +
+          '<button title="Edit" onclick="openEditTemplate(\'' + t.id + '\')"><i class="fa-solid fa-pen"></i></button>' +
+          '<button class="del" title="Delete" onclick="confirmDeleteTemplate(\'' + t.id + '\',\'' + esc(t.subcategory) + '\')"><i class="fa-solid fa-trash"></i></button>' +
+        '</div></td>' +
+      '</tr>';
+    });
+  });
+
+  html += '</tbody></table></div>';
+  body.innerHTML = html;
+}
+
+// ── Template CRUD ──
+function openAddTemplate() {
+  document.getElementById('tmpl-modal-title').textContent = 'Add Scoring Criterion';
+  document.getElementById('tmpl-edit-id').value = '';
+  document.getElementById('tmpl-edit-sector-slug').value = currentSector.slug;
+  document.getElementById('tmpl-edit-sector-name').value = currentSector.name;
+  document.getElementById('tmpl-category').value = '';
+  document.getElementById('tmpl-subcategory').value = '';
+  document.getElementById('tmpl-description').value = '';
+  document.getElementById('tmpl-scoring-type').value = 'Partial';
+  document.getElementById('tmpl-max-points').value = '';
+  document.getElementById('tmpl-scoring-rule').value = '';
+  document.getElementById('tmpl-sources').value = '';
+  document.getElementById('tmpl-hard-fail').value = 'false';
+  document.getElementById('tmpl-notes').value = '';
+  // Auto sort order = max + 1
+  var maxSort = sectorTemplates.reduce(function(m,t){ return Math.max(m, t.sort_order||0); }, 0);
+  document.getElementById('tmpl-sort-order').value = maxSort + 1;
+
+  // Populate category suggestions
+  var cats = {};
+  sectorTemplates.forEach(function(t) { cats[t.category] = true; });
+  var dl = document.getElementById('category-suggestions');
+  dl.innerHTML = Object.keys(cats).map(function(c) { return '<option value="' + esc(c) + '">'; }).join('');
+
+  openModal('tmpl-modal');
+}
+
+function openEditTemplate(id) {
+  var t = sectorTemplates.find(function(x) { return x.id === id; });
+  if (!t) return;
+  document.getElementById('tmpl-modal-title').textContent = 'Edit Scoring Criterion';
+  document.getElementById('tmpl-edit-id').value = t.id;
+  document.getElementById('tmpl-edit-sector-slug').value = t.sector_slug;
+  document.getElementById('tmpl-edit-sector-name').value = t.sector_name;
+  document.getElementById('tmpl-category').value = t.category || '';
+  document.getElementById('tmpl-subcategory').value = t.subcategory || '';
+  document.getElementById('tmpl-description').value = t.point_description || '';
+  document.getElementById('tmpl-scoring-type').value = t.scoring_type || 'Partial';
+  document.getElementById('tmpl-max-points').value = t.max_points || '';
+  document.getElementById('tmpl-scoring-rule').value = t.scoring_rule || '';
+  document.getElementById('tmpl-sources').value = t.source_examples || '';
+  document.getElementById('tmpl-hard-fail').value = String(t.hard_fail || false);
+  document.getElementById('tmpl-sort-order').value = t.sort_order || '';
+  document.getElementById('tmpl-notes').value = t.notes || '';
+
+  var cats = {};
+  sectorTemplates.forEach(function(x) { cats[x.category] = true; });
+  var dl = document.getElementById('category-suggestions');
+  dl.innerHTML = Object.keys(cats).map(function(c) { return '<option value="' + esc(c) + '">'; }).join('');
+
+  openModal('tmpl-modal');
+}
+
+function saveTemplate() {
+  var id = document.getElementById('tmpl-edit-id').value;
+  var payload = {
+    sector_slug: document.getElementById('tmpl-edit-sector-slug').value || currentSector.slug,
+    sector_name: document.getElementById('tmpl-edit-sector-name').value || currentSector.name,
+    category: document.getElementById('tmpl-category').value.trim(),
+    subcategory: document.getElementById('tmpl-subcategory').value.trim(),
+    point_description: document.getElementById('tmpl-description').value.trim(),
+    scoring_type: document.getElementById('tmpl-scoring-type').value,
+    max_points: parseFloat(document.getElementById('tmpl-max-points').value) || 0,
+    scoring_rule: document.getElementById('tmpl-scoring-rule').value.trim(),
+    source_examples: document.getElementById('tmpl-sources').value.trim(),
+    hard_fail: document.getElementById('tmpl-hard-fail').value === 'true',
+    notes: document.getElementById('tmpl-notes').value.trim(),
+    sort_order: parseInt(document.getElementById('tmpl-sort-order').value) || 1
+  };
+
+  if (!payload.category || !payload.subcategory) {
+    Components.showToast('Category and subcategory are required', 'error');
+    return;
+  }
+
+  var btn = document.getElementById('tmpl-save-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+  var auth = GoNoGoAPI._getCallerAuth();
+  var promise = sbFetch('rpc/admin_save_scoring_template', {
+    method: 'POST',
+    body: {
+      p_caller_id: auth.p_caller_id,
+      p_caller_hash: auth.p_caller_hash,
+      p_id: id ? parseInt(id) : null,
+      p_data: payload
+    }
+  });
+
+  promise.then(function() {
+    Components.showToast(id ? 'Criterion updated' : 'Criterion added', 'success');
+    closeModal('tmpl-modal');
+    openSector(currentSector.slug, currentSector.name);
+  }).catch(function(err) {
+    Components.showToast('Error: ' + err.message, 'error');
+  }).finally(function() {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Save';
+  });
+}
+
+function confirmDeleteTemplate(id, name) {
+  document.getElementById('confirm-msg').innerHTML = 'Delete <strong>' + esc(name) + '</strong> from this sector template? This cannot be undone.';
+  var btn = document.getElementById('confirm-btn');
+  btn.onclick = function() {
+    btn.disabled = true;
+    var auth = GoNoGoAPI._getCallerAuth();
+    sbFetch('rpc/admin_delete_scoring_template', {
+      method: 'POST',
+      body: { p_caller_id: auth.p_caller_id, p_caller_hash: auth.p_caller_hash, p_id: parseInt(id) }
+    }).then(function() {
+        Components.showToast('Criterion deleted', 'success');
+        closeModal('confirm-modal');
+        openSector(currentSector.slug, currentSector.name);
+      })
+      .catch(function(err) {
+        Components.showToast('Error: ' + err.message, 'error');
+        btn.disabled = false;
+      });
+  };
+  openModal('confirm-modal');
+}
+
+// ══════════════════════════════════════════
+// VIEW 3: BRAND SCORING
+// ══════════════════════════════════════════
+function openBrandScoring() {
+  currentView = 'brand-scoring';
+  document.getElementById('page-title').textContent = 'Score Brands — ' + currentSector.name;
+  document.getElementById('page-subtitle').innerHTML = '<div class="sc-breadcrumb"><a onclick="loadSectorList()">Sectors</a> <i class="fa-solid fa-chevron-right" style="font-size:10px"></i> <a onclick="openSector(\'' + esc(currentSector.slug) + '\',\'' + esc(currentSector.name) + '\')">' + esc(currentSector.name) + '</a> <i class="fa-solid fa-chevron-right" style="font-size:10px"></i> Brand Scoring</div>';
+  document.getElementById('header-actions').innerHTML =
+    '<button class="btn btn-primary btn-sm" id="save-scores-btn" onclick="saveBrandScores()" disabled><i class="fa-solid fa-floppy-disk"></i> Save All Scores</button>';
+
+  var body = document.getElementById('page-body');
+  body.innerHTML = '<div class="text-sm text-muted" style="padding:var(--space-6);text-align:center"><i class="fa-solid fa-spinner fa-spin"></i> Loading brands...</div>';
+
+  // Load brands for this sector
+  sbFetch('brands?region=eq.za&category_slug=eq.' + encodeURIComponent(currentSector.slug) + '&select=slug,name,status,is_active&order=name')
+    .then(function(brands) {
+      allBrands = brands || [];
+      renderBrandScoring();
+    })
+    .catch(function(err) {
+      body.innerHTML = '<div class="text-sm text-muted" style="padding:var(--space-6);text-align:center"><i class="fa-solid fa-triangle-exclamation" style="color:var(--red-text)"></i> ' + esc(err.message) + '</div>';
+    });
+}
+
+function renderBrandScoring() {
+  var body = document.getElementById('page-body');
+
+  // CSV toolbar always visible so you can upload scores even before brands exist
+  var html = '';
+
+  if (allBrands.length) {
+    html += '<div style="margin-bottom:var(--space-4);display:flex;align-items:center;gap:12px">' +
+      '<label class="text-sm text-muted" style="white-space:nowrap">Select brand:</label>' +
+      '<select id="brand-selector" onchange="loadBrandScores()" style="max-width:300px;padding:8px 12px;border-radius:10px;font-size:14px;border:1px solid rgba(255,255,255,0.1);background:#1a1a2e;color:#fff">' +
+      '<option value="" style="background:#1a1a2e;color:#fff">— Choose a brand —</option>' +
+      allBrands.map(function(b) { return '<option value="' + esc(b.slug) + '" style="background:#1a1a2e;color:#fff">' + esc(b.name) + '</option>'; }).join('') +
+      '</select>' +
+    '</div>';
+  }
+
+  html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:var(--space-5);padding:16px;background:var(--color-surface,#1c1b19);border:1px solid rgba(255,255,255,0.08);border-radius:12px">' +
+    '<span class="text-sm" style="font-weight:600;color:var(--color-text);display:flex;align-items:center;gap:6px;margin-right:auto"><i class="fa-solid fa-file-csv" style="color:var(--green-text)"></i> Category CSV</span>' +
+    '<button class="btn btn-outline btn-sm" onclick="downloadScoringTemplate()" title="Empty template with criteria columns — fill in brand scores"><i class="fa-solid fa-file-arrow-down"></i> Empty Template</button>' +
+    '<button class="btn btn-outline btn-sm" onclick="downloadCategoryScores()" title="All brands\' scores for this category"><i class="fa-solid fa-download"></i> Download All Scores</button>' +
+    '<button class="btn btn-secondary btn-sm" onclick="triggerCSVUpload()"><i class="fa-solid fa-upload"></i> Upload Scores CSV</button>' +
+    '<input type="file" id="csv-upload-input" accept=".csv" style="display:none" onchange="handleCSVUpload(event)">' +
+    '<button class="btn btn-sm" style="background:var(--red);color:#fff;border:none" onclick="deleteCategoryScores()" title="Delete all scored data for every brand in this sector"><i class="fa-solid fa-trash"></i> Delete All Scores</button>' +
+  '</div>';
+
+  if (!allBrands.length) {
+    html += '<div style="text-align:center;padding:var(--space-10)"><i class="fa-solid fa-store" style="font-size:var(--text-2xl);color:var(--text-faint);display:block;margin-bottom:var(--space-3)"></i><p class="text-sm text-muted">No brands found in this sector. Upload brands first, or use the CSV tools above.</p></div>';
+  }
+
+  html += '<div id="brand-score-area"></div>';
+  body.innerHTML = html;
+}
+
+function loadBrandScores() {
+  var sel = document.getElementById('brand-selector');
+  if (!sel) return;
+  var slug = sel.value;
+  var area = document.getElementById('brand-score-area');
+  if (!slug) { area.innerHTML = ''; document.getElementById('save-scores-btn').disabled = true; return; }
+
+  area.innerHTML = '<div class="text-sm text-muted" style="padding:var(--space-4);text-align:center"><i class="fa-solid fa-spinner fa-spin"></i> Loading scores...</div>';
+  document.getElementById('save-scores-btn').disabled = false;
+
+  sbFetch('brand_scores?brand_slug=eq.' + encodeURIComponent(slug) + '&select=template_id,score,evidence,source_url')
+    .then(function(scores) {
+      brandScores = {};
+      (scores || []).forEach(function(s) { brandScores[s.template_id] = s; });
+      renderBrandScoreTable(slug);
+    })
+    .catch(function() {
+      brandScores = {};
+      renderBrandScoreTable(slug);
+    });
+}
+
+function renderBrandScoreTable(brandSlug) {
+  var area = document.getElementById('brand-score-area');
+  var scored = Object.keys(brandScores).length;
+  var total = sectorTemplates.length;
+  var earnedPts = 0;
+  var maxPts = sectorTemplates.reduce(function(s,t){ return s + (parseFloat(t.max_points)||0); }, 0);
+  sectorTemplates.forEach(function(t) {
+    if (brandScores[t.id]) earnedPts += parseFloat(brandScores[t.id].score) || 0;
+  });
+
+  var pct = total > 0 ? Math.round((scored/total)*100) : 0;
+  var html = '<div class="brand-score-progress">' +
+    '<span class="text-sm" style="font-weight:600;color:var(--green-text)">' + scored + '/' + total + ' scored</span>' +
+    '<div style="flex:1"><div class="points-bar" style="height:6px"><div class="points-fill" style="width:' + pct + '%;background:var(--green-text)"></div></div></div>' +
+    '<span class="text-sm" style="font-weight:700">' + earnedPts.toFixed(1) + ' / ' + maxPts.toFixed(1) + ' pts</span>' +
+  '</div>';
+
+  // Group by category
+  var categories = [];
+  var catMap = {};
+  sectorTemplates.forEach(function(t) {
+    if (!catMap[t.category]) { catMap[t.category] = []; categories.push(t.category); }
+    catMap[t.category].push(t);
+  });
+
+  html += '<div class="table-wrapper"><table class="tmpl-table"><thead><tr>' +
+    '<th style="width:22%">Criterion</th>' +
+    '<th style="width:8%">Max</th>' +
+    '<th style="width:10%">Score</th>' +
+    '<th style="width:30%">Evidence</th>' +
+    '<th style="width:20%">Source URL</th>' +
+    '<th style="width:10%">Rule</th>' +
+  '</tr></thead><tbody>';
+
+  categories.forEach(function(cat) {
+    html += '<tr class="cat-header"><td colspan="6"><i class="fa-solid fa-folder-open" style="margin-right:6px"></i> ' + esc(cat) + '</td></tr>';
+    catMap[cat].forEach(function(t) {
+      var existing = brandScores[t.id] || {};
+      html += '<tr>' +
+        '<td>' + esc(t.subcategory) + (t.hard_fail ? ' <span class="hard-fail-badge">HF</span>' : '') + '</td>' +
+        '<td style="font-weight:600;font-size:12px">' + parseFloat(t.max_points).toFixed(1) + '</td>' +
+        '<td><input class="score-input" type="number" step="0.5" min="0" max="' + t.max_points + '" data-tid="' + t.id + '" data-field="score" value="' + (existing.score != null ? existing.score : '') + '"></td>' +
+        '<td><input class="evidence-input" type="text" data-tid="' + t.id + '" data-field="evidence" value="' + esc(existing.evidence || '') + '" placeholder="Evidence..."></td>' +
+        '<td><input class="evidence-input" type="text" data-tid="' + t.id + '" data-field="source_url" value="' + esc(existing.source_url || '') + '" placeholder="URL..."></td>' +
+        '<td style="font-size:10px;color:var(--color-text-muted)">' + esc(t.scoring_rule) + '</td>' +
+      '</tr>';
+    });
+  });
+
+  html += '</tbody></table></div>';
+  area.innerHTML = html;
+}
+
+function saveBrandScores() {
+  var brandSlug = document.getElementById('brand-selector').value;
+  if (!brandSlug) return;
+
+  var inputs = document.querySelectorAll('[data-tid][data-field="score"]');
+  var rows = [];
+  inputs.forEach(function(inp) {
+    var tid = inp.getAttribute('data-tid');
+    var scoreVal = inp.value.trim();
+    if (scoreVal === '') return; // skip empty scores
+    var evidenceInput = document.querySelector('[data-tid="' + tid + '"][data-field="evidence"]');
+    var urlInput = document.querySelector('[data-tid="' + tid + '"][data-field="source_url"]');
+    rows.push({
+      brand_slug: brandSlug,
+      template_id: tid,
+      score: parseFloat(scoreVal) || 0,
+      evidence: evidenceInput ? evidenceInput.value.trim() : '',
+      source_url: urlInput ? urlInput.value.trim() : '',
+      scored_by: 'admin'
+    });
+  });
+
+  if (!rows.length) {
+    Components.showToast('No scores to save — enter at least one score', 'error');
+    return;
+  }
+
+  var btn = document.getElementById('save-scores-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+  var auth = GoNoGoAPI._getCallerAuth();
+  sbFetch('rpc/admin_upsert_brand_scores', {
+    method: 'POST',
+    body: {
+      p_caller_id: auth.p_caller_id,
+      p_caller_hash: auth.p_caller_hash,
+      p_rows: rows
+    }
+  }).then(function() {
+    Components.showToast(rows.length + ' scores saved', 'success');
+    return rollupBrandScores(brandSlug);
+  }).then(function() {
+    loadBrandScores();
+  }).catch(function(err) {
+    Components.showToast('Error saving: ' + err.message, 'error');
+  }).finally(function() {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save All Scores';
+  });
+}
+
+// ══════════════════════════════════════════
+// CSV HELPERS
+// ══════════════════════════════════════════
+function csvQuote(val) {
+  var s = String(val == null ? '' : val);
+  if (s.indexOf(',') !== -1 || s.indexOf('"') !== -1 || s.indexOf('\n') !== -1) {
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+function parseCSV(text) {
+  var rows = [];
+  var row = [];
+  var field = '';
+  var inQuotes = false;
+  var i = 0;
+  while (i < text.length) {
+    var ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (i + 1 < text.length && text[i + 1] === '"') {
+          field += '"';
+          i += 2;
+        } else {
+          inQuotes = false;
+          i++;
+        }
+      } else {
+        field += ch;
+        i++;
+      }
+    } else {
+      if (ch === '"') {
+        inQuotes = true;
+        i++;
+      } else if (ch === ',') {
+        row.push(field);
+        field = '';
+        i++;
+      } else if (ch === '\n' || ch === '\r') {
+        row.push(field);
+        field = '';
+        if (ch === '\r' && i + 1 < text.length && text[i + 1] === '\n') i++;
+        i++;
+        if (row.length > 1 || (row.length === 1 && row[0] !== '')) rows.push(row);
+        row = [];
+      } else {
+        field += ch;
+        i++;
+      }
+    }
+  }
+  // Last field
+  if (field !== '' || row.length > 0) {
+    row.push(field);
+    if (row.length > 1 || (row.length === 1 && row[0] !== '')) rows.push(row);
+  }
+  return rows;
+}
+
+// ══════════════════════════════════════════
+// DOWNLOAD TEMPLATE
+// ══════════════════════════════════════════
+function downloadScoringTemplate() {
+  if (!sectorTemplates.length) {
+    Components.showToast('No template criteria loaded', 'error');
+    return;
+  }
+  var csv = 'brand_slug,brand_name,category,subcategory,point_description,max_points,scoring_rule,score,evidence,source_url\n';
+  sectorTemplates.forEach(function(t) {
+    csv += ',,' + csvQuote(t.category) + ',' + csvQuote(t.subcategory) + ',' +
+           csvQuote(t.point_description) + ',' + t.max_points + ',' +
+           csvQuote(t.scoring_rule) + ',,,\n';
+  });
+
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'scoring_template_' + currentSector.slug + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ══════════════════════════════════════════
+// DOWNLOAD ALL CATEGORY SCORES
+// ══════════════════════════════════════════
+function downloadCategoryScores() {
+  if (!sectorTemplates.length || !allBrands.length) {
+    Components.showToast('No templates or brands loaded', 'error');
+    return;
+  }
+
+  // Fetch ALL brand_scores whose template_id is in this sector's templates
+  var templateIds = sectorTemplates.map(function(t) { return t.id; });
+  var brandSlugs = allBrands.map(function(b) { return b.slug; });
+
+  // Fetch scores for all brands in this sector
+  sbFetch('brand_scores?brand_slug=in.(' + brandSlugs.map(encodeURIComponent).join(',') + ')&template_id=in.(' + templateIds.join(',') + ')&select=brand_slug,template_id,score,evidence,source_url')
+    .then(function(scores) {
+      // Index scores by brand_slug + template_id
+      var scoreMap = {};
+      (scores || []).forEach(function(s) {
+        scoreMap[s.brand_slug + '||' + s.template_id] = s;
+      });
+
+      // Build brand name lookup
+      var brandNames = {};
+      allBrands.forEach(function(b) { brandNames[b.slug] = b.name; });
+
+      // Build CSV: one row per brand × criterion
+      var csv = 'brand_slug,brand_name,category,subcategory,point_description,max_points,scoring_rule,score,evidence,source_url\n';
+
+      allBrands.forEach(function(brand) {
+        sectorTemplates.forEach(function(t) {
+          var key = brand.slug + '||' + t.id;
+          var s = scoreMap[key] || {};
+          csv += csvQuote(brand.slug) + ',' +
+                 csvQuote(brand.name) + ',' +
+                 csvQuote(t.category) + ',' +
+                 csvQuote(t.subcategory) + ',' +
+                 csvQuote(t.point_description) + ',' +
+                 t.max_points + ',' +
+                 csvQuote(t.scoring_rule) + ',' +
+                 (s.score != null ? s.score : '') + ',' +
+                 csvQuote(s.evidence || '') + ',' +
+                 csvQuote(s.source_url || '') + '\n';
+        });
+      });
+
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'scores_' + currentSector.slug + '_all_brands.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+      Components.showToast('Exported scores for ' + allBrands.length + ' brands', 'success');
+    })
+    .catch(function(err) {
+      Components.showToast('Error exporting: ' + err.message, 'error');
+    });
+}
+
+// ══════════════════════════════════════════
+// CSV UPLOAD
+// ══════════════════════════════════════════
+function triggerCSVUpload() {
+  var inp = document.getElementById('csv-upload-input');
+  inp.value = '';
+  inp.click();
+}
+
+function handleCSVUpload(event) {
+  var file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var text = e.target.result;
+    var parsed = parseCSV(text);
+    if (parsed.length < 2) {
+      Components.showToast('CSV is empty or has no data rows', 'error');
+      return;
+    }
+
+    // First row is header
+    var headers = parsed[0].map(function(h) { return h.trim().toLowerCase(); });
+    var colIdx = {};
+    ['brand_slug','category','subcategory','point_description','max_points','scoring_rule','score','evidence','source_url'].forEach(function(col) {
+      colIdx[col] = headers.indexOf(col);
+    });
+
+    if (colIdx.score === -1) {
+      Components.showToast('CSV missing required "score" column', 'error');
+      return;
+    }
+
+    // Normalise all dash/hyphen variants to standard hyphen for matching
+    function normKey(s) { return (s || '').trim().toLowerCase().replace(/[\u2010\u2011\u2012\u2013\u2014\u2015\u2212\uFE58\uFE63\uFF0D]/g, '-'); }
+
+    // Build template lookup: category+subcategory+point_description -> template
+    var tmplLookup = {};
+    sectorTemplates.forEach(function(t) {
+      var key = normKey(t.category) + '||' + normKey(t.subcategory) + '||' + normKey(t.point_description);
+      tmplLookup[key] = t;
+    });
+
+    var rows = [];
+    var errors = [];
+    var brandSlugs = {};
+
+    for (var i = 1; i < parsed.length; i++) {
+      var r = parsed[i];
+      var scoreVal = (colIdx.score !== -1 && r[colIdx.score] != null) ? r[colIdx.score].trim() : '';
+      if (scoreVal === '') continue; // skip rows without a score
+
+      var brandSlug = (colIdx.brand_slug !== -1 && r[colIdx.brand_slug] != null) ? r[colIdx.brand_slug].trim() : '';
+      if (!brandSlug) {
+        errors.push('Row ' + (i + 1) + ': missing brand_slug');
+        continue;
+      }
+
+      var cat = (colIdx.category !== -1 && r[colIdx.category] != null) ? r[colIdx.category].trim() : '';
+      var sub = (colIdx.subcategory !== -1 && r[colIdx.subcategory] != null) ? r[colIdx.subcategory].trim() : '';
+      var desc = (colIdx.point_description !== -1 && r[colIdx.point_description] != null) ? r[colIdx.point_description].trim() : '';
+
+      var lookupKey = normKey(cat) + '||' + normKey(sub) + '||' + normKey(desc);
+      var tmpl = tmplLookup[lookupKey];
+
+      if (!tmpl) {
+        errors.push('Row ' + (i + 1) + ': no matching template for "' + cat + ' / ' + sub + ' / ' + desc.substring(0, 40) + '"');
+        continue;
+      }
+
+      var evidence = (colIdx.evidence !== -1 && r[colIdx.evidence] != null) ? r[colIdx.evidence].trim() : '';
+      var sourceUrl = (colIdx.source_url !== -1 && r[colIdx.source_url] != null) ? r[colIdx.source_url].trim() : '';
+
+      rows.push({
+        brand_slug: brandSlug,
+        template_id: tmpl.id,
+        score: parseFloat(scoreVal) || 0,
+        evidence: evidence,
+        source_url: sourceUrl,
+        scored_by: 'csv-upload'
+      });
+      brandSlugs[brandSlug] = true;
+    }
+
+    if (errors.length > 0) {
+      Components.showToast(errors.length + ' rows skipped — check console', 'error');
+      console.warn('CSV upload errors:', errors);
+    }
+
+    if (!rows.length) {
+      Components.showToast('No valid scores found in CSV', 'error');
+      return;
+    }
+
+    // POST scores via RPC
+    var auth = GoNoGoAPI._getCallerAuth();
+    sbFetch('rpc/admin_upsert_brand_scores', {
+      method: 'POST',
+      body: {
+        p_caller_id: auth.p_caller_id,
+        p_caller_hash: auth.p_caller_hash,
+        p_rows: rows
+      }
+    }).then(function() {
+      Components.showToast(rows.length + ' scores imported for ' + Object.keys(brandSlugs).length + ' brand(s)', 'success');
+
+      // Rollup for each affected brand
+      var slugList = Object.keys(brandSlugs);
+      var rollupPromises = slugList.map(function(slug) { return rollupBrandScores(slug); });
+      return Promise.all(rollupPromises);
+    }).then(function() {
+      // Reload current brand view if one is selected
+      var sel = document.getElementById('brand-selector');
+      if (sel && sel.value) loadBrandScores();
+    }).catch(function(err) {
+      Components.showToast('CSV import error: ' + err.message, 'error');
+    });
+  };
+  reader.readAsText(file);
+}
+
+// ══════════════════════════════════════════
+// DELETE ALL SCORES FOR THIS SECTOR
+// ══════════════════════════════════════════
+function deleteCategoryScores() {
+  if (!sectorTemplates.length) { Components.showToast('No sector loaded', 'error'); return; }
+  var sectorName = sectorTemplates[0].sector_name || currentSectorSlug;
+  if (!confirm('Delete ALL scored data for every brand in "' + sectorName + '"?\n\nThis cannot be undone.')) return;
+
+  var templateIds = sectorTemplates.map(function(t) { return t.id; });
+  var auth = GoNoGoAPI._getCallerAuth();
+
+  sbFetch('rpc/admin_delete_sector_scores', {
+    method: 'POST',
+    body: {
+      p_caller_id: auth.p_caller_id,
+      p_caller_hash: auth.p_caller_hash,
+      p_template_ids: templateIds
+    }
+  }).then(function(res) {
+    var count = (res && res.deleted) || 0;
+    Components.showToast(count + ' scores deleted for ' + sectorName, 'success');
+    // Reload brand view if one is selected
+    var sel = document.getElementById('brand-selector');
+    if (sel && sel.value) loadBrandScores();
+  }).catch(function(err) {
+    Components.showToast('Delete error: ' + err.message, 'error');
+  });
+}
+
+// ══════════════════════════════════════════
+// ROLLUP: framework_breakdown + scoring_breakdown
+// ══════════════════════════════════════════
+function rollupBrandScores(brandSlug) {
+  return sbFetch('brand_scores?brand_slug=eq.' + encodeURIComponent(brandSlug) + '&select=template_id,score')
+    .then(function(scores) {
+      // Group by category using sectorTemplates
+      var catTotals = {};
+      sectorTemplates.forEach(function(t) {
+        if (!catTotals[t.category]) catTotals[t.category] = { earned: 0, max: 0 };
+        catTotals[t.category].max += parseFloat(t.max_points) || 0;
+      });
+
+      (scores || []).forEach(function(s) {
+        var tmpl = sectorTemplates.find(function(t) { return t.id === s.template_id; });
+        if (tmpl && catTotals[tmpl.category]) {
+          catTotals[tmpl.category].earned += parseFloat(s.score) || 0;
+        }
+      });
+
+      // Build framework_breakdown array
+      var breakdown = Object.keys(catTotals).map(function(cat) {
+        var c = catTotals[cat];
+        return {
+          category: cat,
+          score: Math.round(c.earned * 10) / 10 + '/' + Math.round(c.max * 10) / 10
+        };
+      });
+
+      // Compute total score
+      var totalEarned = 0, totalMax = 0;
+      breakdown.forEach(function(b) {
+        var parts = b.score.split('/');
+        totalEarned += parseFloat(parts[0]);
+        totalMax += parseFloat(parts[1]);
+      });
+
+      // Update brands table via secure RPC
+      var auth = GoNoGoAPI._getCallerAuth();
+      return sbFetch('rpc/admin_save_brand', {
+        method: 'POST',
+        body: {
+          p_caller_id: auth.p_caller_id,
+          p_caller_hash: auth.p_caller_hash,
+          p_slug: brandSlug,
+          p_data: {
+            framework_breakdown: breakdown,
+            scoring_breakdown: {
+              total_score: Math.round(totalEarned * 10) / 10,
+              total_max: Math.round(totalMax * 10) / 10,
+              scored_at: new Date().toISOString(),
+              categories: catTotals
+            }
+          }
+        }
+      });
+    });
+}
+
+// ══════════════════════════════════════════
+// MODAL HELPERS
+// ══════════════════════════════════════════
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+// Close on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(function(el) {
+  el.addEventListener('click', function(e) { if (e.target === el) closeModal(el.id); });
+});
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-backdrop.open').forEach(function(el) { closeModal(el.id); });
+  }
+});
+</script>
+</body>
+</html>
