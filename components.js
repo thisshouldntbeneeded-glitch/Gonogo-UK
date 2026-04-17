@@ -236,7 +236,7 @@ const Components = {
     banner.className = 'cookie-banner';
     banner.id = 'cookie-banner';
     banner.innerHTML =
-      '<p>We use essential cookies to keep this site working and optional analytics cookies to understand how it is used and improve our content. Google Analytics will only run if you click "Accept". By choosing an option you are making an informed choice under the Protection of Personal Information Act (POPIA). For details, please see our <a href="privacy.html">Privacy Policy</a> and <a href="cookies.html">Cookie Policy</a>.</p>' +
+      '<p>We use essential cookies to keep this site working and optional analytics cookies to understand how it is used and improve our content. Google Analytics will only run if you click "Accept". By choosing an option you are making an informed choice under the UK General Data Protection Regulation (UK GDPR). For details, please see our <a href="privacy.html">Privacy Policy</a> and <a href="cookies.html">Cookie Policy</a>.</p>' +
       '<div class="cookie-banner-buttons">' +
         '<button class="cookie-btn-reject" onclick="Components.cookieReject()">Reject</button>' +
         '<button class="cookie-btn-accept" onclick="Components.cookieAccept()">Accept</button>' +
@@ -724,7 +724,7 @@ const Components = {
   formatDate(dateStr) {
     if (!dateStr) return '';
     const d = new Date(dateStr);
-    return d.toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   },
 
   formatRelativeDate(dateStr) {
@@ -1581,7 +1581,8 @@ const Components = {
         email: email,
         password: password,
         options: {
-          data: { display_name: name, region: SITE_REGION }
+          data: { display_name: name, region: SITE_REGION },
+          emailRedirectTo: window.location.origin + '/account#persona'
         }
       });
       if (res.error) throw res.error;
