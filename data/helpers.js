@@ -156,14 +156,13 @@ function getScoreColor(score) {
 
 function getScoreLabel(score) {
   if (score >= 80) return 'Excellent';
-  if (score >= 70) return 'Good';
   if (score >= 60) return 'Fair';
   return 'Poor';
 }
 
 function getVerdictFromScore(score) {
-  if (score >= 80) return 'GO';
-  if (score >= 60) return 'GO WITH CAUTION';
+  if (score >= 80) return 'TOP PERFORMER';
+  if (score >= 60) return 'GO';
   return 'NOGO';
 }
 

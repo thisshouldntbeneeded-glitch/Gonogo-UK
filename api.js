@@ -379,15 +379,15 @@ var GoNoGoAPI = (function () {
             var cats = results[1] || [];
             var total = 0;
             var scoreSum = 0;
+            var topPerformer = 0;
             var go = 0;
-            var caution = 0;
             var nogo = 0;
 
             brands.forEach(function (b) {
               total++;
               scoreSum += b.gonogo_score || 0;
               var s = b.gonogo_score || 0;
-              if (s >= 80) go++;
+              if (s >= 80) topPerformer++;
               else if (s >= 60) go++;
               else nogo++;
             });
@@ -397,8 +397,8 @@ var GoNoGoAPI = (function () {
               totalBrands: total,
               totalReviews: 0,
               averageScore: total > 0 ? Math.round((scoreSum / total) * 10) / 10 : 0,
+              topPerformerCount: topPerformer,
               goCount: go,
-              cautionCount: caution,
               nogoCount: nogo
             };
           });
@@ -408,8 +408,8 @@ var GoNoGoAPI = (function () {
 
         var totalBrands = 0;
         var totalScore = 0;
+        var topPerformerCount = 0;
         var goCount = 0;
-        var cautionCount = 0;
         var nogoCount = 0;
 
         BRAND_DATA.forEach(function (c) {
@@ -419,7 +419,8 @@ var GoNoGoAPI = (function () {
               var score = b.gonogo_score || 0;
               totalScore += score;
 
-              if (score >= 60) goCount++;
+              if (score >= 80) topPerformerCount++;
+              else if (score >= 60) goCount++;
               else nogoCount++;
             });
           }
@@ -430,8 +431,8 @@ var GoNoGoAPI = (function () {
           totalBrands: totalBrands,
           totalReviews: 0,
           averageScore: totalBrands > 0 ? Math.round((totalScore / totalBrands) * 10) / 10 : 0,
+          topPerformerCount: topPerformerCount,
           goCount: goCount,
-          cautionCount: cautionCount,
           nogoCount: nogoCount
         };
       });

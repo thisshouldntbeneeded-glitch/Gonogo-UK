@@ -1188,7 +1188,7 @@
       });
       var negativeReviews = reviews.filter(function(r) {
         var v = normalizeVerdict(r.verdict);
-        return v === 'NOGO' || v === 'GO WITH CAUTION';
+        return v === 'NOGO';
       });
 
       var avgSentiment = reviews.length > 0 ? Math.round((goReviews.length / reviews.length) * 100) : 0;
@@ -1480,7 +1480,7 @@
       var colors = [];
 
       if (reviewAnalysis.go > 0) { labels.push('Go'); data.push(reviewAnalysis.go); colors.push('#11a551'); }
-      if (reviewAnalysis.caution > 0) { labels.push('Caution'); data.push(reviewAnalysis.caution); colors.push('#ff9800'); }
+
       if (reviewAnalysis.nogo > 0) { labels.push('NoGo'); data.push(reviewAnalysis.nogo); colors.push('#e74c3c'); }
       if (reviewAnalysis.noVerdict > 0) { labels.push('No Verdict'); data.push(reviewAnalysis.noVerdict); colors.push('#666666'); }
 
@@ -1771,7 +1771,7 @@
       }
 
       var responsePressure = reviewAnalysis.total > 0
-        ? Math.round(((reviewAnalysis.nogo + reviewAnalysis.caution) / Math.max(1, reviewAnalysis.total)) * 100)
+        ? Math.round(((reviewAnalysis.nogo) / Math.max(1, reviewAnalysis.total)) * 100)
         : 0;
 
       var freshnessSignal = reviewAnalysis.total === 0 ? 'Low' : (reviewAnalysis.total < 5 ? 'Building' : 'Active');
@@ -1791,7 +1791,7 @@
         '<div class="review-mini-box">' +
           '<div class="review-mini-label">Trust Signal</div>' +
           '<div class="review-mini-value">' + trustSignal + '</div>' +
-          '<div class="review-mini-note">' + (reviewAnalysis.total ? (reviewAnalysis.go + ' positive vs ' + (reviewAnalysis.nogo + reviewAnalysis.caution) + ' cautionary or negative verdicts.') : 'Start collecting reviews to generate a live signal.') + '</div>' +
+          '<div class="review-mini-note">' + (reviewAnalysis.total ? (reviewAnalysis.go + ' positive vs ' + reviewAnalysis.nogo + ' negative verdicts.') : 'Start collecting reviews to generate a live signal.') + '</div>' +
         '</div>' +
         '<div class="review-mini-box">' +
           '<div class="review-mini-label">Response Pressure</div>' +
@@ -1824,11 +1824,11 @@
         });
       }
 
-      if (reviewAnalysis.total > 0 && (reviewAnalysis.nogo + reviewAnalysis.caution) > reviewAnalysis.go) {
+      if (reviewAnalysis.total > 0 && reviewAnalysis.nogo > reviewAnalysis.go) {
         alerts.push({
           level: 'high',
           title: 'Negative pressure is visible',
-          desc: 'Caution and negative verdicts currently outweigh positive ones, so fresh positive experiences and fast responses should be your priority.'
+          desc: 'Negative verdicts currently outweigh positive ones, so fresh positive experiences and fast responses should be your priority.'
         });
       }
 
@@ -2117,14 +2117,14 @@
 
     function analyseReviews(reviews) {
       var total = reviews.length;
-      var go = 0, caution = 0, nogo = 0, noVerdict = 0;
+      var go = 0, nogo = 0, noVerdict = 0;
       var positiveThemes = {};
       var negativeThemes = {};
 
       reviews.forEach(function(review) {
         var verdict = normalizeVerdict(review.verdict);
         if (verdict === 'GO') go++;
-        else if (verdict === 'GO WITH CAUTION') caution++;
+
         else if (verdict === 'NOGO') nogo++;
         else noVerdict++;
 
@@ -2146,7 +2146,7 @@
       return {
         total: total,
         go: go,
-        caution: caution,
+
         nogo: nogo,
         noVerdict: noVerdict,
         positiveThemes: positive,
@@ -2313,7 +2313,7 @@
 
     function normalizeVerdict(verdict) {
       var v = String(verdict || '').toUpperCase().trim();
-      if (v === 'CAUTION') return 'GO WITH CAUTION';
+      if (v === 'CAUTION' || v === 'GO WITH CAUTION') return 'GO';
       return v;
     }
 

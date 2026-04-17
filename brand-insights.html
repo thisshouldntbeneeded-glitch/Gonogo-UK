@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-GB">
+<html lang="en-ZA">
 <head>
 <!--
    ______                            __
@@ -16,6 +16,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="robots" content="noindex, nofollow">
 <title>GoNoGo SA — Brand Insights</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
@@ -86,7 +91,7 @@
       </div>
 
       <div style="padding:var(--space-6) 0;text-align:center;">
-        <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom &mdash; Brand Portal</p>
+        <p class="text-xs text-muted">&copy; 2026 GoNoGo South Africa &mdash; Brand Portal</p>
       </div>
     </main>
   </div>
@@ -148,7 +153,7 @@
       // ============================
       // 1. Score History (single point)
       // ============================
-      var today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      var today = new Date().toLocaleDateString('en-ZA', { day: 'numeric', month: 'short', year: 'numeric' });
       new Chart(document.getElementById('score-history-chart'), {
         type: 'line',
         data: {
@@ -198,19 +203,14 @@
       // ============================
       // 2. Sentiment Donut
       // ============================
-      var goCount = reviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'GO'; }).length;
+      var goCount = reviews.filter(function(r) { var v = (r.verdict || '').toUpperCase(); return v === 'GO' || v === 'GO WITH CAUTION' || v === 'CAUTION' || v === 'TOP PERFORMER'; }).length;
       var nogoCount = reviews.filter(function(r) { return r.verdict && r.verdict.toUpperCase() === 'NOGO'; }).length;
-      var cautionCount = reviews.filter(function(r) {
-        var v = (r.verdict || '').toUpperCase();
-        return v !== 'GO' && v !== 'NOGO' && v !== '';
-      }).length;
-      var noVerdict = reviews.length - goCount - nogoCount - cautionCount;
+      var noVerdict = reviews.length - goCount - nogoCount;
 
       var sentimentLabels = [];
       var sentimentData = [];
       var sentimentColors = [];
       if (goCount > 0) { sentimentLabels.push('Go'); sentimentData.push(goCount); sentimentColors.push('#11a551'); }
-      if (cautionCount > 0) { sentimentLabels.push('Caution'); sentimentData.push(cautionCount); sentimentColors.push('#ff9800'); }
       if (nogoCount > 0) { sentimentLabels.push('NoGo'); sentimentData.push(nogoCount); sentimentColors.push('#e74c3c'); }
       if (noVerdict > 0) { sentimentLabels.push('No Verdict'); sentimentData.push(noVerdict); sentimentColors.push('#666666'); }
 

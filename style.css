@@ -543,9 +543,15 @@ input:focus, select:focus, textarea:focus {
 }
 
 .badge-caution {
-  background: var(--orange-bg);
-  color: var(--orange-text);
-  border: 1px solid var(--orange-dim);
+  background: var(--green-bg);
+  color: var(--green-text);
+  border: 1px solid var(--green-dim);
+}
+
+.badge-top-performer {
+  background: var(--green-bg);
+  color: var(--green-text);
+  border: 1px solid var(--green-dim);
 }
 
 .badge-score {
@@ -2890,8 +2896,8 @@ textarea {
 }
 
 .homepage-verdict-caution {
-  border-color: var(--orange-dim);
-  background: linear-gradient(180deg, rgba(255,152,0,0.10), rgba(255,152,0,0.04));
+  border-color: var(--green-dim);
+  background: linear-gradient(180deg, rgba(17,165,81,0.10), rgba(17,165,81,0.04));
 }
 
 .homepage-verdict-nogo {

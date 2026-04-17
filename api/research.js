@@ -100,13 +100,13 @@ For each scoring category, you MUST:
 - Each subcategory score should be proportional to its weight
 - The category score is the SUM of subcategory scores
 - GoNoGoScore = round((sum of all category scores / 100) * 100)
-- Verdict: 80+ = "GO", 60-79 = "GO WITH CAUTION", below 60 = "NOGO"
+- Verdict: 80+ = "TOP PERFORMER", 60-79 = "GO", below 60 = "NOGO"
 - Be honest and critical. Real brands rarely score above 85.
 
 Return ONLY valid JSON with this exact structure:
 {
   "gonogo_score": <integer 0-100>,
-  "verdict": "<GO|GO WITH CAUTION|NOGO>",
+  "verdict": "<TOP PERFORMER|GO|NOGO>",
   "overview": "<3-4 sentence brand overview with key facts — founding year, market position, what they're known for>",
   "rating_summary": "<3-4 sentence explanation of the rating, referencing the strongest and weakest scoring areas>",
   "framework_breakdown": [
@@ -167,7 +167,7 @@ Return ONLY the JSON. No markdown, no explanation.`;
       // Use calculated score if it differs significantly from what AI returned
       if (Math.abs(calculated - research.gonogo_score) > 3) {
         research.gonogo_score = calculated;
-        research.verdict = calculated >= 80 ? 'GO' : calculated >= 60 ? 'GO WITH CAUTION' : 'NOGO';
+        research.verdict = calculated >= 80 ? 'TOP PERFORMER' : calculated >= 60 ? 'GO' : 'NOGO';
       }
     }
 
