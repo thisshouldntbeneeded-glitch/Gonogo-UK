@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-ZA">
+<html lang="en-GB">
 <head>
 <!--
    ______                            __
@@ -13,23 +13,23 @@
 -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Compare and rate South African brands by industry. Independent 100-point scores, side-by-side comparisons, and transparent ratings on GoNoGo.">
-  <meta name="keywords" content="brand comparison South Africa, industry ratings, company reviews, GoNoGo ratings, South Africa brand rankings">
+  <meta name="description" content="Compare and rate UK brands by industry. Independent 100-point scores, side-by-side comparisons, and transparent ratings on GoNoGo.">
+  <meta name="keywords" content="brand comparison UK, industry ratings, company reviews, GoNoGo ratings, UK brand rankings">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
-  <link rel="canonical" href="https://www.gonogo.co.za/category">
-  <meta property="og:title" content="Brand Ratings by Industry — GoNoGo South Africa">
-  <meta property="og:description" content="Compare and rate South African brands by industry. Independent 100-point scores and transparent ratings.">
-  <meta property="og:image" content="https://www.gonogo.co.za/logos/og-share.jpg">
+  <link rel="canonical" href="https://www.gonogo.co.uk/category">
+  <meta property="og:title" content="Brand Ratings by Industry — GoNoGo UK">
+  <meta property="og:description" content="Compare and rate UK brands by industry. Independent 100-point scores and transparent ratings.">
+  <meta property="og:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta property="og:url" content="https://www.gonogo.co.za/category">
+  <meta property="og:url" content="https://www.gonogo.co.uk/category">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="GoNoGo South Africa">
+  <meta property="og:site_name" content="GoNoGo UK">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Brand Ratings by Industry — GoNoGo South Africa">
-  <meta name="twitter:description" content="Compare and rate South African brands by industry. Independent 100-point scores and transparent ratings.">
-  <meta name="twitter:image" content="https://www.gonogo.co.za/logos/og-share.jpg">
-  <title>Brand Ratings by Industry — GoNoGo South Africa</title>
+  <meta name="twitter:title" content="Brand Ratings by Industry — GoNoGo UK">
+  <meta name="twitter:description" content="Compare and rate UK brands by industry. Independent 100-point scores and transparent ratings.">
+  <meta name="twitter:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
+  <title>Brand Ratings by Industry — GoNoGo UK</title>
 
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -108,7 +108,7 @@
       if (!slug) {
         document.getElementById('nav').innerHTML = Components.renderPublicNav('');
         Components.updateThemeIcon();
-        document.title = 'All Industries — GoNoGo South Africa';
+        document.title = 'All Industries — GoNoGo UK';
 
         var categories = await GoNoGoAPI.getCategoriesWithBrands();
 
@@ -116,7 +116,7 @@
           '<section class="section"><div class="container">' +
             '<div class="section-header">' +
               '<h1 class="section-title">All Industries</h1>' +
-              '<p class="section-subtitle">Browse ' + categories.length + ' South African industries</p>' +
+              '<p class="section-subtitle">Browse ' + categories.length + ' UK industries</p>' +
             '</div>' +
             '<div class="industry-grid">' +
               categories.map(function(cat) {
@@ -164,9 +164,9 @@
       var itemLabelPlural = isBranchCategory ? 'branches' : 'brands';
 
       // === SEO: Dynamic meta tags for category pages ===
-      var seoTitle = catInfo.name + ' Ratings & Reviews — GoNoGo South Africa';
-      var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' ' + itemLabelPlural + ' in South Africa. Independent ' + catInfo.name.toLowerCase() + ' ratings using a transparent 100-point scoring framework on GoNoGo.';
-      var canonicalUrl = 'https://www.gonogo.co.za/category.html?cat=' + slug;
+      var seoTitle = catInfo.name + ' Ratings & Reviews — GoNoGo UK';
+      var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' ' + itemLabelPlural + ' in the UK. Independent ' + catInfo.name.toLowerCase() + ' ratings using a transparent 100-point scoring framework on GoNoGo.';
+      var canonicalUrl = 'https://www.gonogo.co.uk/category.html?cat=' + slug;
 
       document.title = seoTitle;
 
@@ -176,7 +176,7 @@
         el.content = content;
       }
       setMeta('name', 'description', catDesc);
-      setMeta('name', 'keywords', catInfo.name + ' South Africa, ' + catInfo.name.toLowerCase() + ' ratings, ' + catInfo.name.toLowerCase() + ' comparison, best ' + catInfo.name.toLowerCase() + ' South Africa, GoNoGo ' + catInfo.name.toLowerCase());
+      setMeta('name', 'keywords', catInfo.name + ' UK, ' + catInfo.name.toLowerCase() + ' ratings, ' + catInfo.name.toLowerCase() + ' comparison, best ' + catInfo.name.toLowerCase() + ' UK, GoNoGo ' + catInfo.name.toLowerCase());
       setMeta('property', 'og:title', seoTitle);
       setMeta('property', 'og:description', catDesc);
       setMeta('property', 'og:url', canonicalUrl);
@@ -190,17 +190,17 @@
       var catJsonLD = {
         '@context': 'https://schema.org',
         '@type': 'CollectionPage',
-        'name': catInfo.name + ' Brand Ratings — GoNoGo South Africa',
+        'name': catInfo.name + ' Brand Ratings — GoNoGo UK',
         'description': catDesc,
         'url': canonicalUrl,
         'isPartOf': {
           '@type': 'WebSite',
-          'name': 'GoNoGo South Africa',
-          'url': 'https://www.gonogo.co.za'
+          'name': 'GoNoGo UK',
+          'url': 'https://www.gonogo.co.uk'
         },
         'about': {
           '@type': 'Thing',
-          'name': catInfo.name + ' in South Africa'
+          'name': catInfo.name + ' in the UK'
         }
       };
       var catLdScript = document.createElement('script');

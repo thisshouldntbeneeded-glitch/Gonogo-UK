@@ -965,7 +965,7 @@ const Components = {
         <p style="color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:var(--space-5)">Sign in to access your brand dashboard</p>
         <div class="form-group">
           <label class="form-label">Email</label>
-          <input type="email" id="brand-email" placeholder="brand@example.co.za" onkeydown="if(event.key==='Enter')document.getElementById('brand-password').focus()">
+          <input type="email" id="brand-email" placeholder="brand@example.co.uk" onkeydown="if(event.key==='Enter')document.getElementById('brand-password').focus()">
         </div>
         <div class="form-group">
           <label class="form-label">Password</label>
@@ -998,7 +998,7 @@ const Components = {
       <p style="color:var(--text-secondary);font-size:var(--text-sm);margin-bottom:var(--space-5)">Enter your email and we'll send a reset link</p>
       <div class="form-group">
         <label class="form-label">Email</label>
-        <input type="email" id="reset-email" placeholder="brand@example.co.za" onkeydown="if(event.key==='Enter')Components.submitResetRequest()">
+        <input type="email" id="reset-email" placeholder="brand@example.co.uk" onkeydown="if(event.key==='Enter')Components.submitResetRequest()">
       </div>
       <div class="password-error" id="reset-error" style="display:none"></div>
       <div id="reset-success" style="display:none;padding:var(--space-3);background:rgba(17,165,81,0.1);border:1px solid var(--primary);border-radius:var(--radius-md);color:var(--primary);font-size:var(--text-sm);margin-bottom:var(--space-3)"></div>
