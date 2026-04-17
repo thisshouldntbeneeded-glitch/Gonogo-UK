@@ -524,7 +524,7 @@ function openBrandScoring() {
   body.innerHTML = '<div class="text-sm text-muted" style="padding:var(--space-6);text-align:center"><i class="fa-solid fa-spinner fa-spin"></i> Loading brands...</div>';
 
   // Load brands for this sector
-  sbFetch('brands?region=eq.za&category_slug=eq.' + encodeURIComponent(currentSector.slug) + '&select=slug,name,status,is_active&order=name')
+  sbFetch('brands?region=eq.' + GoNoGoAPI.SITE_REGION + '&category_slug=eq.' + encodeURIComponent(currentSector.slug) + '&select=slug,name,status,is_active&order=name')
     .then(function(brands) {
       allBrands = brands || [];
       renderBrandScoring();
@@ -1001,7 +1001,7 @@ function deleteCategoryScores() {
 // ══════════════════════════════════════════
 function rollupBrandScores(brandSlug) {
   // First verify the brand exists — skip rollup if not (avoids FK error on insert)
-  return sbFetch('brands?slug=eq.' + encodeURIComponent(brandSlug) + '&region=eq.za&select=slug&limit=1')
+  return sbFetch('brands?slug=eq.' + encodeURIComponent(brandSlug) + '&region=eq.' + GoNoGoAPI.SITE_REGION + '&select=slug&limit=1')
     .then(function(brands) {
       if (!brands || !brands.length) {
         console.warn('rollup skipped: brand "' + brandSlug + '" not found in brands table');
