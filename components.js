@@ -1216,6 +1216,20 @@ const Components = {
 
   initPublicAuth() {
     if (!supabaseAuth) return;
+
+    // Handle magic-link / email-confirmation callback (PKCE flow returns ?code=…)
+    var urlParams = new URLSearchParams(window.location.search);
+    var authCode = urlParams.get('code');
+    if (authCode) {
+      supabaseAuth.auth.exchangeCodeForSession(authCode).then(function() {
+        // Clean the URL so the code isn't reused
+        var clean = window.location.pathname + window.location.hash;
+        window.history.replaceState(null, '', clean);
+      }).catch(function(err) {
+        console.warn('Auth code exchange failed:', err);
+      });
+    }
+
     supabaseAuth.auth.getSession().then(function(res) {
       var session = res.data && res.data.session;
       Components._currentUser = session ? session.user : null;
