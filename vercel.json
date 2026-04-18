@@ -4,6 +4,14 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "trailingSlash": false,
+  "redirects": [
+    { "source": "/za/:path*", "destination": "https://www.gonogo.co.za/", "statusCode": 301 },
+    { "source": "/bank-comparison", "destination": "https://www.gonogo.co.za/category.html?cat=banking", "statusCode": 301 },
+    { "source": "/insurance-comparison", "destination": "https://www.gonogo.co.za/category.html?cat=insurance", "statusCode": 301 },
+    { "source": "/mobile-comparison", "destination": "https://www.gonogo.co.za/category.html?cat=mobile-networks", "statusCode": 301 },
+    { "source": "/medical-aid-comparison", "destination": "https://www.gonogo.co.za/category.html?cat=medical-aid", "statusCode": 301 },
+    { "source": "/contact", "destination": "/about", "statusCode": 301 }
+  ],
   "rewrites": [
     { "source": "/category", "destination": "/category.html" },
     { "source": "/brand", "destination": "/brand.html" },
