@@ -453,131 +453,15 @@
           '</div>';
 
         // ========== Assemble full output ==========
-        // ========== Deep Dive Section ==========
-        var deepDiveHtml =
-          '<div class="card" style="margin-bottom:var(--space-6)" id="deep-dive-section">' +
-            '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-2);text-align:center"><i class="fa-solid fa-microscope" style="color:var(--green)"></i> Deep Dive</h3>' +
-            '<p class="text-sm text-muted" style="text-align:center;margin-bottom:var(--space-4)">Compare criterion by criterion — pick a category to see exactly where each brand wins or loses</p>' +
-            '<div id="dd-cat-buttons" style="display:flex;gap:var(--space-2);flex-wrap:wrap;justify-content:center;margin-bottom:var(--space-4)">' +
-              '<div class="text-xs text-muted" style="padding:var(--space-2)"><i class="fa-solid fa-spinner fa-spin"></i> Loading detailed scores...</div>' +
-            '</div>' +
-            '<div id="dd-content"></div>' +
-          '</div>';
+        var deepDiveHtml = '';
 
 resultEl.innerHTML = verdictBannerHtml + brandCardsHtml + ratingSummaryHtml + radarHtml + keyDiffsHtml + deepDiveHtml + barComparisonHtml + strengthsHtml;
 
         if (radarChart) radarChart.destroy();
         radarChart = Components.createCompareRadarChart('compare-radar', b1, b2);
 
-        // Fetch granular scores and build the deep dive
-        loadDeepDive(b1, b2);
+
       };
-
-      // ========== Deep Dive ==========
-      function normCat(s) { return s.replace(/&/g, '').replace(/\s+/g, ' ').trim().toLowerCase(); }
-      var ddData = { norm1: null, norm2: null, categories: [], b1: null, b2: null };
-
-      async function loadDeepDive(b1, b2) {
-        ddData.b1 = b1; ddData.b2 = b2;
-        var g1 = await GoNoGoAPI.getBrandGranularScores(b1.id);
-        var g2 = await GoNoGoAPI.getBrandGranularScores(b2.id);
-        var btnContainer = document.getElementById('dd-cat-buttons');
-        if (!g1 && !g2) {
-          btnContainer.innerHTML = '<div class="text-sm text-muted" style="padding:var(--space-4);text-align:center">Detailed scoring data is not yet available for this category.</div>';
-          return;
-        }
-
-        ddData.norm1 = {}; ddData.norm2 = {};
-        if (g1) Object.keys(g1).forEach(function(k) { ddData.norm1[normCat(k)] = g1[k]; });
-        if (g2) Object.keys(g2).forEach(function(k) { ddData.norm2[normCat(k)] = g2[k]; });
-
-        // Collect all category names from both
-        var catSet = {};
-        if (g1) Object.keys(g1).forEach(function(k) { catSet[k] = true; });
-        if (g2) Object.keys(g2).forEach(function(k) { catSet[k] = true; });
-        ddData.categories = Object.keys(catSet).sort();
-
-        // Render category pill buttons
-        btnContainer.innerHTML = ddData.categories.map(function(cat, idx) {
-          return '<button class="dd-cat-btn' + (idx === 0 ? ' active' : '') + '" onclick="selectDeepDiveCategory(this, \'' + normCat(cat).replace(/'/g, '') + '\')">' + Components.escapeHTML(cat) + '</button>';
-        }).join('');
-
-        // Auto-select first category
-        renderDeepDiveCategory(normCat(ddData.categories[0]));
-      }
-
-      window.selectDeepDiveCategory = function(btn, normKey) {
-        document.querySelectorAll('.dd-cat-btn').forEach(function(b) { b.classList.remove('active'); });
-        btn.classList.add('active');
-        renderDeepDiveCategory(normKey);
-      };
-
-      function renderDeepDiveCategory(normKey) {
-        var container = document.getElementById('dd-content');
-        var d1 = ddData.norm1[normKey], d2 = ddData.norm2[normKey];
-        var c1 = d1 ? d1.criteria : [];
-        var c2 = d2 ? d2.criteria : [];
-
-        // Merge criteria by subcategory+description
-        var merged = {};
-        c1.forEach(function(c) { var key = (c.subcategory||'') + '|' + (c.description||''); merged[key] = { desc: c.description, sub: c.subcategory, s1: c.score, m1: c.max, e1: c.evidence, sort: c.sort }; });
-        c2.forEach(function(c) { var key = (c.subcategory||'') + '|' + (c.description||''); if (!merged[key]) merged[key] = { desc: c.description, sub: c.subcategory, sort: c.sort }; merged[key].s2 = c.score; merged[key].m2 = c.max; merged[key].e2 = c.evidence; });
-
-        var sorted = Object.values(merged).sort(function(a,b) { return (a.sort||0) - (b.sort||0); });
-
-        // Category totals
-        var total1 = 0, total2 = 0, maxTotal = 0;
-        sorted.forEach(function(cr) { total1 += (cr.s1||0); total2 += (cr.s2||0); maxTotal += (cr.m1||cr.m2||0); });
-
-        var esc = Components.escapeHTML;
-        var html =
-          '<div style="display:flex;justify-content:space-between;align-items:center;padding:var(--space-3) var(--space-4);margin-bottom:var(--space-2);background:var(--surface-2);border-radius:var(--radius-md)">' +
-            '<div style="text-align:center"><span class="dd-score' + (total1 > total2 ? ' dd-winner' : '') + '" style="font-size:var(--text-base)">' + total1 + '/' + maxTotal + '</span><div class="text-xs text-muted">' + esc(ddData.b1.name) + '</div></div>' +
-            '<div style="text-align:center;font-size:var(--text-xs);color:var(--text-muted);font-weight:700">CATEGORY TOTAL</div>' +
-            '<div style="text-align:center"><span class="dd-score' + (total2 > total1 ? ' dd-winner' : '') + '" style="font-size:var(--text-base)">' + total2 + '/' + maxTotal + '</span><div class="text-xs text-muted">' + esc(ddData.b2.name) + '</div></div>' +
-          '</div>';
-
-        html += '<div class="dd-header"><div>' + esc(ddData.b1.name) + '</div><div>Criterion</div><div>' + esc(ddData.b2.name) + '</div></div>';
-
-        sorted.forEach(function(cr) {
-          var s1 = cr.s1 != null ? cr.s1 : '-';
-          var s2 = cr.s2 != null ? cr.s2 : '-';
-          var m = cr.m1 || cr.m2 || 0;
-          var w1 = (s1 !== '-' && s2 !== '-' && s1 > s2) ? ' dd-winner' : '';
-          var w2 = (s1 !== '-' && s2 !== '-' && s2 > s1) ? ' dd-winner' : '';
-
-          html += '<div class="dd-criterion">' +
-            '<div class="dd-cell dd-cell-left">' +
-              '<div class="dd-score' + w1 + '">' + s1 + '/' + m + '</div>' +
-              (cr.e1 ? '<div class="dd-evidence">' + esc(cr.e1) + '</div>' : '') +
-            '</div>' +
-            '<div class="dd-cell dd-cell-label">' + esc(cr.desc || cr.sub || '') + '</div>' +
-            '<div class="dd-cell dd-cell-right">' +
-              '<div class="dd-score' + w2 + '">' + s2 + '/' + m + '</div>' +
-              (cr.e2 ? '<div class="dd-evidence">' + esc(cr.e2) + '</div>' : '') +
-            '</div>' +
-          '</div>';
-        });
-
-        // Winner summary
-        var wins1 = 0, wins2 = 0, ties = 0;
-        sorted.forEach(function(cr) {
-          if (cr.s1 != null && cr.s2 != null) {
-            if (cr.s1 > cr.s2) wins1++;
-            else if (cr.s2 > cr.s1) wins2++;
-            else ties++;
-          }
-        });
-        html += '<div style="text-align:center;padding:var(--space-4);border-top:2px solid var(--border-primary);margin-top:var(--space-1)">' +
-          '<span class="text-sm" style="font-weight:700">' + esc(ddData.b1.name) + ' wins ' + wins1 + '</span>' +
-          '<span class="text-sm text-muted" style="margin:0 var(--space-3)">·</span>' +
-          '<span class="text-sm text-muted">' + ties + ' tied</span>' +
-          '<span class="text-sm text-muted" style="margin:0 var(--space-3)">·</span>' +
-          '<span class="text-sm" style="font-weight:700">' + esc(ddData.b2.name) + ' wins ' + wins2 + '</span>' +
-        '</div>';
-
-        container.innerHTML = html;
-      }
 
       // Render after all functions are defined
       renderPage();
