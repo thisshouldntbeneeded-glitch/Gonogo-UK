@@ -140,6 +140,8 @@ var GoNoGoAPI = (function () {
   }
 
   return {
+    _supabaseUrl: SUPABASE_URL,
+    _supabaseKey: SUPABASE_ANON_KEY,
     SITE_REGION: SITE_REGION,
 
     isLive: function () {

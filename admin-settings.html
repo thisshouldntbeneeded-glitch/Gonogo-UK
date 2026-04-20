@@ -171,6 +171,17 @@
       <div id="brand-user-list" class="text-sm text-muted">Loading brand portal users...</div>
     </div>
 
+    <!-- Brand Claims / Leads -->
+    <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-6)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4)">
+        <h3 class="text-sm font-semibold">
+          <i class="fa-solid fa-paper-plane" style="color:var(--blue);margin-right:var(--space-2)"></i> Brand Claims
+        </h3>
+        <span id="claims-count" class="text-xs text-muted"></span>
+      </div>
+      <div id="claims-list" class="text-sm text-muted">Loading brand claims...</div>
+    </div>
+
     <!-- Current Session Info -->
     <div class="card" style="padding:var(--space-6)">
       <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4)">
@@ -224,6 +235,7 @@
     await loadUsers();
     await loadBrandUsers();
     await loadBrandDropdown();
+    await loadBrandClaims();
   }
 
   function safeText(value) {
@@ -474,6 +486,50 @@
       await loadBrandUsers();
     } catch (err) {
       Components.showToast('Error: ' + err.message, 'error');
+    }
+  }
+
+  // ============================================
+  // BRAND CLAIMS / LEADS
+  // ============================================
+  async function loadBrandClaims() {
+    try {
+      var user = Components.getAdminUser();
+      var resp = await fetch(GoNoGoAPI._supabaseUrl + '/rest/v1/rpc/admin_list_brand_claims', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': GoNoGoAPI._supabaseKey,
+          'Authorization': 'Bearer ' + GoNoGoAPI._supabaseKey
+        },
+        body: JSON.stringify({ p_admin_id: user.id })
+      });
+      if (!resp.ok) throw new Error('Failed to load claims');
+      var claims = await resp.json();
+      var container = document.getElementById('claims-list');
+      document.getElementById('claims-count').textContent = claims.length + ' lead' + (claims.length !== 1 ? 's' : '');
+
+      if (!claims.length) {
+        container.innerHTML = '<div style="text-align:center;padding:var(--space-4);color:var(--text-muted)">No brand claims yet. They will appear here when businesses submit the claim form.</div>';
+        return;
+      }
+      container.innerHTML = '<table class="data-table" style="width:100%"><thead><tr>' +
+        '<th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Region</th><th>Submitted</th>' +
+        '</tr></thead><tbody>' +
+        claims.map(function(c) {
+          var regionLabel = (c.region || '').toUpperCase() === 'UK' ? '\ud83c\uddec\ud83c\udde7 UK' : '\ud83c\uddff\ud83c\udde6 SA';
+          return '<tr>' +
+            '<td style="font-size:var(--text-sm);font-weight:600">' + Components.escapeHTML(c.full_name || '') + '</td>' +
+            '<td style="font-size:var(--text-sm)"><a href="mailto:' + Components.escapeHTML(c.email || '') + '" style="color:var(--blue)">' + Components.escapeHTML(c.email || '') + '</a></td>' +
+            '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(c.role || '') + '</td>' +
+            '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(c.phone || '') + '</td>' +
+            '<td style="font-size:var(--text-sm)">' + regionLabel + '</td>' +
+            '<td style="font-size:var(--text-xs);color:var(--text-muted)">' + (c.created_at ? new Date(c.created_at).toLocaleDateString() : '') + '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table>';
+    } catch(e) {
+      document.getElementById('claims-list').innerHTML = '<div class="text-sm" style="color:var(--red-text)">Could not load brand claims.</div>';
     }
   }
 
