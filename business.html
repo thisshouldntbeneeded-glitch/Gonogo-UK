@@ -59,7 +59,7 @@
             Independent scores. Transparent reviews. No pay-for-score.
           </p>
           <div class="bz-hero-actions">
-            <a href="mailto:admin@gonogo.co.uk?subject=GoNoGo%20Business%20Demo" class="btn btn-primary btn-lg"><i class="fa-solid fa-calendar-check"></i> Book a demo</a>
+            <a href="#claim" class="btn btn-primary btn-lg"><i class="fa-solid fa-paper-plane"></i> Claim your brand</a>
             <a href="#pricing" class="btn btn-secondary">See pricing</a>
           </div>
 
@@ -199,8 +199,8 @@
       <div class="bz-steps">
         <div class="bz-step">
           <div class="bz-step-num">1</div>
-          <h3>We score your brand</h3>
-          <p>Our methodology evaluates your brand across six weighted categories using public data, reviews, and compliance signals. Your score is live within 48 hours.</p>
+          <h3>Your brand is already scored</h3>
+          <p>Our methodology evaluates brands across six weighted categories using public data, reviews, and compliance signals. Hundreds of brands across the UK are already scored and live on the platform.</p>
         </div>
         <div class="bz-step-arrow"><i class="fa-solid fa-arrow-right"></i></div>
         <div class="bz-step">
@@ -218,18 +218,24 @@
     </div>
   </section>
 
-  <!-- ═══════════ FREE MONTH ═══════════ -->
-  <section class="section" style="padding-top:0">
-    <div class="container">
-      <div class="bz-free-banner">
-        <div class="bz-free-content">
-          <div class="bz-free-badge"><i class="fa-solid fa-gift"></i> Limited offer</div>
-          <h2 class="bz-free-title">Try it free for one month</h2>
-          <p class="bz-free-desc">See your score, explore the dashboard, and get your first action plan — no commitment, no credit card.</p>
-        </div>
-        <div class="bz-free-action">
-          <a href="mailto:admin@gonogo.co.uk?subject=Claim%201%20Month%20Free%20-%20GoNoGo%20Business" class="btn btn-primary btn-lg">Claim your free month</a>
-          <span class="bz-free-note">Cancel anytime. No strings.</span>
+  <!-- ═══════════ CLAIM YOUR BRAND ═══════════ -->
+  <section class="section" style="padding-top:0" id="claim">
+    <div class="container" style="max-width:640px">
+      <div class="card" style="padding:var(--space-6);border:1px solid var(--border-primary)">
+        <h2 style="font-size:var(--text-xl);font-weight:700;margin-bottom:var(--space-1);text-align:center">Claim your brand</h2>
+        <p style="color:var(--text-secondary);font-size:var(--text-sm);text-align:center;margin-bottom:var(--space-5);line-height:1.6">Fill in your details below and our team will verify your identity and activate your brand portal access.</p>
+        <form id="claim-form" style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <div class="form-group"><label class="form-label" for="claim-name">Full name</label><input type="text" id="claim-name" required placeholder="e.g. James Taylor"></div>
+          <div class="form-group"><label class="form-label" for="claim-email">Business email address</label><input type="email" id="claim-email" required placeholder="e.g. james@company.co.uk"></div>
+          <div class="form-group"><label class="form-label" for="claim-role">Your role</label><input type="text" id="claim-role" required placeholder="e.g. Head of Customer Experience"></div>
+          <div class="form-group"><label class="form-label" for="claim-phone">Business telephone number</label><input type="tel" id="claim-phone" required placeholder="e.g. 020 7123 4567"></div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width:100%;justify-content:center" id="claim-btn"><i class="fa-solid fa-paper-plane"></i> Submit</button>
+          <p style="font-size:var(--text-xs);color:var(--text-muted);text-align:center;margin:0">We'll review your details and be in touch within two business days.</p>
+        </form>
+        <div id="claim-success" style="display:none;text-align:center;padding:var(--space-6) 0">
+          <i class="fa-solid fa-circle-check" style="font-size:48px;color:var(--green);margin-bottom:var(--space-3);display:block"></i>
+          <h3 style="margin-bottom:var(--space-2)">Thank you</h3>
+          <p style="color:var(--text-secondary);font-size:var(--text-sm);line-height:1.6">We've received your details and will be in touch shortly to verify your brand and activate your portal access.</p>
         </div>
       </div>
     </div>
@@ -289,11 +295,25 @@
   <section class="section" id="pricing">
     <div class="container">
       <h2 class="bz-section-title" style="text-align:center;margin-bottom:var(--space-2)">Simple, transparent pricing</h2>
-      <p class="bz-section-lead" style="text-align:center;max-width:50ch;margin:0 auto var(--space-8)">One core package. Everything included. Enterprise for multi-venue rollouts.</p>
+      <p class="bz-section-lead" style="text-align:center;max-width:50ch;margin:0 auto var(--space-8)">Start free. Upgrade when you're ready.</p>
 
       <div class="bz-pricing-grid">
+        <article class="bz-price-card">
+          <div class="bz-price-tag highlight" style="background:var(--green-bg);color:var(--green-text)">Free</div>
+          <h3>Claim Your Brand</h3>
+          <div class="bz-price">£0 <small>/ forever</small></div>
+          <p class="bz-price-lead">Take ownership of your brand profile and start engaging with customer reviews at no cost.</p>
+          <ul class="bz-price-list">
+            <li>View your brand's public reviews</li>
+            <li>Reply to customer reviews</li>
+            <li>Verified brand profile badge</li>
+          </ul>
+          <a href="#claim" class="btn btn-primary" style="width:100%;justify-content:center">Claim your brand</a>
+          <p class="bz-price-note">No credit card. No commitment. Just claim and reply.</p>
+        </article>
+
         <article class="bz-price-card featured">
-          <div class="bz-price-tag highlight">Core package</div>
+          <div class="bz-price-tag highlight">Full access</div>
           <h3>GoNoGo Business</h3>
           <div class="bz-price-row">
             <div class="bz-price">£195 <small>/ month</small></div>
@@ -304,36 +324,18 @@
           </div>
           <p class="bz-price-lead">Everything your brand needs — a public score, an improvement workspace, and customer feedback tools.</p>
           <ul class="bz-price-list">
-            <li>Live GoNoGo score badge</li>
+            <li>Everything in Free, plus:</li>
             <li>Full business portal access</li>
+            <li>Live GoNoGo score badge</li>
             <li>Priority action plan</li>
             <li>Score-lift scenario modelling</li>
             <li>Review intelligence and theme extraction</li>
             <li>Reply coach with guided templates</li>
             <li>Peer benchmarking</li>
-            <li>QR feedback for single-site operations</li>
-            <li>Monthly support</li>
+            <li>QR feedback</li>
           </ul>
-          <a href="mailto:admin@gonogo.co.uk?subject=GoNoGo%20Business%20Plan" class="btn btn-primary" style="width:100%;justify-content:center">Get started</a>
+          <a href="#claim" class="btn btn-primary" style="width:100%;justify-content:center">Get started</a>
           <p class="bz-price-note">Month-to-month. Annual for better value. First month free.</p>
-        </article>
-
-        <article class="bz-price-card">
-          <div class="bz-price-tag">Enterprise</div>
-          <h3>Multi-Venue</h3>
-          <div class="bz-price">From £750 <small>/ month</small></div>
-          <p class="bz-price-lead">For organisations running across multiple branches, stores, clinics, terminals or service venues.</p>
-          <ul class="bz-price-list">
-            <li>Everything in GoNoGo Business</li>
-            <li>Multi-venue QR feedback rollout</li>
-            <li>Venue-level reporting</li>
-            <li>Group-wide dashboard views</li>
-            <li>Multi-user team access</li>
-            <li>Rollout support and onboarding</li>
-            <li>Custom setup for larger organisations</li>
-          </ul>
-          <a href="mailto:admin@gonogo.co.uk?subject=GoNoGo%20Enterprise%20Plan" class="btn btn-secondary" style="width:100%;justify-content:center">Discuss Enterprise</a>
-          <p class="bz-price-note">Best for groups with multiple physical locations.</p>
         </article>
       </div>
     </div>
@@ -376,14 +378,14 @@
     <div class="container">
       <div class="bz-cta">
         <div class="bz-cta-text">
-          <h2 class="bz-section-title" style="margin:0 0 var(--space-2)">See how it works for your brand</h2>
+          <h2 class="bz-section-title" style="margin:0 0 var(--space-2)">Ready to take control of your brand?</h2>
           <p style="color:var(--text-secondary);font-size:var(--text-sm);line-height:1.7;margin:0;max-width:52ch">
-            Send us your brand name and category. We'll walk you through the platform, show you your score, and generate your first action plan — free.
+            Claim your brand profile for free and start replying to reviews today. Upgrade to the full portal when you're ready.
           </p>
         </div>
         <div class="bz-cta-actions">
-          <a href="mailto:admin@gonogo.co.uk?subject=GoNoGo%20Business%20Demo" class="btn btn-primary btn-lg"><i class="fa-solid fa-calendar-check"></i> Book a demo</a>
-          <a href="mailto:admin@gonogo.co.uk?subject=GoNoGo%20Business%20Question" class="btn btn-secondary">Ask a question</a>
+          <a href="#claim" class="btn btn-primary btn-lg"><i class="fa-solid fa-paper-plane"></i> Claim your brand</a>
+          <a href="#pricing" class="btn btn-secondary">See pricing</a>
         </div>
       </div>
     </div>
@@ -426,6 +428,39 @@
     Components.initTheme();
     Components.initPublicAuth();
     document.getElementById('footer').innerHTML = Components.renderFooter();
+
+    // Claim form handler
+    document.getElementById('claim-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      var btn = document.getElementById('claim-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
+      try {
+        var resp = await fetch(SUPABASE_URL + '/rest/v1/brand_claims', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({
+            full_name: document.getElementById('claim-name').value.trim(),
+            email: document.getElementById('claim-email').value.trim().toLowerCase(),
+            role: document.getElementById('claim-role').value.trim(),
+            phone: document.getElementById('claim-phone').value.trim(),
+            region: 'uk'
+          })
+        });
+        if (!resp.ok) throw new Error('Submission failed');
+        document.getElementById('claim-form').style.display = 'none';
+        document.getElementById('claim-success').style.display = 'block';
+      } catch(err) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit';
+        alert('Something went wrong. Please try again or email admin@gonogo.co.uk.');
+      }
+    });
   </script>
 
   <style>
