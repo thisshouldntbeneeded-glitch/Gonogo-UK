@@ -130,6 +130,7 @@ const Components = {
       { href: 'admin-categories.html', label: 'Categories', icon: 'fa-folder-open', id: 'categories' },
       { href: 'admin-comments.html', label: 'Comments', icon: 'fa-comments', id: 'comments' },
       { href: 'admin-research.html', label: 'Research', icon: 'fa-flask', id: 'research' },
+      { href: 'admin-weights.html', label: 'Weight Analytics', icon: 'fa-sliders', id: 'weights' },
       { href: 'admin-api.html', label: 'API Portal', icon: 'fa-plug', id: 'api' },
       { href: 'admin-settings.html', label: 'Settings', icon: 'fa-gear', id: 'settings' },
       { href: 'admin-scoring.html', label: 'Scoring Engine', icon: 'fa-scale-balanced', id: 'scoring' },
@@ -623,12 +624,13 @@ const Components = {
             'GoNoGo\u2019s default weights reflect our methodology. Adjust them to match what matters most to <em>you</em>. Your personalised score is calculated on your device only.' +
           '</p>' +
           sliders +
-          '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-3);padding-top:var(--space-3);border-top:1px solid var(--border-primary)">' +
+          '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--space-3);margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--border-primary)">' +
             '<button type="button" class="uw-reset btn btn-ghost btn-sm" style="font-size:var(--text-xs)"><i class="fa-solid fa-rotate-left"></i> Reset to GoNoGo defaults</button>' +
-            '<span style="font-size:var(--text-xs);color:var(--text-muted)">Saved on this device only</span>' +
+            '<button type="button" class="uw-save btn btn-primary btn-sm" style="display:inline-flex;align-items:center;gap:8px"><i class="fa-solid fa-check"></i><span class="uw-save-label">Save my weights</span></button>' +
           '</div>' +
+          '<div class="uw-saved-msg" style="display:none;margin-top:var(--space-3);padding:var(--space-2) var(--space-3);background:var(--green-bg);border:1px solid var(--green-dim);border-radius:var(--radius-sm);color:var(--green-text);font-size:var(--text-xs);font-weight:600"><i class="fa-solid fa-circle-check"></i> Saved. Thanks \u2014 your weights help us see what matters to readers.</div>' +
           '<p style="font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-3);line-height:1.5">' +
-            '<a href="methodology.html" style="color:var(--green)">How GoNoGo scores work \u2192</a>' +
+            'Saved on this device. We also send an anonymous, aggregated copy of your weights (no identifier, no personal data) so we can prioritise what readers care about. <a href="cookies.html#weight-analytics" style="color:var(--green)">Details</a> \u00b7 <a href="methodology.html" style="color:var(--green)">How GoNoGo scores work \u2192</a>' +
           '</p>' +
         '</div>' +
       '</div>'
@@ -647,6 +649,8 @@ const Components = {
     const chevron = wrap.querySelector('.uw-chevron');
     const sliders = Array.prototype.slice.call(wrap.querySelectorAll('.uw-slider'));
     const resetBtn = wrap.querySelector('.uw-reset');
+    const saveBtn = wrap.querySelector('.uw-save');
+    const savedMsg = wrap.querySelector('.uw-saved-msg');
     const defaults = this.defaultWeightsFrom(scoringCategories);
     const opts = options || {};
     const self = this;
@@ -744,6 +748,33 @@ const Components = {
       emit();
       if (typeof onChange === 'function') onChange(null);
     });
+
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        // Force a save: weights are already in localStorage via emit(), but if the
+        // user opened the panel and tweaked nothing, lastWeights may still be null.
+        if (!lastWeights) {
+          dirty = true;
+          emit();
+        } else {
+          // Mark dirty so maybeSendAnalytics will fire even if weights match defaults
+          // for users who explicitly clicked Save after fiddling and reverting.
+          dirty = true;
+        }
+        maybeSendAnalytics();
+        if (savedMsg) {
+          savedMsg.style.display = 'block';
+          clearTimeout(saveBtn._t);
+          saveBtn._t = setTimeout(() => { savedMsg.style.display = 'none'; }, 3000);
+        }
+        const lbl = saveBtn.querySelector('.uw-save-label');
+        if (lbl) {
+          const orig = lbl.textContent;
+          lbl.textContent = 'Saved';
+          setTimeout(() => { lbl.textContent = orig; }, 2000);
+        }
+      });
+    }
 
     // Catch users who close the tab / navigate away with the panel still open.
     window.addEventListener('pagehide', maybeSendAnalytics, { once: false });

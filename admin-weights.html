@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta name="generator" content="Perplexity Computer">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>GoNoGo UK — Weight Analytics</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <div id="sidebar-container"></div>
+    <main class="admin-main" id="admin-content" style="display:none;">
+      <div class="admin-header">
+        <div>
+          <h1 class="admin-title">Weight Analytics</h1>
+          <p class="text-sm text-secondary">Anonymous, aggregated category-weight events submitted by readers via the &ldquo;Weight this yourself&rdquo; panel.</p>
+        </div>
+        <div style="display:flex;gap:var(--space-2);align-items:center">
+          <select id="range-filter" class="input input-sm" style="min-width:160px">
+            <option value="all" selected>All time</option>
+            <option value="30">Last 30 days</option>
+            <option value="7">Last 7 days</option>
+            <option value="1">Last 24 hours</option>
+          </select>
+          <button id="refresh-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" style="margin-bottom:var(--space-8);" id="kpi-grid">
+        <div class="kpi-card"><div class="kpi-label">Loading&hellip;</div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-8);">
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">Most-reweighted categories</h3>
+          <div style="height:280px;"><canvas id="cat-chart"></canvas></div>
+        </div>
+        <div class="card">
+          <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">User score vs GoNoGo score (where compared)</h3>
+          <div style="height:280px;"><canvas id="score-chart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:var(--space-8);">
+        <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">Average weight emphasis by category</h3>
+        <p class="text-xs text-muted" style="margin-bottom:var(--space-4)">Each row shows the average user-weight for a scoring sub-category vs GoNoGo&rsquo;s default. Positive deltas mean readers care more than we do; negative means less.</p>
+        <div id="emphasis-table"></div>
+      </div>
+
+      <div class="card" style="margin-bottom:var(--space-8);">
+        <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">Top brands by user vs GoNoGo gap</h3>
+        <p class="text-xs text-muted" style="margin-bottom:var(--space-4)">Brands where reader-weighted scores most diverge from our independent score (averaged across submissions).</p>
+        <div id="brand-gap-table"></div>
+      </div>
+
+      <div class="card">
+        <h3 class="text-sm font-semibold" style="margin-bottom:var(--space-4);">Recent events</h3>
+        <div id="events-table"></div>
+      </div>
+
+      <div style="padding:var(--space-6) 0;text-align:center;">
+        <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom &middot; data is anonymous and aggregated</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="data/data_partA.js"></script>
+  <script src="data/data_partB.js"></script>
+  <script src="data/data_partC.js"></script>
+  <script src="data/data_partD.js"></script>
+  <script src="data/data_partE.js"></script>
+  <script src="data/data_partF.js"></script>
+  <script src="data/data.js"></script>
+  <script src="data/helpers.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="components.js"></script>
+  <script src="api.js"></script>
+
+  <script>
+    const SITE = 'uk';
+    document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('weights');
+
+    if (Components.checkAdminAuth()) {
+      initWeightsPage();
+    }
+
+    let catChart = null, scoreChart = null;
+
+    function fmt(n, d) {
+      if (n === null || n === undefined || isNaN(n)) return '&mdash;';
+      return Number(n).toFixed(d == null ? 1 : d);
+    }
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    function timeAgo(iso) {
+      const d = new Date(iso); const s = (Date.now() - d.getTime()) / 1000;
+      if (s < 60) return Math.round(s) + 's ago';
+      if (s < 3600) return Math.round(s/60) + 'm ago';
+      if (s < 86400) return Math.round(s/3600) + 'h ago';
+      return Math.round(s/86400) + 'd ago';
+    }
+
+    async function fetchEvents() {
+      const range = document.getElementById('range-filter').value;
+      let path = 'weight_events?select=*&site=eq.' + SITE + '&order=created_at.desc&limit=2000';
+      if (range !== 'all') {
+        const since = new Date(Date.now() - parseInt(range, 10) * 86400 * 1000).toISOString();
+        path += '&created_at=gte.' + encodeURIComponent(since);
+      }
+      try {
+        return await GoNoGoAPI.reviewsRequest(path);
+      } catch (e) {
+        console.error('weight_events fetch failed', e);
+        return [];
+      }
+    }
+
+    function brandNameFor(slug) {
+      if (!slug) return '';
+      try {
+        const all = (typeof BRANDS !== 'undefined' && BRANDS) || [];
+        const hit = all.find(b => b.id === slug || b.slug === slug);
+        return hit ? hit.name : slug;
+      } catch (e) { return slug; }
+    }
+
+    function categoryNameFor(slug) {
+      if (!slug) return '';
+      try {
+        const cats = (typeof CATEGORIES !== 'undefined' && CATEGORIES) || [];
+        const hit = cats.find(c => c.slug === slug || c.id === slug);
+        return hit ? (hit.name || slug) : slug;
+      } catch (e) { return slug; }
+    }
+
+    function aggregateCategoryFrequency(events) {
+      const counts = {};
+      events.forEach(e => {
+        const k = e.category_slug || '(unknown)';
+        counts[k] = (counts[k] || 0) + 1;
+      });
+      return Object.keys(counts)
+        .map(k => ({ slug: k, label: categoryNameFor(k), count: counts[k] }))
+        .sort((a,b) => b.count - a.count);
+    }
+
+    // For each category_slug, compute average user weight per sub-category and average default weight.
+    function aggregateEmphasis(events) {
+      const buckets = {}; // catSlug -> { sub -> { sumUser, sumDefault, n } }
+      events.forEach(e => {
+        const cs = e.category_slug; const w = e.weights || {}; const d = e.default_weights || {};
+        if (!cs) return;
+        if (!buckets[cs]) buckets[cs] = {};
+        Object.keys(w).forEach(sub => {
+          if (!buckets[cs][sub]) buckets[cs][sub] = { sumUser: 0, sumDefault: 0, n: 0 };
+          buckets[cs][sub].sumUser += Number(w[sub]) || 0;
+          buckets[cs][sub].sumDefault += Number(d[sub]) || 0;
+          buckets[cs][sub].n += 1;
+        });
+      });
+      const rows = [];
+      Object.keys(buckets).forEach(cs => {
+        Object.keys(buckets[cs]).forEach(sub => {
+          const b = buckets[cs][sub];
+          const avgUser = b.sumUser / b.n;
+          const avgDefault = b.sumDefault / b.n;
+          rows.push({
+            categorySlug: cs,
+            categoryLabel: categoryNameFor(cs),
+            subCategory: sub,
+            avgUser, avgDefault,
+            delta: avgUser - avgDefault,
+            n: b.n
+          });
+        });
+      });
+      return rows.sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta));
+    }
+
+    function aggregateBrandGap(events) {
+      const buckets = {}; // brand_slug -> { sumUser, sumGonogo, n }
+      events.forEach(e => {
+        if (!e.brand_slug || e.user_score == null || e.gonogo_score == null) return;
+        const k = e.brand_slug;
+        if (!buckets[k]) buckets[k] = { sumUser: 0, sumGonogo: 0, n: 0 };
+        buckets[k].sumUser += Number(e.user_score);
+        buckets[k].sumGonogo += Number(e.gonogo_score);
+        buckets[k].n += 1;
+      });
+      return Object.keys(buckets).map(k => {
+        const b = buckets[k];
+        const u = b.sumUser / b.n; const g = b.sumGonogo / b.n;
+        return { brandSlug: k, brandName: brandNameFor(k), avgUser: u, avgGonogo: g, delta: u - g, n: b.n };
+      }).sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta));
+    }
+
+    function renderKPIs(events) {
+      const total = events.length;
+      const uniqBrands = new Set(events.map(e => e.brand_slug).filter(Boolean)).size;
+      const uniqCats = new Set(events.map(e => e.category_slug).filter(Boolean)).size;
+      const withScores = events.filter(e => e.user_score != null && e.gonogo_score != null);
+      const avgGap = withScores.length
+        ? withScores.reduce((s,e) => s + (Number(e.user_score) - Number(e.gonogo_score)), 0) / withScores.length
+        : null;
+
+      document.getElementById('kpi-grid').innerHTML =
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Total events</div>' +
+          '<div class="kpi-value">' + total + '</div>' +
+          '<div class="kpi-delta text-muted">submissions in range</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Unique brands re-weighted</div>' +
+          '<div class="kpi-value">' + uniqBrands + '</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Unique categories</div>' +
+          '<div class="kpi-value">' + uniqCats + '</div>' +
+        '</div>' +
+        '<div class="kpi-card">' +
+          '<div class="kpi-label">Avg user vs GoNoGo</div>' +
+          '<div class="kpi-value">' + (avgGap == null ? '&mdash;' : (avgGap >= 0 ? '+' : '') + avgGap.toFixed(1)) + '</div>' +
+          '<div class="kpi-delta text-muted">average score delta</div>' +
+        '</div>';
+    }
+
+    function renderCategoryChart(events) {
+      const data = aggregateCategoryFrequency(events).slice(0, 10);
+      const ctx = document.getElementById('cat-chart');
+      if (catChart) catChart.destroy();
+      catChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.map(d => d.label),
+          datasets: [{
+            data: data.map(d => d.count),
+            backgroundColor: '#11a551',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#a0a0a0', font: { family: 'Inter', size: 11 }, stepSize: 1 } },
+            y: { grid: { display: false }, ticks: { color: '#a0a0a0', font: { family: 'Inter', size: 11 } } }
+          }
+        }
+      });
+    }
+
+    function renderScoreScatter(events) {
+      const points = events
+        .filter(e => e.user_score != null && e.gonogo_score != null)
+        .map(e => ({ x: Number(e.gonogo_score), y: Number(e.user_score), brand: brandNameFor(e.brand_slug) }));
+      const ctx = document.getElementById('score-chart');
+      if (scoreChart) scoreChart.destroy();
+      scoreChart = new Chart(ctx, {
+        type: 'scatter',
+        data: {
+          datasets: [
+            {
+              label: 'Submissions',
+              data: points,
+              backgroundColor: 'rgba(17,165,81,0.55)',
+              borderColor: '#11a551', pointRadius: 5, pointHoverRadius: 7
+            },
+            {
+              label: 'Parity (y = x)',
+              type: 'line',
+              data: [{x:0,y:0},{x:100,y:100}],
+              borderColor: 'rgba(160,160,160,0.4)', borderDash: [4,4], pointRadius: 0, fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#a0a0a0', font: { family: 'Inter', size: 11 } } },
+            tooltip: { callbacks: { label: c => c.raw.brand ? (c.raw.brand + ': user ' + c.raw.y + ' vs GoNoGo ' + c.raw.x) : '' } }
+          },
+          scales: {
+            x: { min: 0, max: 100, title: { display: true, text: 'GoNoGo score', color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#a0a0a0' } },
+            y: { min: 0, max: 100, title: { display: true, text: 'User score', color: '#a0a0a0' }, grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#a0a0a0' } }
+          }
+        }
+      });
+    }
+
+    function renderEmphasisTable(events) {
+      const rows = aggregateEmphasis(events).slice(0, 20);
+      if (!rows.length) {
+        document.getElementById('emphasis-table').innerHTML = '<p class="text-sm text-muted">No data yet.</p>';
+        return;
+      }
+      const html = '<table class="data-table" style="width:100%;border-collapse:collapse">' +
+        '<thead><tr>' +
+          '<th style="text-align:left;padding:8px 12px;font-size:12px;color:#a0a0a0">Category</th>' +
+          '<th style="text-align:left;padding:8px 12px;font-size:12px;color:#a0a0a0">Sub-category</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">Avg user</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">GoNoGo default</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">Delta</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">N</th>' +
+        '</tr></thead><tbody>' +
+        rows.map(r => {
+          const colour = r.delta > 0 ? 'var(--green-text)' : (r.delta < 0 ? 'var(--red-text)' : 'var(--text-muted)');
+          const sign = r.delta > 0 ? '+' : '';
+          return '<tr style="border-top:1px solid var(--border-primary)">' +
+            '<td style="padding:8px 12px;font-size:13px">' + escapeHtml(r.categoryLabel) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px">' + escapeHtml(r.subCategory) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums">' + fmt(r.avgUser) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums">' + fmt(r.avgDefault) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:' + colour + ';font-weight:600">' + sign + fmt(r.delta) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;color:var(--text-muted)">' + r.n + '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table>';
+      document.getElementById('emphasis-table').innerHTML = html;
+    }
+
+    function renderBrandGapTable(events) {
+      const rows = aggregateBrandGap(events).slice(0, 20);
+      if (!rows.length) {
+        document.getElementById('brand-gap-table').innerHTML = '<p class="text-sm text-muted">No brand-level data yet.</p>';
+        return;
+      }
+      const html = '<table class="data-table" style="width:100%;border-collapse:collapse">' +
+        '<thead><tr>' +
+          '<th style="text-align:left;padding:8px 12px;font-size:12px;color:#a0a0a0">Brand</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">Avg user score</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">GoNoGo score</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">Delta</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">N</th>' +
+        '</tr></thead><tbody>' +
+        rows.map(r => {
+          const colour = r.delta > 0 ? 'var(--green-text)' : (r.delta < 0 ? 'var(--red-text)' : 'var(--text-muted)');
+          const sign = r.delta > 0 ? '+' : '';
+          return '<tr style="border-top:1px solid var(--border-primary)">' +
+            '<td style="padding:8px 12px;font-size:13px"><a href="brand?id=' + encodeURIComponent(r.brandSlug) + '" style="color:inherit">' + escapeHtml(r.brandName) + '</a></td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums">' + fmt(r.avgUser, 0) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums">' + fmt(r.avgGonogo, 0) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:' + colour + ';font-weight:600">' + sign + fmt(r.delta, 1) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;color:var(--text-muted)">' + r.n + '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table>';
+      document.getElementById('brand-gap-table').innerHTML = html;
+    }
+
+    function renderEventsTable(events) {
+      const rows = events.slice(0, 50);
+      if (!rows.length) {
+        document.getElementById('events-table').innerHTML = '<p class="text-sm text-muted">No events yet. Once readers start adjusting weights, submissions will appear here.</p>';
+        return;
+      }
+      const html = '<table class="data-table" style="width:100%;border-collapse:collapse">' +
+        '<thead><tr>' +
+          '<th style="text-align:left;padding:8px 12px;font-size:12px;color:#a0a0a0">When</th>' +
+          '<th style="text-align:left;padding:8px 12px;font-size:12px;color:#a0a0a0">Page</th>' +
+          '<th style="text-align:left;padding:8px 12px;font-size:12px;color:#a0a0a0">Brand</th>' +
+          '<th style="text-align:left;padding:8px 12px;font-size:12px;color:#a0a0a0">Category</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">User</th>' +
+          '<th style="text-align:right;padding:8px 12px;font-size:12px;color:#a0a0a0">GoNoGo</th>' +
+        '</tr></thead><tbody>' +
+        rows.map(e => {
+          return '<tr style="border-top:1px solid var(--border-primary)">' +
+            '<td style="padding:8px 12px;font-size:12px;color:var(--text-muted)" title="' + escapeHtml(e.created_at) + '">' + escapeHtml(timeAgo(e.created_at)) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px">' + escapeHtml(e.page || '') + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px">' + escapeHtml(brandNameFor(e.brand_slug)) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px">' + escapeHtml(categoryNameFor(e.category_slug)) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums">' + (e.user_score == null ? '&mdash;' : e.user_score) + '</td>' +
+            '<td style="padding:8px 12px;font-size:13px;text-align:right;font-variant-numeric:tabular-nums;color:var(--text-muted)">' + (e.gonogo_score == null ? '&mdash;' : e.gonogo_score) + '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table>';
+      document.getElementById('events-table').innerHTML = html;
+    }
+
+    async function loadAndRender() {
+      const events = await fetchEvents();
+      renderKPIs(events);
+      renderCategoryChart(events);
+      renderScoreScatter(events);
+      renderEmphasisTable(events);
+      renderBrandGapTable(events);
+      renderEventsTable(events);
+    }
+
+    async function initWeightsPage() {
+      document.getElementById('admin-content').style.display = '';
+      document.getElementById('refresh-btn').addEventListener('click', loadAndRender);
+      document.getElementById('range-filter').addEventListener('change', loadAndRender);
+      await loadAndRender();
+    }
+  </script>
+  <style>
+    @media (max-width: 900px) {
+      .admin-main > div[style*="grid-template-columns:1fr 1fr"] { grid-template-columns: 1fr !important; }
+    }
+  </style>
+</body>
+</html>
