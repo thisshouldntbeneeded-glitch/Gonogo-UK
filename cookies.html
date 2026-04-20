@@ -229,6 +229,29 @@
           </a>.
         </p>
 
+        <h3>4.2.1 Anonymous category weighting analytics</h3>
+        <p>
+          When you use the “Weight this yourself” control on a brand or comparison page and change the default
+          weights, we send a single anonymous event to our database (hosted by Supabase, EU‑West region) so we
+          can understand which scoring categories matter most to people across each brand and sector. The event
+          contains:
+        </p>
+        <ul>
+          <li>The site (“uk” or “sa”) and the page type (“brand” or “compare”).</li>
+          <li>The category slug (e.g. <code>banking</code>) and, for brand pages, the brand identifier; for
+            comparison pages, the two brand identifiers being compared.</li>
+          <li>The weights you set, the original GoNoGo defaults for that category, and the resulting score.</li>
+          <li>A timestamp.</li>
+        </ul>
+        <p>
+          The event contains <strong>no user, session, device or browser identifier</strong>, no IP address is
+          retained, and no cookie is set as part of this transmission. We cannot link any event back to an
+          individual visitor or session. Because the data is fully anonymised at the point of collection it does
+          not constitute personal data under UK GDPR; we still describe it here for transparency. If you do not
+          want any data sent at all, simply do not change the default weights, or disable JavaScript in your
+          browser.
+        </p>
+
         <!-- 4.3 Functionality -->
         <h3>4.3 Functionality</h3>
         <p>
@@ -256,6 +279,21 @@
                 Stores your colour-scheme preference ("light" or "dark") so that your chosen theme is applied on
                 every page load without flicker. If absent, the Site falls back to your operating system's
                 preference via <code>prefers-color-scheme</code>.
+              </td>
+              <td>Persistent until cleared by user or browser data reset</td>
+              <td>localStorage</td>
+            </tr>
+            <tr>
+              <td><code>gonogo_user_weights_v1</code></td>
+              <td>GoNoGo (first-party)</td>
+              <td>
+                Stores any custom category weights you set using the “Weight this yourself” control on brand
+                and comparison pages, so your personalised score is recalculated on subsequent visits. The
+                <code>localStorage</code> value itself stays on your device and is never sent to us. Separately,
+                when you change the default weights we send a single anonymous event containing the weights,
+                the category and the brand or comparison you were viewing — with no user, session or device
+                identifier — so we can understand which factors users care about most. See §4.2.1 “Anonymous
+                category weighting analytics” below.
               </td>
               <td>Persistent until cleared by user or browser data reset</td>
               <td>localStorage</td>

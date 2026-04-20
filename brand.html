@@ -241,7 +241,7 @@
           '<div class="brand-hero-inner">' +
             '<div class="brand-hero-identity">' +
               '<div class="brand-hero-logo">' + logoHTML + '</div>' +
-              '<div class="brand-hero-score">' + Components.renderScoreCircle(brand.overallScore, 'hero') + '</div>' +
+              '<div class="brand-hero-score" id="brand-hero-score-wrap">' + Components.renderScoreCircle(brand.overallScore, 'hero') + '<div id="your-score-pill" style="display:none;margin-top:var(--space-2);text-align:center;font-size:var(--text-xs);font-weight:700;color:var(--text-secondary);background:var(--surface-3);border:1px solid var(--border-primary);border-radius:var(--radius-full);padding:4px 10px">Your score: <span id="your-score-value">—</span>/100</div></div>' +
             '</div>' +
             '<div class="brand-hero-info">' +
               '<h1 class="brand-hero-name">' + brand.name + '</h1>' +
@@ -301,7 +301,9 @@
               '</div>' +
             '</div>' +
             '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">Category Scores</h3>' +
-            '<div class="category-grid" style="margin-bottom:var(--space-8)">' + categoryCardsHTML + '</div>' +
+            '<div class="category-grid" style="margin-bottom:var(--space-4)">' + categoryCardsHTML + '</div>' +
+            Components.renderUserWeightsPanel(brand.scoringCategories, 'uw-brand') +
+            '<div style="margin-bottom:var(--space-8)"></div>' +
             '<div class="sc-grid">' +
               '<div>' +
                 '<h3 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)"><i class="fa-solid fa-circle-check" style="color:var(--green)"></i> Strengths</h3>' +
@@ -397,6 +399,23 @@
         '</div></section>';
 
       Components.createRadarChart('brand-radar', brand, { showTicks: true, labelSize: 11, pointRadius: 4 });
+
+      // Wire up "Weight this yourself" sliders — personalised score stays on device.
+      // When the panel is closed having actually changed defaults, an anonymous
+      // event is sent so we can see which categories matter most per brand.
+      Components.attachUserWeights('uw-brand', brand.scoringCategories, brand.categorySlug, function(weights) {
+        var pill = document.getElementById('your-score-pill');
+        var val = document.getElementById('your-score-value');
+        if (!pill || !val) return;
+        if (!weights) { pill.style.display = 'none'; return; }
+        var yourScore = Components.computeWeightedScore(brand, weights);
+        val.textContent = yourScore;
+        pill.style.display = 'inline-block';
+      }, {
+        page: 'brand',
+        brandSlug: brand.id || (brand.name && brand.name.toLowerCase().replace(/\s+/g, '-')),
+        getBrandsForScoring: function () { return [brand]; }
+      });
 
       window.switchTab = function(tab) {
         document.querySelectorAll('.tab-content').forEach(function(el) { el.style.display = 'none'; });
