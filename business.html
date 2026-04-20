@@ -325,6 +325,7 @@
       </div>
       <div class="bz-claim-form-wrap">
         <form id="claim-form">
+          <div class="form-group"><label class="form-label" for="claim-brand">Brand you are claiming</label><input type="text" id="claim-brand" required placeholder="e.g. Tesco"></div>
           <div class="form-group"><label class="form-label" for="claim-name">Full name</label><input type="text" id="claim-name" required placeholder="e.g. James Robertson"></div>
           <div class="form-group"><label class="form-label" for="claim-email">Business email address</label><input type="email" id="claim-email" required placeholder="e.g. james@company.co.uk"></div>
           <div class="form-group"><label class="form-label" for="claim-role">Your role</label><input type="text" id="claim-role" required placeholder="e.g. Head of Customer Experience"></div>
@@ -400,6 +401,7 @@
             'Prefer': 'return=minimal'
           },
           body: JSON.stringify({
+            brand_name: document.getElementById('claim-brand').value.trim(),
             full_name: document.getElementById('claim-name').value.trim(),
             email: document.getElementById('claim-email').value.trim().toLowerCase(),
             role: document.getElementById('claim-role').value.trim(),

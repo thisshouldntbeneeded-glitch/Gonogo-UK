@@ -70,11 +70,12 @@
         return;
       }
       container.innerHTML = '<table class="data-table" style="width:100%"><thead><tr>' +
-        '<th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Region</th><th>Submitted</th>' +
+        '<th>Brand</th><th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Region</th><th>Submitted</th>' +
         '</tr></thead><tbody>' +
         claims.map(function(c) {
           var regionLabel = (c.region || '').toUpperCase() === 'UK' ? '\ud83c\uddec\ud83c\udde7 UK' : '\ud83c\uddff\ud83c\udde6 SA';
           return '<tr>' +
+            '<td style="font-size:var(--text-sm);font-weight:700;color:var(--blue)">' + Components.escapeHTML(c.brand_name || '-') + '</td>' +
             '<td style="font-size:var(--text-sm);font-weight:600">' + Components.escapeHTML(c.full_name || '') + '</td>' +
             '<td style="font-size:var(--text-sm)"><a href="mailto:' + Components.escapeHTML(c.email || '') + '" style="color:var(--blue)">' + Components.escapeHTML(c.email || '') + '</a></td>' +
             '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(c.role || '') + '</td>' +
