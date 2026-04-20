@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="GoNoGo's review integrity policy — how we handle reviews, replies, manipulation, and the rights of users and brands.">
+<meta name="keywords" content="GoNoGo review policy, review integrity, fake reviews, brand replies">
+<link rel="canonical" href="https://www.gonogo.co.uk/review-policy">
+<meta property="og:title" content="Review Policy — GoNoGo United Kingdom">
+<meta property="og:description" content="How GoNoGo handles reviews, replies and manipulation.">
+<meta property="og:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
+<meta property="og:url" content="https://www.gonogo.co.uk/review-policy">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="GoNoGo United Kingdom">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Review Policy — GoNoGo United Kingdom">
+<meta name="twitter:description" content="How GoNoGo handles reviews, replies and manipulation.">
+<meta name="twitter:image" content="https://www.gonogo.co.uk/logos/og-share.jpg">
+<meta name="robots" content="index, follow">
+<title>Review Policy — GoNoGo United Kingdom</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>(function(){try{var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');}catch(e){}})()</script>
+</head>
+<body>
+<div id="nav"></div>
+
+<section class="section">
+  <div class="container" style="max-width:800px">
+    <h1 class="section-title" style="text-align:left">Review Policy</h1>
+    <p class="text-sm text-muted" style="margin-bottom:var(--space-6)">Last updated 20 April 2026</p>
+
+    <div class="legal-content">
+      <p style="font-size:var(--text-base);font-weight:600;color:var(--text-secondary);margin-bottom:var(--space-5)">
+        Independent scores. Transparent reviews. No pay-for-score.
+      </p>
+
+      <h2>Our aim</h2>
+      <p>GoNoGo aims to be useful to both consumers and brands. Brands can engage with feedback on GoNoGo, but they cannot buy better scores or remove genuine reviews simply because they are negative. GoNoGo may remove or restrict reviews or replies that appear fake, unlawful, abusive, defamatory, manipulated, or otherwise in breach of platform rules.</p>
+
+      <h2>Brand replies</h2>
+      <p>Claimed-profile businesses may submit public replies to reviews or profile content in accordance with GoNoGo's platform rules. Businesses are solely responsible for the content of their replies. GoNoGo may moderate, restrict, reject or remove replies that are unlawful, misleading, abusive, defamatory, infringing, or otherwise contrary to its policies or legal obligations.</p>
+
+      <h2>Review integrity</h2>
+      <p>Businesses and users must not submit, solicit, suppress, edit, distort, incentivise without proper disclosure, or otherwise manipulate reviews in a misleading manner. GoNoGo reserves the right to investigate suspicious activity, annotate content, suspend profile features, remove affected reviews, or terminate access to business tools.</p>
+
+      <h2>User-generated content</h2>
+      <p>Opinions expressed by users are their own and do not represent GoNoGo's views. GoNoGo does not adopt, endorse or guarantee user-submitted content. GoNoGo may moderate, restrict or remove user content and will review notices of complaint in accordance with applicable law and its complaints procedure.</p>
+
+      <h2>Reporting concerns</h2>
+      <p>If you believe a review or reply breaches our policy, or if you are a brand representative who believes content on the site is factually inaccurate, incomplete, outdated, defamatory, or infringes your rights, please contact <a href="mailto:admin@gonogo.co.uk?subject=Review%20or%20Content%20Complaint" style="color:var(--green)">admin@gonogo.co.uk</a> with:</p>
+      <ul>
+        <li>The URL of the page or review concerned;</li>
+        <li>A clear description of the concern;</li>
+        <li>Any supporting information or evidence; and</li>
+        <li>Your contact details and connection to the brand (if applicable).</li>
+      </ul>
+      <p>GoNoGo will review substantiated requests in good faith and may update, annotate, restrict or remove content where appropriate.</p>
+
+      <p style="margin-top:var(--space-6);font-size:var(--text-sm);color:var(--text-muted)">
+        See also our <a href="methodology.html" style="color:var(--green)">How GoNoGo Scores Work</a> page and <a href="terms.html" style="color:var(--green)">Terms &amp; Conditions</a>.
+      </p>
+    </div>
+  </div>
+</section>
+
+<div id="footer"></div>
+
+<script src="data/helpers.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="components.js"></script>
+<script>
+  document.getElementById('nav').innerHTML = Components.renderPublicNav('review-policy');
+  Components.initTheme();
+  Components.initPublicAuth();
+  document.getElementById('footer').innerHTML = Components.renderFooter();
+</script>
+</body>
+</html>

@@ -368,11 +368,16 @@ const Components = {
     return `
       <footer class="site-footer">
         <div class="container">
+          <div class="footer-trust-line" style="text-align:center;font-size:var(--text-sm);font-weight:600;color:var(--text-secondary);margin-bottom:var(--space-4);letter-spacing:0.02em;">
+            Independent scores. Transparent reviews. No pay-for-score.
+          </div>
           <div class="footer-content">
             <div class="footer-links">
               <a href="index.html">Home</a>
               <a href="compare.html">Compare</a>
               <a href="about.html">About</a>
+              <a href="methodology.html">How Scores Work</a>
+              <a href="review-policy.html">Review Policy</a>
               <a href="blog.html">Blog</a>
               <a href="faq.html">FAQ</a>
               <a href="privacy.html">Privacy Policy</a>
@@ -380,7 +385,10 @@ const Components = {
               <a href="terms.html">Terms & Conditions</a>
               <a href="https://www.gonogo.co.uk" target="_blank" rel="noopener noreferrer">GoNoGo UK</a>
             </div>
-            <div class="footer-attribution">
+            <div class="footer-non-affiliation" style="font-size:var(--text-xs);color:var(--text-muted);line-height:1.55;margin-top:var(--space-4);max-width:900px;">
+              Brand names, trade marks and logos appearing on this site are the property of their respective owners and are used for identification, commentary, review and comparison purposes only. Unless expressly stated otherwise, GoNoGo is independent and is not affiliated with, endorsed by, sponsored by, or acting on behalf of any featured brand.
+            </div>
+            <div class="footer-attribution" style="margin-top:var(--space-3);">
               &copy; 2026 GoNoGo Ratings and Reviews Ltd. All rights reserved.
             </div>
           </div>
