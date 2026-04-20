@@ -599,7 +599,7 @@ const Components = {
             '<label for="' + safeId + '" style="font-size:var(--text-sm);font-weight:600;color:var(--text-primary)">' + c.name + '</label>' +
             '<span class="uw-weight-pct" data-for="' + safeId + '" style="font-size:var(--text-xs);color:var(--text-muted);font-variant-numeric:tabular-nums">' + pct + '%</span>' +
           '</div>' +
-          '<input type="range" id="' + safeId + '" class="uw-slider" data-cat="' + c.name.replace(/"/g,'&quot;') + '" min="0" max="100" step="1" value="' + (c.max || 0) + '" style="width:100%">' +
+          '<input type="range" id="' + safeId + '" class="uw-slider" data-cat="' + c.name.replace(/"/g,'&quot;') + '" min="0" max="100" step="1" value="' + (c.max || 0) + '" style="width:100%;accent-color:var(--green)">' +
         '</div>'
       );
     }).join('');
@@ -610,7 +610,7 @@ const Components = {
           '<div style="flex:1;min-width:240px">' +
             '<div style="font-size:var(--text-base);font-weight:700;color:var(--text-primary);margin-bottom:4px;display:flex;align-items:center;gap:8px">' +
               '<i class="fa-solid fa-sliders" style="color:var(--green)"></i>' +
-              '<span>Disagree with how we weight things?</span>' +
+              '<span>Prefer your own weightings?</span>' +
             '</div>' +
             '<div style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.5">Adjust the sliders to match what matters most to <em>you</em> and see your personalised score — GoNoGo\u2019s independent score stays alongside it.</div>' +
           '</div>' +
@@ -869,9 +869,9 @@ const Components = {
     // Catch users who close the tab / navigate away with the panel still open.
     window.addEventListener('pagehide', maybeSendAnalytics, { once: false });
 
-    // Auto-open if user already has saved weights for this category
+    // Default to closed. If user already has saved weights, still emit so the
+    // hero pill / page reflects them, but don't auto-open the panel.
     if (saved) {
-      toggle.click();
       emit();
     }
   },
