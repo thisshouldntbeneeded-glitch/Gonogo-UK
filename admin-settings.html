@@ -494,7 +494,7 @@
   // ============================================
   async function loadBrandClaims() {
     try {
-      var user = Components.getAdminUser();
+      var auth = GoNoGoAPI._getCallerAuth();
       var resp = await fetch(GoNoGoAPI._supabaseUrl + '/rest/v1/rpc/admin_list_brand_claims', {
         method: 'POST',
         headers: {
@@ -502,7 +502,7 @@
           'apikey': GoNoGoAPI._supabaseKey,
           'Authorization': 'Bearer ' + GoNoGoAPI._supabaseKey
         },
-        body: JSON.stringify({ p_admin_id: user.id })
+        body: JSON.stringify(auth)
       });
       if (!resp.ok) throw new Error('Failed to load claims');
       var claims = await resp.json();
