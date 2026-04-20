@@ -487,6 +487,20 @@ const Components = {
   // ============================================================
   USER_WEIGHTS_STORAGE_KEY: 'gonogo_user_weights_v1',
 
+  // Standard scoring framework — the canonical default weights shown in the
+  // "Prefer your own weightings?" panel. These intentionally override any
+  // per-brand or per-category 'max' values so users always see the same
+  // baseline. Per-brand category 'max' is still used by computeWeightedScore
+  // for the underlying score calculation.
+  STANDARD_FRAMEWORK: [
+    { name: 'Compliance', max: 15 },
+    { name: 'Customer Satisfaction', max: 25 },
+    { name: 'Product Value', max: 30 },
+    { name: 'Innovation', max: 10 },
+    { name: 'Customer Support', max: 10 },
+    { name: 'Accessibility & Security', max: 10 }
+  ],
+
   // Anonymous analytics: aggregated weight events.
   // No session id, no IP retention, no PII. Insert-only via RLS.
   // We send one event when the user closes the panel having actually changed the defaults.
@@ -587,7 +601,8 @@ const Components = {
   // Returns HTML for the collapsible "Weight this yourself" panel.
   // containerId is a unique id for this instance (e.g. 'uw-brand' or 'uw-compare').
   renderUserWeightsPanel(scoringCategories, containerId) {
-    const cats = scoringCategories || [];
+    // Always use the standard framework as the default slider positions.
+    const cats = this.STANDARD_FRAMEWORK;
     if (!cats.length) return '';
     const totalDefault = cats.reduce((s, c) => s + (c.max || 0), 0) || 1;
     const sliders = cats.map((c, i) => {
@@ -714,7 +729,9 @@ const Components = {
     const resetBtn = wrap.querySelector('.uw-reset');
     const saveBtn = wrap.querySelector('.uw-save');
     const savedMsg = wrap.querySelector('.uw-saved-msg');
-    const defaults = this.defaultWeightsFrom(scoringCategories);
+    // Always use the standard framework as the defaults baseline, ignoring
+    // any per-brand scoringCategories that may have different 'max' values.
+    const defaults = this.defaultWeightsFrom(this.STANDARD_FRAMEWORK);
     const opts = options || {};
     const self = this;
     let dirty = false;        // user touched a slider in this session
