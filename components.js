@@ -132,6 +132,7 @@ const Components = {
       { href: 'admin-research.html', label: 'Research', icon: 'fa-flask', id: 'research' },
       { href: 'admin-weights.html', label: 'Weight Analytics', icon: 'fa-sliders', id: 'weights' },
       { href: 'admin-api.html', label: 'API Portal', icon: 'fa-plug', id: 'api' },
+      { href: 'admin-leads.html', label: 'Leads', icon: 'fa-paper-plane', id: 'leads' },
       { href: 'admin-settings.html', label: 'Settings', icon: 'fa-gear', id: 'settings' },
       { href: 'admin-scoring.html', label: 'Scoring Engine', icon: 'fa-scale-balanced', id: 'scoring' },
       { href: 'admin-blog.html', label: 'Blog', icon: 'fa-pen-nib', id: 'blog' },

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>GoNoGo UK — Leads</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="admin-content" style="display:none">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title">Leads</h1>
+        <p class="text-sm text-secondary">Brand claim requests from the business page</p>
+      </div>
+      <span id="claims-count" class="text-sm text-muted"></span>
+    </div>
+
+    <div class="card" style="padding:var(--space-6)">
+      <div id="claims-list" class="text-sm text-muted">Loading brand claims...</div>
+    </div>
+
+    <div style="padding:var(--space-6) 0;text-align:center">
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo United Kingdom</p>
+    </div>
+  </main>
+</div>
+
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js"></script>
+
+<script>
+  document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('leads');
+  if (Components.checkAdminAuth()) initPage();
+
+  async function initPage() {
+    document.getElementById('admin-content').style.display = '';
+    loadBrandClaims();
+  }
+
+  async function loadBrandClaims() {
+    try {
+      var auth = GoNoGoAPI._getCallerAuth();
+      var resp = await fetch(GoNoGoAPI._supabaseUrl + '/rest/v1/rpc/admin_list_brand_claims', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': GoNoGoAPI._supabaseKey,
+          'Authorization': 'Bearer ' + GoNoGoAPI._supabaseKey
+        },
+        body: JSON.stringify(auth)
+      });
+      if (!resp.ok) throw new Error('Failed to load claims');
+      var claims = await resp.json();
+      var container = document.getElementById('claims-list');
+      document.getElementById('claims-count').textContent = claims.length + ' lead' + (claims.length !== 1 ? 's' : '');
+
+      if (!claims.length) {
+        container.innerHTML = '<div style="text-align:center;padding:var(--space-8);color:var(--text-muted)"><i class="fa-solid fa-paper-plane" style="font-size:32px;display:block;margin-bottom:var(--space-3);opacity:0.3"></i>No brand claims yet. They will appear here when businesses submit the claim form.</div>';
+        return;
+      }
+      container.innerHTML = '<table class="data-table" style="width:100%"><thead><tr>' +
+        '<th>Name</th><th>Email</th><th>Role</th><th>Phone</th><th>Region</th><th>Submitted</th>' +
+        '</tr></thead><tbody>' +
+        claims.map(function(c) {
+          var regionLabel = (c.region || '').toUpperCase() === 'UK' ? '\ud83c\uddec\ud83c\udde7 UK' : '\ud83c\uddff\ud83c\udde6 SA';
+          return '<tr>' +
+            '<td style="font-size:var(--text-sm);font-weight:600">' + Components.escapeHTML(c.full_name || '') + '</td>' +
+            '<td style="font-size:var(--text-sm)"><a href="mailto:' + Components.escapeHTML(c.email || '') + '" style="color:var(--blue)">' + Components.escapeHTML(c.email || '') + '</a></td>' +
+            '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(c.role || '') + '</td>' +
+            '<td style="font-size:var(--text-sm)">' + Components.escapeHTML(c.phone || '') + '</td>' +
+            '<td style="font-size:var(--text-sm)">' + regionLabel + '</td>' +
+            '<td style="font-size:var(--text-xs);color:var(--text-muted)">' + (c.created_at ? new Date(c.created_at).toLocaleDateString() : '') + '</td>' +
+          '</tr>';
+        }).join('') +
+        '</tbody></table>';
+    } catch(e) {
+      document.getElementById('claims-list').innerHTML = '<div class="text-sm" style="color:var(--red-text)">Could not load brand claims.</div>';
+    }
+  }
+</script>
+</body>
+</html>
