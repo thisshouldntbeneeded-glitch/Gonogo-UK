@@ -620,8 +620,9 @@ const Components = {
           '</button>' +
         '</div>' +
         '<div class="uw-panel" style="display:none;margin-top:var(--space-3);padding:var(--space-4);background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md)">' +
+          '<div class="uw-live" style="display:none;margin-bottom:var(--space-4);padding:var(--space-3) var(--space-4);background:var(--surface-3);border:1px solid var(--border-primary);border-radius:var(--radius-md)"></div>' +
           '<p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-3);line-height:1.55">' +
-            'GoNoGo\u2019s default weights reflect our methodology. Adjust them to match what matters most to <em>you</em>. Your personalised score is calculated on your device only.' +
+            'GoNoGo\u2019s default weights reflect our methodology. Adjust them to match what matters most to <em>you</em>. Your personalised score updates live below.' +
           '</p>' +
           sliders +
           '<div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:var(--space-3);margin-top:var(--space-4);padding-top:var(--space-3);border-top:1px solid var(--border-primary)">' +
@@ -635,6 +636,68 @@ const Components = {
         '</div>' +
       '</div>'
     );
+  },
+
+  // Render the live "Your score" block inside the panel.
+  // brandsScored: [{name, gonogoScore, userScore, slug?, href?}], top-N by userScore.
+  // If a single brand, show it big; if multiple, show a compact ranked list.
+  renderLiveScoreBlock(containerId, brandsScored) {
+    const wrap = document.getElementById(containerId);
+    if (!wrap) return;
+    const live = wrap.querySelector('.uw-live');
+    if (!live) return;
+    const items = (brandsScored || []).filter(b => b && typeof b.userScore === 'number');
+    if (!items.length) { live.style.display = 'none'; live.innerHTML = ''; return; }
+    live.style.display = 'block';
+
+    if (items.length === 1) {
+      const b = items[0];
+      const delta = b.userScore - (b.gonogoScore || 0);
+      const sign = delta > 0 ? '+' : '';
+      const colour = delta > 0 ? 'var(--green-text)' : (delta < 0 ? 'var(--red-text, #e74c3c)' : 'var(--text-muted)');
+      live.innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap">' +
+          '<div style="min-width:0">' +
+            '<div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Your personalised score</div>' +
+            '<div style="font-size:var(--text-sm);color:var(--text-secondary)">' + (b.name ? this._uwEscape(b.name) : 'This brand') + '</div>' +
+          '</div>' +
+          '<div style="display:flex;align-items:baseline;gap:var(--space-3)">' +
+            '<div style="font-size:var(--text-3xl);font-weight:800;color:var(--text-primary);font-variant-numeric:tabular-nums;line-height:1">' + b.userScore + '<span style="font-size:var(--text-sm);color:var(--text-muted);font-weight:600">/100</span></div>' +
+            '<div style="font-size:var(--text-xs);color:' + colour + ';font-weight:700;font-variant-numeric:tabular-nums">' + sign + delta + ' vs GoNoGo ' + (b.gonogoScore != null ? b.gonogoScore : '\u2014') + '</div>' +
+          '</div>' +
+        '</div>';
+      return;
+    }
+
+    // Multi-brand (category page): compact ranked list, top 8
+    const sorted = items.slice().sort((a, b) => b.userScore - a.userScore);
+    const top = sorted.slice(0, 8);
+    const rows = top.map((b, i) => {
+      const delta = b.userScore - (b.gonogoScore || 0);
+      const sign = delta > 0 ? '+' : '';
+      const colour = delta > 0 ? 'var(--green-text)' : (delta < 0 ? 'var(--red-text, #e74c3c)' : 'var(--text-muted)');
+      const nameHtml = b.href
+        ? '<a href="' + this._uwEscape(b.href) + '" style="color:inherit;text-decoration:none">' + this._uwEscape(b.name || '') + '</a>'
+        : this._uwEscape(b.name || '');
+      return (
+        '<div style="display:flex;align-items:center;gap:var(--space-3);padding:6px 0;border-top:' + (i === 0 ? '0' : '1px solid var(--border-primary)') + '">' +
+          '<div style="width:22px;text-align:right;font-size:var(--text-xs);color:var(--text-muted);font-variant-numeric:tabular-nums">' + (i + 1) + '.</div>' +
+          '<div style="flex:1;min-width:0;font-size:var(--text-sm);color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + nameHtml + '</div>' +
+          '<div style="font-size:var(--text-sm);font-weight:700;color:var(--text-primary);font-variant-numeric:tabular-nums;min-width:48px;text-align:right">' + b.userScore + '</div>' +
+          '<div style="font-size:var(--text-xs);color:' + colour + ';font-weight:700;font-variant-numeric:tabular-nums;min-width:54px;text-align:right">' + sign + delta + '</div>' +
+        '</div>'
+      );
+    }).join('');
+    live.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2)">' +
+        '<div style="font-size:var(--text-xs);font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em">Your personalised ranking <span style="color:var(--text-secondary);text-transform:none;letter-spacing:0;font-weight:400;margin-left:6px">(top ' + top.length + ')</span></div>' +
+        '<div style="font-size:11px;color:var(--text-muted)"><span style="color:var(--text-secondary)">Score</span> &middot; <span style="color:var(--text-secondary)">vs GoNoGo</span></div>' +
+      '</div>' +
+      rows;
+  },
+
+  _uwEscape(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   },
 
   // Wire up interactivity for the panel.
@@ -667,6 +730,25 @@ const Components = {
       });
     }
 
+    const updateLiveDisplay = (weights) => {
+      if (typeof opts.getBrandsForScoring !== 'function') return;
+      try {
+        const brands = opts.getBrandsForScoring() || [];
+        if (!brands.length) { self.renderLiveScoreBlock(containerId, []); return; }
+        const scored = brands.map(b => {
+          if (!b) return null;
+          return {
+            name: b.name || '',
+            href: b.id ? ('brand?id=' + encodeURIComponent(b.id)) : (b.slug ? ('brand?id=' + encodeURIComponent(b.slug)) : null),
+            slug: b.id || b.slug || null,
+            gonogoScore: typeof b.overallScore === 'number' ? b.overallScore : null,
+            userScore: weights ? self.computeWeightedScore(b, weights) : (typeof b.overallScore === 'number' ? b.overallScore : null)
+          };
+        }).filter(Boolean);
+        self.renderLiveScoreBlock(containerId, scored);
+      } catch (e) { /* noop */ }
+    };
+
     const emit = () => {
       const weights = {};
       sliders.forEach(s => { weights[s.getAttribute('data-cat')] = parseInt(s.value, 10) || 0; });
@@ -678,6 +760,7 @@ const Components = {
       });
       this.saveUserWeights(categorySlug, weights);
       lastWeights = weights;
+      updateLiveDisplay(weights);
       if (typeof onChange === 'function') onChange(weights);
     };
 
@@ -729,7 +812,12 @@ const Components = {
       const lbl = wrap.querySelector('.uw-toggle-label');
       if (lbl) lbl.textContent = open ? 'Weight this yourself' : 'Hide weights';
       // 'open' was the state BEFORE the click — if it was true, panel just closed.
-      if (open) maybeSendAnalytics();
+      if (open) {
+        maybeSendAnalytics();
+      } else {
+        // Panel just opened — populate the live display with current weights (or defaults).
+        updateLiveDisplay(lastWeights || (saved ? saved : defaults));
+      }
     });
 
     sliders.forEach(s => {
@@ -747,6 +835,8 @@ const Components = {
       lastSent = null;
       emit();
       if (typeof onChange === 'function') onChange(null);
+      // After reset, panel should still show defaults-as-personal so the user sees a baseline.
+      updateLiveDisplay(defaults);
     });
 
     if (saveBtn) {

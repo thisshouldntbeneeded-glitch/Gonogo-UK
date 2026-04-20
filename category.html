@@ -294,6 +294,12 @@
         var brands = await GoNoGoAPI.getBrandsByCategory(slug);
         var currentSort = 'score-desc';
         var userPriorities = null;
+        var userWeights = null; // per-category sub-category weights from "Weight this yourself"
+
+        function userScoreFor(brand) {
+          if (!userWeights) return null;
+          try { return Components.computeWeightedScore(brand, userWeights); } catch (e) { return null; }
+        }
 
         window.sortBrands = function(key) {
           currentSort = key;
@@ -304,8 +310,16 @@
               return sb - sa || b.overallScore - a.overallScore;
             });
           }
-          else if (key === 'score-desc') brands.sort(function(a, b) { return b.overallScore - a.overallScore; });
-          else if (key === 'score-asc') brands.sort(function(a, b) { return a.overallScore - b.overallScore; });
+          else if (key === 'score-desc') brands.sort(function(a, b) {
+            var sa = userScoreFor(a); var sb = userScoreFor(b);
+            if (sa != null && sb != null) return sb - sa || b.overallScore - a.overallScore;
+            return b.overallScore - a.overallScore;
+          });
+          else if (key === 'score-asc') brands.sort(function(a, b) {
+            var sa = userScoreFor(a); var sb = userScoreFor(b);
+            if (sa != null && sb != null) return sa - sb || a.overallScore - b.overallScore;
+            return a.overallScore - b.overallScore;
+          });
           else if (key === 'name-asc') brands.sort(function(a, b) { return a.name.localeCompare(b.name); });
           else if (key === 'name-desc') brands.sort(function(a, b) { return b.name.localeCompare(a.name); });
           renderBrands();
@@ -320,6 +334,15 @@
               var matchBadge = '<div style="text-align:center;padding:4px 0 2px;font-size:11px;font-weight:600;color:var(--green)"><i class="fa-solid fa-fingerprint" style="margin-right:3px"></i>' + match + '% match</div>';
               card = card.replace('</a>', matchBadge + '</a>');
             }
+            // Personalised score badge (live, when user has set weights)
+            var us = userScoreFor(brand);
+            if (us != null) {
+              var delta = us - brand.overallScore;
+              var sign = delta > 0 ? '+' : '';
+              var col = delta > 0 ? 'var(--green-text)' : (delta < 0 ? 'var(--red-text, #e74c3c)' : 'var(--text-muted)');
+              var pBadge = '<div style="text-align:center;padding:6px 8px;margin:6px 8px 2px;background:var(--surface-3);border:1px solid var(--border-primary);border-radius:var(--radius-full);font-size:11px;font-weight:700;color:var(--text-primary);font-variant-numeric:tabular-nums"><i class="fa-solid fa-sliders" style="color:var(--green);margin-right:4px"></i>Your score: ' + us + '/100 <span style="color:' + col + ';margin-left:4px">' + sign + delta + '</span></div>';
+              card = card.replace('</a>', pBadge + '</a>');
+            }
             return card;
           }).join('');
           brands.forEach(function(brand) {
@@ -331,6 +354,13 @@
         }
 
         var frameworkHTML = renderFrameworkHTML(STANDARD_FRAMEWORK);
+
+        // Build the "Weight this yourself" panel HTML using the category's scoringCategories
+        var firstWithSC = brands.find(function(b){ return b.scoringCategories && b.scoringCategories.length; });
+        var catScoring = (firstWithSC && firstWithSC.scoringCategories) || (catInfo.scoringCategories || STANDARD_FRAMEWORK || []);
+        var catWeightsPanel = (catScoring && catScoring.length)
+          ? Components.renderUserWeightsPanel(catScoring, 'uw-category')
+          : '';
 
         document.getElementById('page-content').innerHTML =
           '<section class="section-sm" style="border-bottom:1px solid var(--border-primary)"><div class="container">' +
@@ -351,6 +381,7 @@
             '<h2 style="font-size:var(--text-lg);font-weight:700;margin-bottom:var(--space-4)">Scoring Framework</h2>' +
             '<p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-4)">Each ' + catInfo.name.toLowerCase() + ' brand is scored out of 100 across these weighted categories:</p>' +
             '<div style="max-width:600px">' + frameworkHTML + '</div>' +
+            catWeightsPanel +
           '</div></section>' +
           '<section class="section"><div class="container">' +
             '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-6)">' +
@@ -395,6 +426,20 @@
         })();
 
         renderBrands();
+
+        // Wire the category-level reweighting panel — it re-ranks the brand grid live
+        // and shows a top-N personalised ranking inside the panel.
+        if (catScoring && catScoring.length && document.getElementById('uw-category')) {
+          Components.attachUserWeights('uw-category', catScoring, slug, function(weights) {
+            userWeights = weights || null;
+            // Re-sort by score using the active sort (default score-desc)
+            window.sortBrands(currentSort === 'name-asc' || currentSort === 'name-desc' || currentSort === 'for-you' ? currentSort : 'score-desc');
+          }, {
+            page: 'category',
+            brandSlug: null,
+            getBrandsForScoring: function () { return brands; }
+          });
+        }
       }
     })();
   </script>
