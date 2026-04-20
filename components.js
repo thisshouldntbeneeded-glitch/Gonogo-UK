@@ -479,9 +479,58 @@ const Components = {
   // USER-WEIGHTED SCORE ("Weight this yourself")
   // Lets users re-weight the scoring categories client-side and see
   // their personalised score alongside GoNoGo's independent score.
-  // Nothing is sent anywhere; saved to localStorage only.
+  // Their weights are saved to localStorage. When a user actually changes
+  // the defaults we also send a single anonymous, aggregate event
+  // (category + weights, no user identifier) to help editorial prioritise
+  // what categories matter most. See sendWeightEvent below.
   // ============================================================
   USER_WEIGHTS_STORAGE_KEY: 'gonogo_user_weights_v1',
+
+  // Anonymous analytics: aggregated weight events.
+  // No session id, no IP retention, no PII. Insert-only via RLS.
+  // We send one event when the user closes the panel having actually changed the defaults.
+  WEIGHT_ANALYTICS: {
+    url: 'https://kkpbzttwljxvyjbvggqr.supabase.co/rest/v1/weight_events',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtrcGJ6dHR3bGp4dnlqYnZnZ3FyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMjk2MTcsImV4cCI6MjA4ODgwNTYxN30.lNvYPegElDYbS5heD4DXUxIgfy2qPDzx8S2K22F1p3A',
+    site: 'uk'
+  },
+
+  sendWeightEvent(payload) {
+    try {
+      var cfg = this.WEIGHT_ANALYTICS;
+      if (!cfg || !cfg.url) return;
+      var body = JSON.stringify({
+        site: cfg.site,
+        page: payload.page,
+        brand_slug: payload.brandSlug || null,
+        category_slug: payload.categorySlug,
+        weights: payload.weights,
+        default_weights: payload.defaultWeights || null,
+        user_score: (typeof payload.userScore === 'number') ? payload.userScore : null,
+        gonogo_score: (typeof payload.gonogoScore === 'number') ? payload.gonogoScore : null
+      });
+      // Prefer sendBeacon so a tab-close still delivers; fall back to fetch keepalive.
+      var headers = { type: 'application/json' };
+      if (navigator && typeof navigator.sendBeacon === 'function') {
+        // Beacons cannot set custom headers, so include the apikey in the URL.
+        var beaconUrl = cfg.url + '?apikey=' + encodeURIComponent(cfg.anonKey);
+        var blob = new Blob([body], headers);
+        if (navigator.sendBeacon(beaconUrl, blob)) return;
+      }
+      fetch(cfg.url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': cfg.anonKey,
+          'Authorization': 'Bearer ' + cfg.anonKey,
+          'Prefer': 'return=minimal'
+        },
+        body: body,
+        keepalive: true,
+        mode: 'cors'
+      }).catch(function () { /* swallow — analytics must never break the page */ });
+    } catch (e) { /* noop */ }
+  },
 
   loadUserWeights(categorySlug) {
     try {
@@ -582,7 +631,7 @@ const Components = {
   // scoringCategories: array from brand.scoringCategories
   // categorySlug: used as localStorage key
   // onChange(weights): called with a {categoryName: weight} map on every change
-  attachUserWeights(containerId, scoringCategories, categorySlug, onChange) {
+  attachUserWeights(containerId, scoringCategories, categorySlug, onChange, options) {
     const wrap = document.getElementById(containerId);
     if (!wrap) return;
     const toggle = wrap.querySelector('.uw-toggle');
@@ -591,6 +640,11 @@ const Components = {
     const sliders = Array.prototype.slice.call(wrap.querySelectorAll('.uw-slider'));
     const resetBtn = wrap.querySelector('.uw-reset');
     const defaults = this.defaultWeightsFrom(scoringCategories);
+    const opts = options || {};
+    const self = this;
+    let dirty = false;        // user touched a slider in this session
+    let lastWeights = null;   // most recent emitted weights
+    let lastSent = null;      // JSON of the last payload we transmitted (dedupe)
 
     // Restore saved weights if any
     const saved = this.loadUserWeights(categorySlug);
@@ -611,7 +665,48 @@ const Components = {
         if (label) label.textContent = Math.round(((parseInt(s.value, 10) || 0) / total) * 100) + '%';
       });
       this.saveUserWeights(categorySlug, weights);
+      lastWeights = weights;
       if (typeof onChange === 'function') onChange(weights);
+    };
+
+    // Decide whether to fire an analytics event for the current weights.
+    // Skip if (a) user never moved a slider this session AND no saved weights existed,
+    // (b) weights match defaults exactly, or (c) we already sent the same payload.
+    const maybeSendAnalytics = () => {
+      if (!opts.page) return;
+      if (!dirty && !saved) return;
+      if (!lastWeights) return;
+      // No-op if weights equal defaults
+      let changed = false;
+      for (const k in lastWeights) {
+        if (lastWeights[k] !== defaults[k]) { changed = true; break; }
+      }
+      if (!changed) return;
+      const payloadKey = JSON.stringify([opts.page, opts.brandSlug || null, categorySlug, lastWeights]);
+      if (payloadKey === lastSent) return;
+      lastSent = payloadKey;
+
+      // Compute scores for the affected brand(s) if a resolver was supplied.
+      let userScore = null, gonogoScore = null;
+      if (typeof opts.getBrandsForScoring === 'function') {
+        try {
+          const brands = opts.getBrandsForScoring() || [];
+          if (brands.length === 1 && brands[0]) {
+            userScore = self.computeWeightedScore(brands[0], lastWeights);
+            gonogoScore = brands[0].overallScore || null;
+          }
+        } catch (e) { /* noop */ }
+      }
+
+      self.sendWeightEvent({
+        page: opts.page,
+        brandSlug: opts.brandSlug || null,
+        categorySlug: categorySlug,
+        weights: lastWeights,
+        defaultWeights: defaults,
+        userScore: userScore,
+        gonogoScore: gonogoScore
+      });
     };
 
     toggle.addEventListener('click', () => {
@@ -621,9 +716,13 @@ const Components = {
       if (chevron) chevron.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
       const lbl = wrap.querySelector('.uw-toggle-label');
       if (lbl) lbl.textContent = open ? 'Weight this yourself' : 'Hide weights';
+      // 'open' was the state BEFORE the click — if it was true, panel just closed.
+      if (open) maybeSendAnalytics();
     });
 
-    sliders.forEach(s => s.addEventListener('input', emit));
+    sliders.forEach(s => {
+      s.addEventListener('input', () => { dirty = true; emit(); });
+    });
 
     resetBtn.addEventListener('click', () => {
       sliders.forEach(s => {
@@ -631,9 +730,15 @@ const Components = {
         s.value = typeof defaults[cat] === 'number' ? defaults[cat] : 0;
       });
       this.clearUserWeights(categorySlug);
+      dirty = false;
+      lastWeights = null;
+      lastSent = null;
       emit();
       if (typeof onChange === 'function') onChange(null);
     });
+
+    // Catch users who close the tab / navigate away with the panel still open.
+    window.addEventListener('pagehide', maybeSendAnalytics, { once: false });
 
     // Auto-open if user already has saved weights for this category
     if (saved) {
