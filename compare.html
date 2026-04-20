@@ -465,6 +465,8 @@ resultEl.innerHTML = verdictBannerHtml + brandCardsHtml + ratingSummaryHtml + ra
         radarChart = Components.createCompareRadarChart('compare-radar', b1, b2);
 
         // Wire up "Weight this yourself" for the compare page — applies one set of weights to both brands.
+        // Anonymous analytics: log the pair (sorted) so we can see which match-ups drive reweighting.
+        var pairSlug = [b1.id, b2.id].filter(Boolean).sort().join('__vs__') || null;
         Components.attachUserWeights('uw-compare', (b1.scoringCategories || b2.scoringCategories), (b1.categorySlug || b2.categorySlug), function(weights) {
           [[b1, 'compare-your-score-1'], [b2, 'compare-your-score-2']].forEach(function(pair) {
             var el = document.getElementById(pair[1]);
@@ -475,6 +477,10 @@ resultEl.innerHTML = verdictBannerHtml + brandCardsHtml + ratingSummaryHtml + ra
             if (valEl) valEl.textContent = yourScore;
             el.style.display = 'inline-block';
           });
+        }, {
+          page: 'compare',
+          brandSlug: pairSlug,
+          getBrandsForScoring: function () { return [b1, b2].filter(Boolean); }
         });
 
 

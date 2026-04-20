@@ -401,6 +401,8 @@
       Components.createRadarChart('brand-radar', brand, { showTicks: true, labelSize: 11, pointRadius: 4 });
 
       // Wire up "Weight this yourself" sliders — personalised score stays on device.
+      // When the panel is closed having actually changed defaults, an anonymous
+      // event is sent so we can see which categories matter most per brand.
       Components.attachUserWeights('uw-brand', brand.scoringCategories, brand.categorySlug, function(weights) {
         var pill = document.getElementById('your-score-pill');
         var val = document.getElementById('your-score-value');
@@ -409,6 +411,10 @@
         var yourScore = Components.computeWeightedScore(brand, weights);
         val.textContent = yourScore;
         pill.style.display = 'inline-block';
+      }, {
+        page: 'brand',
+        brandSlug: brand.id || (brand.name && brand.name.toLowerCase().replace(/\s+/g, '-')),
+        getBrandsForScoring: function () { return [brand]; }
       });
 
       window.switchTab = function(tab) {
