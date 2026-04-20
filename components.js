@@ -604,12 +604,20 @@ const Components = {
     }).join('');
 
     return (
-      '<div class="uw-wrap" id="' + containerId + '" style="margin-top:var(--space-4)">' +
-        '<button type="button" class="uw-toggle btn btn-ghost btn-sm" aria-expanded="false" style="display:inline-flex;align-items:center;gap:8px">' +
-          '<i class="fa-solid fa-sliders"></i>' +
-          '<span class="uw-toggle-label">Weight this yourself</span>' +
-          '<i class="fa-solid fa-chevron-down uw-chevron" style="font-size:11px;transition:transform .2s"></i>' +
-        '</button>' +
+      '<div class="uw-wrap" id="' + containerId + '" style="margin-top:var(--space-5)">' +
+        '<div class="uw-cta" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:var(--space-3);padding:var(--space-4) var(--space-5);background:linear-gradient(135deg,var(--surface-2),var(--surface-3));border:1px solid var(--border-primary);border-left:3px solid var(--green);border-radius:var(--radius-md)">' +
+          '<div style="flex:1;min-width:240px">' +
+            '<div style="font-size:var(--text-base);font-weight:700;color:var(--text-primary);margin-bottom:4px;display:flex;align-items:center;gap:8px">' +
+              '<i class="fa-solid fa-sliders" style="color:var(--green)"></i>' +
+              '<span>Disagree with how we weight things?</span>' +
+            '</div>' +
+            '<div style="font-size:var(--text-sm);color:var(--text-secondary);line-height:1.5">Adjust the sliders to match what matters most to <em>you</em> and see your personalised score — GoNoGo\u2019s independent score stays alongside it.</div>' +
+          '</div>' +
+          '<button type="button" class="uw-toggle btn btn-primary btn-sm" aria-expanded="false" style="display:inline-flex;align-items:center;gap:8px;white-space:nowrap">' +
+            '<span class="uw-toggle-label">Weight this yourself</span>' +
+            '<i class="fa-solid fa-chevron-down uw-chevron" style="font-size:11px;transition:transform .2s"></i>' +
+          '</button>' +
+        '</div>' +
         '<div class="uw-panel" style="display:none;margin-top:var(--space-3);padding:var(--space-4);background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md)">' +
           '<p style="font-size:var(--text-sm);color:var(--text-secondary);margin-bottom:var(--space-3);line-height:1.55">' +
             'GoNoGo\u2019s default weights reflect our methodology. Adjust them to match what matters most to <em>you</em>. Your personalised score is calculated on your device only.' +
