@@ -1629,23 +1629,37 @@ const Components = {
     // Handle magic-link / email-confirmation callback (PKCE flow returns ?code=…)
     var urlParams = new URLSearchParams(window.location.search);
     var authCode = urlParams.get('code');
+
     if (authCode) {
-      supabaseAuth.auth.exchangeCodeForSession(authCode).then(function() {
-        // Clean the URL so the code isn't reused
+      // Code exchange in progress — don't call getSession or show welcome yet.
+      // The onAuthStateChange listener below will fire SIGNED_IN once the
+      // exchange completes, which updates the UI.
+      supabaseAuth.auth.exchangeCodeForSession(authCode).then(function(res) {
         var clean = window.location.pathname + window.location.hash;
         window.history.replaceState(null, '', clean);
+        var session = res.data && res.data.session;
+        Components._currentUser = session ? session.user : null;
+        Components._updateNavAuth();
       }).catch(function(err) {
         console.warn('Auth code exchange failed:', err);
+        // Fall back to normal session check
+        supabaseAuth.auth.getSession().then(function(r) {
+          var s = r.data && r.data.session;
+          Components._currentUser = s ? s.user : null;
+          Components._updateNavAuth();
+          if (!s) Components._maybeShowWelcome();
+        });
+      });
+    } else {
+      supabaseAuth.auth.getSession().then(function(res) {
+        var session = res.data && res.data.session;
+        Components._currentUser = session ? session.user : null;
+        Components._updateNavAuth();
+        // Show welcome modal for anonymous visitors (once per session)
+        if (!session) Components._maybeShowWelcome();
       });
     }
 
-    supabaseAuth.auth.getSession().then(function(res) {
-      var session = res.data && res.data.session;
-      Components._currentUser = session ? session.user : null;
-      Components._updateNavAuth();
-      // Show welcome modal for anonymous visitors (once per session)
-      if (!session) Components._maybeShowWelcome();
-    });
     var _hadSessionOnLoad = null; // null = not yet known
     supabaseAuth.auth.onAuthStateChange(async function(event, session) {
       Components._currentUser = session ? session.user : null;
