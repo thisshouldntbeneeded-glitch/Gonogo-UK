@@ -1087,7 +1087,7 @@ const Components = {
     const chartId = `radar-${brand.id}`;
 
     return `
-      <a href="brand.html?id=${brand.id}" class="brand-card animate-in ${staggerClass}">
+      <a href="brand/${brand.id}" class="brand-card animate-in ${staggerClass}">
         <div class="brand-card-top">
           ${this.renderLogo(brand, 'brand-logo brand-logo-lg')}
           <div class="brand-card-info">
@@ -1135,7 +1135,7 @@ const Components = {
   // URL PARAMETER HELPERS
   // ============================================================
   getParam(name) {
-    // 1) Query string (legacy): /brand.html?id=capitec  OR  /category.html?cat=banking
+    // 1) Query string (legacy): /brand/capitec  OR  /category/banking
     const params = new URLSearchParams(window.location.search);
     const fromQuery = params.get(name);
     if (fromQuery) return fromQuery;

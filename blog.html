@@ -89,7 +89,7 @@
         var img = p.cover_image_url
           ? '<div style="height:200px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;overflow:hidden"><img src="' + Components.escapeHTML(p.cover_image_url) + '" alt="" style="width:100%;height:100%;object-fit:cover"></div>'
           : '<div style="height:200px;border-radius:var(--radius-lg) var(--radius-lg) 0 0;background:linear-gradient(135deg,var(--green),#065f28);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-pen-nib" style="font-size:48px;color:rgba(255,255,255,0.3)"></i></div>';
-        return '<a href="blog-post.html?slug=' + encodeURIComponent(p.slug) + '" class="card" style="text-decoration:none;color:inherit;padding:0;overflow:hidden;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s" onmouseover="this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,0.3)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">' +
+        return '<a href="blog/' + encodeURIComponent(p.slug) + '" class="card" style="text-decoration:none;color:inherit;padding:0;overflow:hidden;display:flex;flex-direction:column;transition:transform 0.2s,box-shadow 0.2s" onmouseover="this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 8px 24px rgba(0,0,0,0.3)\'" onmouseout="this.style.transform=\'\';this.style.boxShadow=\'\'">' +
           img +
           '<div style="padding:var(--space-4) var(--space-5) var(--space-5)">' +
             '<div class="text-xs text-muted" style="margin-bottom:var(--space-2)">' + Components.escapeHTML(p.author || '') + (date ? ' · ' + date : '') + '</div>' +

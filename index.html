@@ -506,7 +506,7 @@
           var desc = cat.description || (cat.brandCount + ' brands reviewed');
           var color = categoryColors[cat.id] || '#3b82f6';
           return ''
-            + '<a href="category.html?cat=' + cat.id + '" class="industry-card-v2">'
+            + '<a href="category/' + cat.id + '" class="industry-card-v2">'
             +   '<div class="ic-icon" style="color:' + color + '"><i class="fa-solid ' + cat.icon + '"></i></div>'
             +   '<div class="ic-name">' + cat.name + '</div>'
             +   '<div class="ic-desc">' + desc + '</div>'
@@ -543,7 +543,7 @@
           results.innerHTML = matches.map(function (b) {
             var scoreColor = b.overallScore >= 80 ? 'var(--green-text)' : b.overallScore >= 60 ? 'var(--orange-text)' : 'var(--red-text)';
             return ''
-              + '<a href="brand.html?id=' + b.id + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;text-decoration:none;color:var(--text-primary);border-bottom:1px solid var(--border-subtle);transition:background var(--transition-fast);" onmouseover="this.style.background=\'var(--surface-3)\'" onmouseout="this.style.background=\'transparent\'">'
+              + '<a href="brand/' + b.id + '" style="display:flex;align-items:center;gap:10px;padding:12px 14px;text-decoration:none;color:var(--text-primary);border-bottom:1px solid var(--border-subtle);transition:background var(--transition-fast);" onmouseover="this.style.background=\'var(--surface-3)\'" onmouseout="this.style.background=\'transparent\'">'
               +   Components.renderLogo(b, 'brand-logo')
               +   '<div style="flex:1;min-width:0;">'
               +     '<div style="font-weight:600;font-size:var(--text-sm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + b.name + '</div>'

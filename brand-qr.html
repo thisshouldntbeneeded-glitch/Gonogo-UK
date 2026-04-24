@@ -124,7 +124,7 @@
     }
 
     function setupReviewQr(brandSlug) {
-      var reviewUrl = LIVE_PUBLIC_BASE_URL + '/brand.html?id=' + encodeURIComponent(brandSlug) + '#leave-review';
+      var reviewUrl = LIVE_PUBLIC_BASE_URL + '/brand/' + encodeURIComponent(brandSlug) + '#leave-review';
       window.reviewPageUrl = reviewUrl;
       var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=' + encodeURIComponent(reviewUrl);
       var urlEl = document.getElementById('review-url');

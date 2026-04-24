@@ -285,7 +285,7 @@
               '<div style="margin-top:var(--space-2);display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap">' +
                 Components.renderVerdictBadge(b1.verdict) + Components.renderScoreBadge(b1.overallScore) +
               '</div>' +
-              '<a href="brand.html?id=' + b1.id + '" style="font-size:var(--text-xs);margin-top:var(--space-3);display:block">View full profile →</a>' +
+              '<a href="brand/' + b1.id + '" style="font-size:var(--text-xs);margin-top:var(--space-3);display:block">View full profile →</a>' +
             '</div>' +
             '<div class="card" style="text-align:center">' +
               '<div style="display:flex;align-items:center;justify-content:center;gap:var(--space-3);margin-bottom:var(--space-3)">' +
@@ -297,7 +297,7 @@
               '<div style="margin-top:var(--space-2);display:flex;gap:var(--space-2);justify-content:center;flex-wrap:wrap">' +
                 Components.renderVerdictBadge(b2.verdict) + Components.renderScoreBadge(b2.overallScore) +
               '</div>' +
-              '<a href="brand.html?id=' + b2.id + '" style="font-size:var(--text-xs);margin-top:var(--space-3);display:block">View full profile →</a>' +
+              '<a href="brand/' + b2.id + '" style="font-size:var(--text-xs);margin-top:var(--space-3);display:block">View full profile →</a>' +
             '</div>' +
           '</div>' +
           Components.renderUserWeightsPanel(b1.scoringCategories || b2.scoringCategories, 'uw-compare');

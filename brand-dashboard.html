@@ -1687,7 +1687,7 @@
       var slug = window._brandSlug || '';
       var siteUrl = window._siteUrl || '';
       var verdictColor = verdict === 'TOP PERFORMER' ? '#d4a017' : verdict === 'GO' ? '#11a551' : verdict === 'NOGO' ? '#e74c3c' : '#11a551';
-      var brandUrl = siteUrl + '/brand.html?id=' + encodeURIComponent(slug);
+      var brandUrl = siteUrl + '/brand/' + encodeURIComponent(slug);
 
       var badgeHtml = '';
       var embedCode = '';
@@ -1717,7 +1717,7 @@
     }
 
     function setupReviewCollection(brandSlug, brandName, reviewAnalysis, frameworkAnalysis, brand) {
-      var reviewUrl = LIVE_PUBLIC_BASE_URL + '/brand.html?id=' + encodeURIComponent(brandSlug) + '#leave-review';
+      var reviewUrl = LIVE_PUBLIC_BASE_URL + '/brand/' + encodeURIComponent(brandSlug) + '#leave-review';
       window._reviewUrl = reviewUrl;
       window._reviewQrFilename = (brandSlug || 'brand') + '-review-qr.png';
       window._reviewBrandName = brandName || 'Brand';
