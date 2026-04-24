@@ -30,13 +30,13 @@ export default async function handler(req, res) {
 
     // Category pages
     for (const cat of cats) {
-      xml += url(SITE_URL + '/category/' + cat.slug, today, '0.8', 'weekly');
+      xml += url(SITE_URL + '/category?cat=' + cat.slug, today, '0.8', 'weekly');
     }
 
     // Brand pages
     for (const brand of brands) {
       const lastmod = brand.last_updated || today;
-      xml += url(SITE_URL + '/brand/' + brand.slug, lastmod, '0.7', 'weekly');
+      xml += url(SITE_URL + '/brand?id=' + brand.slug, lastmod, '0.7', 'weekly');
     }
 
     // Blog listing
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     // Blog posts
     for (const post of blogPosts) {
       const lastmod = (post.updated_at || post.published_at || today).split('T')[0];
-      xml += url(SITE_URL + '/blog/' + post.slug, lastmod, '0.7', 'weekly');
+      xml += url(SITE_URL + '/blog-post.html?slug=' + post.slug, lastmod, '0.7', 'weekly');
     }
 
     xml += '</urlset>';

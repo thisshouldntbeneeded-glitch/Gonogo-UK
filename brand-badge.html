@@ -175,7 +175,7 @@
       var vcDim = isTop ? 'rgba(212,175,55,0.15)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.15)' : 'rgba(17,165,81,0.15)';
       var vcBorder = isTop ? 'rgba(212,175,55,0.35)' : verdict === 'NOGO' ? 'rgba(231,76,60,0.35)' : 'rgba(17,165,81,0.35)';
       var logoUrl = siteUrl + '/favicon-32x32.png';
-      var brandUrl = siteUrl + '/brand/' + encodeURIComponent(slug);
+      var brandUrl = siteUrl + '/brand.html?id=' + encodeURIComponent(slug);
       var verdictLabel = isTop ? 'Top Performer' : (verdict === 'NOGO' ? 'No Go' : 'Go');
       var circ = 150.796;
       var offset = circ * (1 - Math.min(100, Math.max(0, score)) / 100);

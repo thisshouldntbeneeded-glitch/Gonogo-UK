@@ -122,7 +122,7 @@
               categories.map(function(cat) {
                 var itemLabel = cat.categoryType === 'branch' ? 'branch' : 'brand';
                 var itemLabelPlural = cat.brandCount !== 1 ? (itemLabel === 'branch' ? 'es' : 's') : '';
-                return '<a href="category/' + cat.id + '" class="industry-card ' + (cat.hasBrands ? '' : 'no-data') + '">' +
+                return '<a href="category.html?cat=' + cat.id + '" class="industry-card ' + (cat.hasBrands ? '' : 'no-data') + '">' +
                   '<i class="fa-solid ' + cat.icon + '" style="color:' + (cat.icon_color || 'var(--green)') + '"></i>' +
                   '<div class="name">' + cat.name + '</div>' +
                   '<div class="count">' + cat.brandCount + ' ' + itemLabel + itemLabelPlural + '</div>' +
@@ -166,7 +166,7 @@
       // === SEO: Dynamic meta tags for category pages ===
       var seoTitle = catInfo.name + ' Ratings & Reviews — GoNoGo UK';
       var catDesc = 'Compare ' + catInfo.brandCount + ' ' + catInfo.name.toLowerCase() + ' ' + itemLabelPlural + ' in the UK. Independent ' + catInfo.name.toLowerCase() + ' ratings using a transparent 100-point scoring framework on GoNoGo.';
-      var canonicalUrl = 'https://www.gonogo.co.uk/category/' + slug;
+      var canonicalUrl = 'https://www.gonogo.co.uk/category.html?cat=' + slug;
 
       document.title = seoTitle;
 

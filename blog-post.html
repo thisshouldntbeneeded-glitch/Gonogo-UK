@@ -66,7 +66,8 @@
   document.getElementById('footer').innerHTML = Components.renderFooter();
 
   (async function() {
-    var slug = Components.getParam('slug');
+    var params = new URLSearchParams(window.location.search);
+    var slug = params.get('slug');
     if (!slug) { showNotFound(); return; }
 
     try {
@@ -80,7 +81,7 @@
 
       var postTitle = post.title + ' — GoNoGo United Kingdom';
       var postDesc = post.excerpt || post.title;
-      var postUrl = 'https://www.gonogo.co.uk/blog/' + encodeURIComponent(post.slug);
+      var postUrl = 'https://www.gonogo.co.uk/blog-post.html?slug=' + encodeURIComponent(post.slug);
       var postImage = post.cover_image_url || 'https://www.gonogo.co.uk/logos/og-share.jpg';
 
       document.title = postTitle;

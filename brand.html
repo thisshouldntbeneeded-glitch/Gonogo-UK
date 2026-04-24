@@ -90,7 +90,7 @@
       // === SEO: Dynamic meta tags optimised for brand name searches ===
       var verdictLabel = brand.verdict === 'TOP PERFORMER' ? 'Top Performer' : (brand.verdict === 'NOGO' ? 'No\u2011Go' : 'Go');
       var seoTitle = brand.name + ' Reviews & Rating (' + brand.overallScore + '/100) \u2014 GoNoGo UK';
-      var brandUrl = 'https://www.gonogo.co.uk/brand/' + encodeURIComponent(brand.id || brandId);
+      var brandUrl = 'https://www.gonogo.co.uk/brand.html?id=' + encodeURIComponent(brand.id || brandId);
       var metaDesc = brand.name + ' scored ' + brand.overallScore + '/100 (' + verdictLabel + ') in ' + brand.categoryName + ' on GoNoGo. ' + (brand.overview ? brand.overview.substring(0, 120) : 'See the full 100-point breakdown, strengths, concerns, pricing, and user reviews.');
 
       document.title = seoTitle;
@@ -160,7 +160,7 @@
         '@type': 'BreadcrumbList',
         'itemListElement': [
           { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': 'https://www.gonogo.co.uk/' },
-          { '@type': 'ListItem', 'position': 2, 'name': brand.categoryName, 'item': 'https://www.gonogo.co.uk/category/' + brand.categorySlug },
+          { '@type': 'ListItem', 'position': 2, 'name': brand.categoryName, 'item': 'https://www.gonogo.co.uk/category.html?cat=' + brand.categorySlug },
           { '@type': 'ListItem', 'position': 3, 'name': brand.name, 'item': brandUrl }
         ]
       };
@@ -234,7 +234,7 @@
       document.getElementById('page-content').innerHTML =
         '<section class="brand-hero"><div class="container">' +
           '<div style="display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-3)">' +
-            '<a href="category/' + brand.categorySlug + '" style="color:var(--text-muted);font-size:var(--text-sm)">' +
+            '<a href="category.html?cat=' + brand.categorySlug + '" style="color:var(--text-muted);font-size:var(--text-sm)">' +
               '<i class="fa-solid fa-arrow-left"></i> ' + brand.categoryName +
             '</a>' +
           '</div>' +

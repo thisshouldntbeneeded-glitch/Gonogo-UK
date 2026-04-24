@@ -1087,7 +1087,7 @@ const Components = {
     const chartId = `radar-${brand.id}`;
 
     return `
-      <a href="brand/${brand.id}" class="brand-card animate-in ${staggerClass}">
+      <a href="brand.html?id=${brand.id}" class="brand-card animate-in ${staggerClass}">
         <div class="brand-card-top">
           ${this.renderLogo(brand, 'brand-logo brand-logo-lg')}
           <div class="brand-card-info">
@@ -1135,27 +1135,8 @@ const Components = {
   // URL PARAMETER HELPERS
   // ============================================================
   getParam(name) {
-    // 1) Query string (legacy): /brand/capitec  OR  /category/banking
     const params = new URLSearchParams(window.location.search);
-    const fromQuery = params.get(name);
-    if (fromQuery) return fromQuery;
-
-    // 2) Clean URL (SEO): /brand/capitec, /category/banking, /blog/post-slug
-    // Map the canonical param name each page asks for to the URL prefix we expect.
-    const pathMap = {
-      'id':   ['/brand/'],
-      'cat':  ['/category/'],
-      'slug': ['/blog/', '/blog-post/']
-    };
-    const prefixes = pathMap[name] || [];
-    const path = window.location.pathname;
-    for (const prefix of prefixes) {
-      if (path.indexOf(prefix) === 0) {
-        const value = path.slice(prefix.length).replace(/\/+$/, '');
-        if (value) return decodeURIComponent(value);
-      }
-    }
-    return null;
+    return params.get(name);
   },
 
   setParam(name, value) {
