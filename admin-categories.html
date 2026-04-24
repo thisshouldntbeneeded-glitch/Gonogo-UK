@@ -103,7 +103,7 @@
         <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-1)"><i class="fa-solid fa-magnifying-glass" style="color:var(--green);font-size:12px"></i><span class="text-xs" style="font-weight:700">SEO Preview</span></div>
         <div class="seo-box">
           <div class="seo-title" id="seo-title">Category Name Ratings &amp; Reviews — GoNoGo UK</div>
-          <div class="seo-url" id="seo-url">www.gonogo.co.uk/category.html?cat=...</div>
+          <div class="seo-url" id="seo-url">www.gonogo.co.uk/category/...</div>
           <div class="seo-desc" id="seo-desc">Compare brands in this category in the UK. Independent ratings powered by a transparent 100-point scoring framework.</div>
         </div>
       </div>
@@ -254,7 +254,7 @@
     var name = document.getElementById('ep-name').value.trim();
     if (!editingSlug) document.getElementById('ep-slug').value = slugify(name);
     document.getElementById('seo-title').textContent = (name || 'Category Name') + ' Ratings & Reviews — GoNoGo UK';
-    document.getElementById('seo-url').textContent = 'www.gonogo.co.uk/category.html?cat=' + (document.getElementById('ep-slug').value || '...');
+    document.getElementById('seo-url').textContent = 'www.gonogo.co.uk/category/' + (document.getElementById('ep-slug').value || '...');
     var desc = document.getElementById('ep-desc').value.trim();
     document.getElementById('seo-desc').textContent = desc || ('Compare ' + (name || 'brands') + ' in the UK. Independent ratings powered by a transparent 100-point scoring framework.');
   }

@@ -1135,8 +1135,27 @@ const Components = {
   // URL PARAMETER HELPERS
   // ============================================================
   getParam(name) {
+    // 1) Query string (legacy): /brand.html?id=capitec  OR  /category.html?cat=banking
     const params = new URLSearchParams(window.location.search);
-    return params.get(name);
+    const fromQuery = params.get(name);
+    if (fromQuery) return fromQuery;
+
+    // 2) Clean URL (SEO): /brand/capitec, /category/banking, /blog/post-slug
+    // Map the canonical param name each page asks for to the URL prefix we expect.
+    const pathMap = {
+      'id':   ['/brand/'],
+      'cat':  ['/category/'],
+      'slug': ['/blog/', '/blog-post/']
+    };
+    const prefixes = pathMap[name] || [];
+    const path = window.location.pathname;
+    for (const prefix of prefixes) {
+      if (path.indexOf(prefix) === 0) {
+        const value = path.slice(prefix.length).replace(/\/+$/, '');
+        if (value) return decodeURIComponent(value);
+      }
+    }
+    return null;
   },
 
   setParam(name, value) {
