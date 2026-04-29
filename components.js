@@ -1799,7 +1799,7 @@ const Components = {
     setTimeout(function() {
       if (Components._currentUser) return;
       Components._showWelcomeModal();
-    }, 2000);
+    }, 120000);
   },
 
   _triggerWelcomeAfterConsent() {
@@ -1812,7 +1812,7 @@ const Components = {
     setTimeout(function() {
       if (Components._currentUser) return;
       Components._showWelcomeModal();
-    }, 1500);
+    }, 120000);
   },
 
   _showWelcomeModal() {
