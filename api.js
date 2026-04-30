@@ -68,7 +68,7 @@ var GoNoGoAPI = (function () {
 
   function loadCategoryCache() {
     if (_categoryCache) return Promise.resolve(_categoryCache);
-    return supabaseRequest('categories?select=*&order=sort_order.asc,name.asc').then(function (rows) {
+    return supabaseRequest('categories?region=eq.' + SITE_REGION + '&select=*&order=sort_order.asc,name.asc').then(function (rows) {
       _categoryCache = {};
       (rows || []).forEach(function (c) {
         _categoryCache[c.slug] = {
@@ -160,7 +160,7 @@ var GoNoGoAPI = (function () {
       return checkSupabaseBrands().then(function (hasSB) {
         if (hasSB) {
           return Promise.all([
-            supabaseRequest('categories?select=*&order=sort_order.asc,name.asc'),
+            supabaseRequest('categories?region=eq.' + SITE_REGION + '&select=*&order=sort_order.asc,name.asc'),
             supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&select=slug,category_slug'),
             supabaseRequest('branches?select=branch_id,category_slug').catch(function () {
               return [];
@@ -375,7 +375,7 @@ var GoNoGoAPI = (function () {
         if (hasSB) {
           return Promise.all([
             supabaseRequest('brands?region=eq.' + SITE_REGION + LIVE_FILTER + '&select=gonogo_score,verdict,category_slug'),
-            supabaseRequest('categories?select=slug')
+            supabaseRequest('categories?region=eq.' + SITE_REGION + '&select=slug')
           ]).then(function (results) {
             var brands = results[0] || [];
             var cats = results[1] || [];
