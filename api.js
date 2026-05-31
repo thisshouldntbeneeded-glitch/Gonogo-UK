@@ -572,10 +572,12 @@ var GoNoGoAPI = (function () {
       });
     },
 
-    // Helper: get caller auth from stored admin session
+    // Helper: get caller auth from stored admin session, falling back to brand user
     _getCallerAuth: function () {
       var stored = GoNoGoStorage.get('adminUser');
       if (stored && stored.id && stored._ah) return { p_caller_id: stored.id, p_caller_hash: stored._ah };
+      var brand = GoNoGoStorage.get('brandUser');
+      if (brand && brand.id && brand._ah) return { p_caller_id: brand.id, p_caller_hash: brand._ah };
       return { p_caller_id: null, p_caller_hash: null };
     },
 
@@ -716,8 +718,10 @@ var GoNoGoAPI = (function () {
             p_hash: hash
           }
         }).then(function (rows) {
-          if (rows && rows.length > 0) return rows[0];
-          if (rows && rows.id) return rows;
+          var user = null;
+          if (rows && rows.length > 0) user = rows[0];
+          else if (rows && rows.id) user = rows;
+          if (user) { user._ah = hash; return user; }
 
           return supabaseRequest('rpc/admin_login', {
             method: 'POST',
@@ -726,31 +730,12 @@ var GoNoGoAPI = (function () {
               p_hash: hash
             }
           }).then(function (adminRows) {
-            if (adminRows && adminRows.length > 0) {
-              var admin = adminRows[0];
-              return {
-                id: admin.id,
-                email: admin.email,
-                display_name: admin.display_name,
-                role: 'admin',
-                brand_slug: '__admin__',
-                region: SITE_REGION
-              };
-            }
-            if (adminRows && adminRows.id) {
-              return {
-                id: adminRows.id,
-                email: adminRows.email,
-                display_name: adminRows.display_name,
-                role: 'admin',
-                brand_slug: '__admin__',
-                region: SITE_REGION
-              };
+            var admin = (adminRows && adminRows.length > 0) ? adminRows[0] : ((adminRows && adminRows.id) ? adminRows : null);
+            if (admin) {
+              return { id: admin.id, email: admin.email, display_name: admin.display_name, role: 'admin', brand_slug: '__admin__', region: SITE_REGION, _ah: hash };
             }
             return null;
-          }).catch(function () {
-            return null;
-          });
+          }).catch(function () { return null; });
         }).catch(function () {
           return supabaseRequest('rpc/admin_login', {
             method: 'POST',
@@ -759,31 +744,12 @@ var GoNoGoAPI = (function () {
               p_hash: hash
             }
           }).then(function (adminRows) {
-            if (adminRows && adminRows.length > 0) {
-              var admin = adminRows[0];
-              return {
-                id: admin.id,
-                email: admin.email,
-                display_name: admin.display_name,
-                role: 'admin',
-                brand_slug: '__admin__',
-                region: SITE_REGION
-              };
-            }
-            if (adminRows && adminRows.id) {
-              return {
-                id: adminRows.id,
-                email: adminRows.email,
-                display_name: adminRows.display_name,
-                role: 'admin',
-                brand_slug: '__admin__',
-                region: SITE_REGION
-              };
+            var admin = (adminRows && adminRows.length > 0) ? adminRows[0] : ((adminRows && adminRows.id) ? adminRows : null);
+            if (admin) {
+              return { id: admin.id, email: admin.email, display_name: admin.display_name, role: 'admin', brand_slug: '__admin__', region: SITE_REGION, _ah: hash };
             }
             return null;
-          }).catch(function () {
-            return null;
-          });
+          }).catch(function () { return null; });
         });
       });
     },

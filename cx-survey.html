@@ -317,13 +317,12 @@ if (EMBED) {
 /* ── Tiny i18n: button labels only ── */
 var I18N = {
   en: { start:'Start', back:'Back', next:'Next', submit:'Submit', qof:'Question {n} of {t}', share:'Share your feedback', intro:'A few quick questions — your answers go straight to the brand.', required:'This question is required.', language:'Language' },
-  af: { start:'Begin', back:'Terug', next:'Volgende', submit:'Stuur', qof:'Vraag {n} van {t}', share:'Deel jou terugvoer', intro:'‘n Paar vinnige vrae — jou antwoorde gaan reguit na die handelsmerk.', required:'Hierdie vraag is verpligtend.', language:'Taal' },
-  zu: { start:'Qala', back:'Emuva', next:'Okulandelayo', submit:'Thumela', qof:'Umbuzo {n} ku-{t}', share:'Yabelana ngempendulo yakho', intro:'Imibuzo embalwa esheshayo — izimpendulo zakho ziya ngqo kwibhrendi.', required:'Lo mbuzo uyadingeka.', language:'Ulimi' },
-  xh: { start:'Qalisa', back:'Buyela', next:'Okulandelayo', submit:'Ngenisa', qof:'Umbuzo {n} ku-{t}', share:'Yabelana ngenkcazo yakho', intro:'Imibuzo embalwa ekhawulezayo — iimpendulo zakho ziya ngqo kwibrand.', required:'Lo mbuzo uyafuneka.', language:'Ulwimi' },
-  fr: { start:'Démarrer', back:'Retour', next:'Suivant', submit:'Envoyer', qof:'Question {n} sur {t}', share:'Partagez votre avis', intro:'Quelques questions rapides — vos réponses vont directement à la marque.', required:'Cette question est obligatoire.', language:'Langue' },
-  pt: { start:'Iniciar', back:'Voltar', next:'Próximo', submit:'Enviar', qof:'Pergunta {n} de {t}', share:'Partilhe a sua opinião', intro:'Algumas perguntas rápidas — as suas respostas vão directamente para a marca.', required:'Esta pergunta é obrigatória.', language:'Idioma' }
+  cy: { start:'Dechrau', back:'Yn ôl', next:'Nesaf', submit:'Cyflwyno', qof:'Cwestiwn {n} o {t}', share:'Rhannwch eich adborth', intro:'Ychydig o gwestiynau cyflym — mae eich atebion yn mynd yn syth at y brand.', required:'Mae angen y cwestiwn hwn.', language:'Iaith' },
+  gd: { start:'Tòisich', back:'Air ais', next:'Air adhart', submit:'Cuir a-steach', qof:'Ceist {n} de {t}', share:'Roinn do bheachd', intro:'Beagan cheistean luatha — thèid na freagairtean agad dìreach chun a’ bhrand.', required:'Tha a’ cheist seo riatanach.', language:'Cànan' },
+  pl: { start:'Rozpocznij', back:'Wstecz', next:'Dalej', submit:'Wyślij', qof:'Pytanie {n} z {t}', share:'Podziel się opinią', intro:'Kilka szybkich pytań — Twoje odpowiedzi trafiają bezpośrednio do marki.', required:'To pytanie jest wymagane.', language:'Język' },
+  fr: { start:'Démarrer', back:'Retour', next:'Suivant', submit:'Envoyer', qof:'Question {n} sur {t}', share:'Partagez votre avis', intro:'Quelques questions rapides — vos réponses vont directement à la marque.', required:'Cette question est obligatoire.', language:'Langue' }
 };
-var LANG_NAMES = { en:'English', af:'Afrikaans', zu:'isiZulu', xh:'isiXhosa', fr:'Français', pt:'Português' };
+var LANG_NAMES = { en:'English', cy:'Cymraeg', gd:'Gàidhlig', pl:'Polski', fr:'Français' };
 function t(k, vars){
   var lang = (state && state.lang) || 'en';
   var s = (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;

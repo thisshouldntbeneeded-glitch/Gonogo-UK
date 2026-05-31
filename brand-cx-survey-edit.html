@@ -442,7 +442,7 @@ var _dirty = false;
 var _saving = false;
 var esc = Components.escapeHTML.bind(Components);
 
-// init() must run AFTER all var/function declarations below so SA_LANGUAGES etc. are defined
+// init() must run AFTER all var/function declarations below so UK_LANGUAGES etc. are defined
 
 var QTYPES = [
   {v:'info',         l:'Free text / intro', icon:'fa-circle-info'},
@@ -461,12 +461,15 @@ var QTYPES = [
 ];
 
 
-var SA_LANGUAGES = [
-  { code:'en-ZA', name:'English', native:'English' },
-  { code:'af-ZA', name:'Afrikaans', native:'Afrikaans' },
-  { code:'zu-ZA', name:'Zulu', native:'isiZulu' },
-  { code:'xh-ZA', name:'Xhosa', native:'isiXhosa' }
+var UK_LANGUAGES = [
+  { code:'en-GB', name:'English', native:'English' },
+  { code:'cy-GB', name:'Welsh', native:'Cymraeg' },
+  { code:'gd-GB', name:'Scottish Gaelic', native:'Gàidhlig' },
+  { code:'pl-PL', name:'Polish', native:'Polski' },
+  { code:'fr-FR', name:'French', native:'Français' }
 ];
+// Backwards-compat alias for shared logic that referenced SA_LANGUAGES
+var SA_LANGUAGES = UK_LANGUAGES;
 
 // Kick off init once all top-level declarations are in place
 if (Components.checkBrandAuth()) init();
@@ -1286,7 +1289,7 @@ function renderSettingsPanel() {
   html += '<div class="se-settings-section" data-settings-section="branding">';
   html += '<h4 class="se-section-h" style="margin-top:0">Branding</h4>';
   html += '<div class="se-row"><div class="se-field"><label class="se-label">Brand logo URL</label><input class="se-input" id="s-brand-logo" placeholder="https://..."></div><div class="se-field"><label class="se-label">Primary colour</label><input class="se-input" id="s-brand-primary" type="text" placeholder="#11a551"></div></div>';
-  html += '<div class="se-row"><div class="se-field"><label class="se-label">Accent colour</label><input class="se-input" id="s-brand-accent" type="text" placeholder="#0b7a3b"></div><div class="se-field"><label class="se-label">Survey language</label><select class="se-input" id="s-language"><option value="en">English</option><option value="af">Afrikaans</option><option value="zu">isiZulu</option><option value="xh">isiXhosa</option><option value="fr">Français</option><option value="pt">Português</option></select><div class="se-inline-note" style="font-size:11px;color:var(--text-muted);margin-top:4px">Write your questions in this language. UI labels (Next, Back, Submit) will match automatically.</div></div></div>';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Accent colour</label><input class="se-input" id="s-brand-accent" type="text" placeholder="#0b7a3b"></div><div class="se-field"><label class="se-label">Survey language</label><select class="se-input" id="s-language"><option value="en">English</option><option value="cy">Cymraeg</option><option value="gd">Gàidhlig</option><option value="pl">Polski</option><option value="fr">Français</option></select><div class="se-inline-note" style="font-size:11px;color:var(--text-muted);margin-top:4px">Write your questions in this language. UI labels (Next, Back, Submit) will match automatically.</div></div></div>';
   html += '<div class="se-mini-note">Templates now belong to the survey structure area so they can shape the question list immediately.</div>';
   html += '</div>';
 
