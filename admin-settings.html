@@ -160,6 +160,7 @@
             <select id="bu-tier">
               <option value="basic">Basic — Reviews only</option>
               <option value="full">Full — All tabs</option>
+              <option value="cx_only">CX Survey only — Survey platform + dashboard</option>
             </select>
           </div>
         </div>
@@ -413,8 +414,8 @@
         '</tr></thead><tbody>' +
         users.map(function(u) {
           var tierVal = u.tier || 'basic';
-          var tierBg = tierVal === 'full' ? 'var(--green-bg, rgba(17,165,81,0.12))' : 'var(--blue-dim, rgba(59,130,246,0.12))';
-          var tierColor = tierVal === 'full' ? 'var(--green-text, #11a551)' : 'var(--blue, #3b82f6)';
+          var tierBg = tierVal === 'full' ? 'var(--green-bg, rgba(17,165,81,0.12))' : (tierVal === 'cx_only' ? 'rgba(168,85,247,0.12)' : 'var(--blue-dim, rgba(59,130,246,0.12))');
+          var tierColor = tierVal === 'full' ? 'var(--green-text, #11a551)' : (tierVal === 'cx_only' ? '#a855f7' : 'var(--blue, #3b82f6)');
           return '<tr>' +
             '<td style="font-size:var(--text-sm)">' + safeText(u.email) + '</td>' +
             '<td style="font-size:var(--text-sm)">' + safeText(u.display_name || '-') + '</td>' +
@@ -422,6 +423,7 @@
             '<td><select onchange="changeBrandTier(\'' + safeAttr(u.id) + '\', this.value)" style="font-size:11px;padding:2px 6px;border-radius:var(--radius-sm);border:1px solid var(--border-primary);background:' + tierBg + ';color:' + tierColor + ';font-weight:600;cursor:pointer">' +
               '<option value="basic"' + (tierVal === 'basic' ? ' selected' : '') + '>Basic</option>' +
               '<option value="full"' + (tierVal === 'full' ? ' selected' : '') + '>Full</option>' +
+              '<option value="cx_only"' + (tierVal === 'cx_only' ? ' selected' : '') + '>CX only</option>' +
             '</select></td>' +
             '<td style="font-size:var(--text-xs);color:var(--text-muted)">' + safeText(u.created_at ? new Date(u.created_at).toLocaleDateString('en-GB') : '') + '</td>' +
             '<td><button class="btn btn-ghost btn-sm" style="color:var(--red-text)" type="button" data-remove-brand-user="1" data-user-id="' + safeAttr(u.id) + '" data-email="' + safeAttr(u.email) + '"><i class="fa-solid fa-trash"></i></button></td>' +
