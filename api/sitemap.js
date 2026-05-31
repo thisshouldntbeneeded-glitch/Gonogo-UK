@@ -28,8 +28,11 @@ export default async function handler(req, res) {
     xml += url(SITE_URL + '/faq', today, '0.5', 'monthly');
     xml += url(SITE_URL + '/cookies', today, '0.3', 'monthly');
 
-    // Category pages
+    // Category pages — only include categories that actually have brands
+    // (empty categories cause Soft 404s in Google Search Console)
+    const categoriesWithBrands = new Set(brands.map(b => b.category_slug).filter(Boolean));
     for (const cat of cats) {
+      if (!categoriesWithBrands.has(cat.slug)) continue;
       xml += url(SITE_URL + '/category?cat=' + cat.slug, today, '0.8', 'weekly');
     }
 
