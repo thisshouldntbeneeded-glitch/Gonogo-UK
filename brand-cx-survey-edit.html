@@ -1,0 +1,2423 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>GoNoGo — Survey Editor</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* ── Top header bar ── */
+.se-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5)}
+.se-header h1{font-size:18px;font-weight:700;margin:0;flex:1;min-width:200px}
+.se-header .cx-badge{font-size:11px}
+.se-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center}
+
+/* ── Two-column layout ── */
+.se-grid{display:grid;grid-template-columns:340px minmax(0,1fr);gap:var(--space-5);align-items:start}
+@media(max-width:860px){.se-grid{grid-template-columns:1fr}}
+
+/* ── Left rail (question list) ── */
+.se-rail{position:sticky;top:var(--space-4);background:linear-gradient(180deg,var(--surface-2),var(--surface-1));border:1px solid var(--border-primary);border-radius:calc(var(--radius-md) + 2px);padding:var(--space-4);max-height:calc(100vh - 120px);overflow-y:auto;box-shadow:0 10px 28px rgba(2,8,23,.08)}
+.se-q-item{display:flex;align-items:center;gap:var(--space-2);padding:12px 14px;border-radius:12px;cursor:pointer;font-size:13px;border:1px solid transparent;margin-bottom:8px;background:var(--surface-1);transition:background .16s,border-color .16s,transform .16s,box-shadow .16s}
+.se-q-item:hover{background:var(--surface-3);border-color:rgba(17,165,81,.18);transform:translateY(-1px)}
+.se-q-item.active{border-color:rgba(17,165,81,.35);background:rgba(17,165,81,.08);box-shadow:0 8px 18px rgba(17,165,81,.10)}
+.se-q-item .handle{color:var(--text-muted);cursor:grab;font-size:13px;flex-shrink:0}
+.se-q-item .handle:active{cursor:grabbing}
+.se-q-item .qicon{color:var(--green);width:18px;text-align:center;flex-shrink:0;font-size:12px}
+.se-q-item .qlabel{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-primary)}
+.se-q-item .req-dot{color:var(--red);font-size:10px;flex-shrink:0}
+.se-q-item .del-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:var(--radius-sm);flex-shrink:0}
+.se-q-item .del-btn:hover{color:var(--red);background:var(--red-dim)}
+.se-q-item.dragging{opacity:.4}
+.se-q-item.drag-over{border-top:2px solid var(--green)}
+.se-add-bar{margin-top:var(--space-4);position:relative}
+.se-add-btn{width:100%;text-align:left;justify-content:center}
+.se-qtype-picker{position:absolute;left:0;right:0;bottom:100%;margin-bottom:4px;background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-2);z-index:10;box-shadow:var(--shadow-md);display:none;max-height:280px;overflow-y:auto}
+.se-qtype-picker.show{display:block}
+.se-qtype-opt{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:var(--radius-sm);cursor:pointer;font-size:13px;color:var(--text-primary)}
+.se-qtype-opt:hover{background:var(--surface-3)}
+.se-qtype-opt i{color:var(--green);width:18px;text-align:center}
+
+/* ── Right pane ── */
+.se-pane{background:linear-gradient(180deg,var(--surface-2),var(--surface-1));border:1px solid var(--border-primary);border-radius:calc(var(--radius-md) + 2px);padding:var(--space-5);min-height:460px;box-shadow:0 14px 34px rgba(15,23,42,.06)}
+.se-tabs{display:flex;gap:6px;border-bottom:1px solid var(--border-primary);margin-bottom:var(--space-5);padding-bottom:2px;flex-wrap:wrap}
+.se-tab{padding:10px 14px;font-size:13px;font-weight:700;color:var(--text-secondary);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;border-radius:10px 10px 0 0}
+.se-tab.active{color:var(--text-primary);border-bottom-color:var(--green);background:rgba(17,165,81,.06)}
+
+/* ── Form controls ── */
+.se-label{display:block;font-size:11px;font-weight:700;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.08em}
+.se-section-h{font-size:13px;font-weight:700;color:var(--text-primary);text-transform:uppercase;letter-spacing:.06em;margin:0 0 var(--space-3);padding-bottom:var(--space-2);border-bottom:1px solid var(--border-primary)}
+.se-input,.se-select,.se-textarea{width:100%;background:var(--surface-1);border:1px solid var(--border-primary);color:var(--text-primary);padding:11px 12px;border-radius:12px;font-size:13px;font-family:inherit;transition:border-color .16s,box-shadow .16s,background .16s}
+.se-textarea{resize:vertical;min-height:60px;line-height:1.45}
+.se-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-3)}
+.se-row-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-3);margin-bottom:var(--space-3)}
+@media(max-width:980px){.se-row-3{grid-template-columns:1fr}}
+@media(max-width:980px){.se-row{grid-template-columns:1fr}}
+.se-card{background:var(--surface-1);border:1px solid var(--border-primary);border-radius:14px;padding:var(--space-4);margin-bottom:var(--space-4)}
+.se-rail-section{margin-bottom:var(--space-4)}
+.se-rail-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.09em;color:var(--text-secondary);margin-bottom:10px}
+.se-template-card{background:var(--surface-1);border:1px solid var(--border-primary);border-radius:14px;padding:14px;margin-bottom:var(--space-4)}
+.se-template-card .se-label{margin-bottom:8px}
+.se-template-note{font-size:12px;color:var(--text-muted);line-height:1.45;margin-top:8px}
+.se-q-meta{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text-muted);margin-top:6px}
+.se-q-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;background:rgba(15,23,42,.06);font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase}
+.se-q-pill.logic{background:rgba(17,165,81,.12);color:var(--green)}
+
+.se-btn-primary,.se-btn-secondary,.se-btn-danger{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 14px;border-radius:12px;font-weight:700;font-size:13px;
+  border:1px solid transparent;text-decoration:none;
+  transition:transform .16s,box-shadow .16s,background .16s,border-color .16s,color .16s
+}
+.se-btn-primary{background:linear-gradient(180deg,#18b35a,#11994d);color:#fff;box-shadow:0 10px 20px rgba(17,165,81,.18)}
+.se-btn-primary:hover{transform:translateY(-1px);box-shadow:0 14px 26px rgba(17,165,81,.22)}
+.se-btn-secondary{background:var(--surface-1);border-color:var(--border-primary);color:var(--text-primary)}
+.se-btn-secondary:hover{background:var(--surface-3);border-color:rgba(17,165,81,.2)}
+.se-btn-danger{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.18)}
+.se-btn-danger:hover{background:rgba(239,68,68,.14)}
+
+.se-actions .btn{display:none!important}
+.se-actions .btn{
+  display:inline-flex!important;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:10px 14px;
+  min-height:40px;
+  border-radius:12px;
+  font-weight:700;
+  font-size:13px;
+  text-decoration:none;
+  border:1px solid var(--border-primary);
+  background:var(--surface-1);
+  color:var(--text-primary);
+  cursor:pointer;
+  transition:transform .16s, box-shadow .16s, background .16s, border-color .16s, color .16s;
+}
+
+.se-actions .btn:hover{
+  transform:translateY(-1px);
+  background:var(--surface-3);
+  border-color:rgba(17,165,81,.22);
+  box-shadow:0 10px 24px rgba(15,23,42,.08);
+}
+
+.se-actions #btn-save{
+  background:linear-gradient(180deg,#18b35a,#11994d)!important;
+  color:#fff!important;
+  border-color:transparent!important;
+  box-shadow:0 10px 22px rgba(17,165,81,.20);
+}
+
+.se-actions #btn-save:hover{
+  box-shadow:0 14px 28px rgba(17,165,81,.24);
+}
+
+.se-actions #btn-publish{
+  background:linear-gradient(180deg,#18b35a,#11994d)!important;
+  color:#fff!important;
+  border-color:transparent!important;
+}
+
+.se-actions #btn-pause{
+  background:#f59e0b!important;
+  color:#fff!important;
+  border-color:transparent!important;
+}
+
+.se-actions #btn-unpublish{
+  background:var(--surface-1)!important;
+  color:var(--text-primary)!important;
+}
+.se-top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+.se-panel-intro{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-4)}
+.se-panel-intro h2{font-size:17px;margin:0;color:var(--text-primary)}
+.se-panel-intro p{margin:4px 0 0;color:var(--text-muted);font-size:13px;max-width:60ch}
+
+.se-inline-toggle{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border-primary);background:var(--surface-1);border-radius:12px}
+.se-logic-list{display:grid;gap:10px;margin-top:10px}
+.se-logic-row{display:grid;grid-template-columns:1.1fr .9fr 1fr auto;gap:10px;align-items:end;background:var(--surface-1);border:1px solid var(--border-primary);padding:12px;border-radius:14px}
+@media(max-width:980px){.se-logic-row{grid-template-columns:1fr}}
+.se-logic-row .del-btn{height:42px;width:42px;display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:rgba(239,68,68,.08)}
+.se-logic-empty{font-size:12px;color:var(--text-muted);padding:12px;border:1px dashed var(--border-primary);border-radius:12px;background:var(--surface-1)}
+
+.se-help-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-3)}
+@media(max-width:980px){.se-help-grid{grid-template-columns:1fr}}
+
+.se-input:focus,.se-select:focus,.se-textarea:focus{outline:none;border-color:rgba(17,165,81,.45);box-shadow:0 0 0 4px rgba(17,165,81,.10)}
+
+.se-settings-subtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--space-4)}
+.se-settings-subtab{padding:9px 12px;border-radius:999px;border:1px solid var(--border-primary);background:var(--surface-1);color:var(--text-secondary);font-size:12px;font-weight:700;letter-spacing:.02em;cursor:pointer}
+.se-settings-subtab.active{background:rgba(17,165,81,.1);border-color:rgba(17,165,81,.3);color:var(--text-primary)}
+.se-settings-section{display:none}
+.se-settings-section.active{display:block}
+
+.se-toggle-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border:1px solid var(--border-primary);background:var(--surface-1);border-radius:14px;margin-bottom:12px}
+.se-toggle-copy{min-width:0}
+.se-toggle-title{font-size:13px;font-weight:700;color:var(--text-primary);margin:0 0 2px}
+.se-toggle-desc{font-size:12px;color:var(--text-muted);line-height:1.4;margin:0}
+
+.se-switch{position:relative;display:inline-flex;align-items:center;width:48px;height:28px;flex-shrink:0}
+.se-switch input{position:absolute;opacity:0;pointer-events:none}
+.se-switch-ui{position:relative;width:48px;height:28px;border-radius:999px;background:#cbd5e1;transition:background .18s ease,box-shadow .18s ease;box-shadow:inset 0 0 0 1px rgba(15,23,42,.08)}
+.se-switch-ui::after{content:'';position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(15,23,42,.18);transition:transform .18s ease}
+.se-switch input:checked + .se-switch-ui{background:linear-gradient(180deg,#18b35a,#11994d)}
+.se-switch input:checked + .se-switch-ui::after{transform:translateX(20px)}
+.se-switch input:focus-visible + .se-switch-ui{box-shadow:0 0 0 4px rgba(17,165,81,.14)}
+
+.se-template-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.se-template-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;background:rgba(17,165,81,.1);color:var(--green);font-size:11px;font-weight:700;margin-top:10px}
+.se-privacy-banner{padding:14px 16px;border-radius:14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.16);color:var(--text-primary);font-size:12px;line-height:1.5;margin-bottom:var(--space-4)}
+.se-mini-note{font-size:12px;color:var(--text-muted);margin-top:8px;line-height:1.45}
+
+/* ── Survey preview ── */
+.se-survey-preview-shell{background:var(--surface-1);border:1px solid var(--border-primary);border-radius:16px;overflow:hidden;max-width:760px}
+.se-preview-banner{padding:14px 16px;background:rgba(59,130,246,.08);border-bottom:1px solid rgba(59,130,246,.14);font-size:12px;line-height:1.5;color:var(--text-primary)}
+.se-preview-hero{padding:22px 20px 14px;border-bottom:1px solid var(--border-primary)}
+.se-preview-hero h3{margin:0 0 6px;font-size:20px;color:var(--text-primary)}
+.se-preview-hero p{margin:0;color:var(--text-muted);font-size:13px;line-height:1.55;max-width:60ch}
+.se-preview-body{padding:18px 20px 20px;display:grid;gap:16px}
+.se-preview-card{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:14px;padding:16px}
+.se-preview-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.se-preview-progress{height:8px;background:rgba(15,23,42,.08);border-radius:999px;overflow:hidden;flex:1}
+.se-preview-progress > span{display:block;height:100%;background:linear-gradient(90deg,#18b35a,#11994d);width:35%}
+
+.se-field{margin-bottom:var(--space-3)}
+.se-toggle{display:flex;align-items:center;gap:var(--space-2);font-size:13px;cursor:pointer}
+.se-hint{font-size:12px;color:var(--text-muted);margin-top:2px}
+
+/* ── Options editor ── */
+.se-opt-row{display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-2)}
+.se-opt-row input{flex:1}
+.se-opt-row .handle{color:var(--text-muted);cursor:grab;font-size:12px}
+.se-opt-row .del-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:12px;padding:2px 4px;border-radius:var(--radius-sm)}
+.se-opt-row .del-btn:hover{color:var(--red)}
+.se-opt-row.dragging{opacity:.4}
+.se-opt-row.drag-over{border-top:2px solid var(--green)}
+
+/* ── Live preview card ── */
+.se-preview{background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);margin-top:var(--space-4)}
+.se-preview-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:var(--space-3)}
+.se-preview .q-prompt{font-weight:600;font-size:14px;color:var(--text-primary);margin-bottom:4px}
+.se-preview .q-help{font-size:12px;color:var(--text-muted);margin-bottom:var(--space-2)}
+.se-preview .scale-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(38px,1fr));gap:4px;margin-top:var(--space-2)}
+.se-preview .scale-btn{padding:8px 0;border:1px solid var(--border-primary);background:var(--surface-2);border-radius:var(--radius-sm);font-weight:600;font-size:13px;text-align:center;color:var(--text-primary)}
+.se-preview .nps-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);margin-top:4px}
+.se-preview .nps-red{background:rgba(231,76,60,.12);border-color:rgba(231,76,60,.3);color:var(--red-text)}
+.se-preview .nps-amber{background:rgba(234,179,8,.12);border-color:rgba(234,179,8,.3);color:#fbbf24}
+.se-preview .nps-green{background:rgba(17,165,81,.12);border-color:rgba(17,165,81,.3);color:var(--green-text)}
+.se-preview .radio-row{display:flex;align-items:center;gap:var(--space-2);padding:6px 0;font-size:13px;color:var(--text-primary)}
+.se-preview input[type="text"],.se-preview input[type="email"],.se-preview input[type="tel"],.se-preview textarea,.se-preview select{width:100%;padding:8px 10px;border:1px solid var(--border-primary);background:var(--surface-2);border-radius:var(--radius-sm);font-size:13px;color:var(--text-primary);font-family:inherit}
+.se-preview textarea{min-height:60px;resize:vertical}
+
+/* ── Empty state / qtype picker ── */
+.se-empty{text-align:center;padding:var(--space-6) var(--space-4)}
+.se-empty .se-empty-icon{font-size:36px;color:var(--text-muted);margin-bottom:var(--space-3)}
+.se-empty h3{font-size:16px;font-weight:700;color:var(--text-primary);margin:0 0 4px}
+.se-empty p{color:var(--text-muted);margin-bottom:var(--space-4);font-size:13px}
+.se-qtype-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:var(--space-2);text-align:left;margin-top:var(--space-3)}
+.se-qtype-card{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3);background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);cursor:pointer;font-size:13px;color:var(--text-primary);transition:border-color .15s,background .15s;font-weight:500}
+.se-qtype-card:hover{border-color:var(--green);background:var(--surface-3)}
+.se-qtype-card i{color:var(--green);width:18px;text-align:center;font-size:14px}
+.se-qtype-card-title{flex:1}
+
+/* ── Distribution / share links ── */
+.se-dist-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:var(--space-4);align-items:start}
+@media(max-width:1100px){.se-dist-grid{grid-template-columns:1fr}}
+.se-dist-stack{display:grid;gap:var(--space-4)}
+.se-dist-card{background:var(--surface-1);border:1px solid var(--border-primary);border-radius:16px;padding:var(--space-4)}
+.se-dist-card h3{margin:0 0 6px;font-size:16px;color:var(--text-primary)}
+.se-dist-card p{margin:0 0 var(--space-3);font-size:13px;color:var(--text-muted);line-height:1.5}
+.se-dist-icon{width:36px;height:36px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:rgba(17,165,81,.1);color:var(--green);margin-bottom:10px;font-size:14px}
+.se-dist-list{display:grid;gap:10px;margin-top:var(--space-3)}
+.se-dist-item{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border-primary)}
+.se-dist-item strong{display:block;font-size:13px;color:var(--text-primary);margin-bottom:2px}
+.se-dist-item span{display:block;font-size:12px;color:var(--text-muted);line-height:1.45}
+.se-dist-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:var(--space-3)}
+.se-dist-note{padding:12px 14px;border-radius:14px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.16);font-size:12px;color:var(--text-primary);line-height:1.5;margin-top:var(--space-3)}
+.se-mini-kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:var(--space-3)}
+@media(max-width:720px){.se-mini-kpi{grid-template-columns:1fr}}
+.se-mini-kpi .k{padding:12px 14px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border-primary)}
+.se-mini-kpi .k b{display:block;font-size:18px;color:var(--text-primary);margin-bottom:4px}
+.se-mini-kpi .k span{font-size:12px;color:var(--text-muted)}
+.se-channel-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:rgba(17,165,81,.1);color:var(--green);font-size:11px;font-weight:700;margin-left:auto;white-space:nowrap}
+
+.se-link-row{display:flex;gap:var(--space-2);align-items:center;background:var(--surface-1);border:1px solid var(--border-primary);border-radius:12px;padding:var(--space-2) var(--space-3);margin-bottom:var(--space-2);font-size:12px;flex-wrap:wrap}
+.se-link-row input{flex:1;min-width:220px;background:transparent;border:none;color:var(--text-primary);font-family:var(--font-mono,ui-monospace,monospace);font-size:12px}
+.se-link-row.revoked{opacity:.5;text-decoration:line-through}
+.se-link-status{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 6px;border-radius:999px}
+.se-link-active{background:rgba(34,197,94,.18);color:#4ade80}
+.se-link-revoked{background:rgba(100,116,139,.18);color:#94a3b8}
+
+/* ── Toast ── */
+.se-toast{position:fixed;bottom:var(--space-5);right:var(--space-5);padding:var(--space-3) var(--space-5);border-radius:var(--radius-md);font-size:13px;font-weight:600;z-index:200;opacity:0;transform:translateY(10px);transition:opacity .2s,transform .2s;pointer-events:none}
+.se-toast.show{opacity:1;transform:translateY(0)}
+.se-toast.success{background:var(--green);color:#fff}
+.se-toast.error{background:var(--red);color:#fff}
+
+/* ── Badge ── */
+.cx-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.cx-b-draft{background:rgba(148,163,184,.2);color:#cbd5e1}
+.cx-b-active{background:rgba(34,197,94,.18);color:#4ade80}
+.cx-b-paused{background:rgba(234,179,8,.18);color:#fbbf24}
+
+/* Final question tab rebuild */
+.se-question-shell{display:grid;grid-template-columns:300px minmax(0,1fr) 300px;gap:var(--space-4);align-items:start}
+.se-question-column{background:var(--surface-1);border:1px solid var(--border-primary);border-radius:16px;padding:var(--space-4)}
+.se-question-column h3{margin:0 0 4px;font-size:15px;color:var(--text-primary)}
+.se-question-column p{margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.45}
+.se-builder-blocks,.se-flow-cards,.se-language-list,.se-choice-list{display:grid;gap:10px}
+.se-builder-block{display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--border-primary);border-radius:14px;background:var(--surface-2);cursor:grab;transition:border-color .16s,background .16s,transform .16s}
+.se-builder-block:hover{border-color:rgba(17,165,81,.3);background:rgba(17,165,81,.05);transform:translateY(-1px)}
+.se-builder-icon,.se-flow-icon{width:34px;height:34px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:rgba(17,165,81,.12);color:var(--green);flex-shrink:0}
+.se-builder-name{font-size:13px;font-weight:800;color:var(--text-primary);margin-bottom:4px}
+.se-builder-copy{font-size:12px;color:var(--text-muted);line-height:1.45}
+.se-flow-drop{border:1px dashed var(--border-primary);border-radius:16px;background:linear-gradient(180deg,var(--surface-1),var(--surface-2));padding:14px;text-align:center;color:var(--text-muted);font-size:12px;margin-bottom:var(--space-3);position:sticky;top:0;z-index:5;backdrop-filter:saturate(140%) blur(6px);background:linear-gradient(180deg,rgba(255,255,255,.95),rgba(248,250,252,.92))}
+.se-flow-drop.dragover{border-color:rgba(17,165,81,.45);background:rgba(17,165,81,.10);color:var(--green)}
+.se-flow-cards.dragover{outline:2px dashed rgba(17,165,81,.35);outline-offset:6px;border-radius:14px}
+.se-flow-card.drag-over{box-shadow:0 0 0 2px rgba(17,165,81,.45) inset}
+.se-fmt-bar{display:flex;gap:4px;align-items:center;margin:6px 0 4px;flex-wrap:wrap}
+.se-fmt-bar button{appearance:none;border:1px solid var(--border-primary);background:var(--surface-1);color:var(--text-primary);width:28px;height:28px;border-radius:6px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center}
+.se-fmt-bar button.active{background:var(--green);color:#fff;border-color:var(--green)}
+.se-fmt-bar select{height:28px;border:1px solid var(--border-primary);border-radius:6px;background:var(--surface-1);font-size:12px;padding:0 6px}
+.se-fmt-bar input[type=color]{width:28px;height:28px;border:1px solid var(--border-primary);border-radius:6px;background:transparent;padding:0;cursor:pointer}
+.se-flow-card{border:1px solid var(--border-primary);border-radius:16px;background:var(--surface-2);padding:14px;transition:border-color .16s,background .16s,box-shadow .16s}
+.se-flow-card.active{border-color:rgba(17,165,81,.35);background:linear-gradient(180deg,rgba(17,165,81,.04),var(--surface-2));box-shadow:0 0 0 3px rgba(17,165,81,.08)}
+.se-flow-top{display:flex;gap:12px;align-items:flex-start}
+.se-flow-body{flex:1;min-width:0}
+.se-flow-title{font-size:14px;font-weight:800;color:var(--text-primary);margin-bottom:4px}
+.se-flow-copy{font-size:12px;color:var(--text-muted);line-height:1.45}
+.se-flow-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.se-flow-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;border-radius:10px;border:1px solid var(--border-primary);background:var(--surface-3);font-size:11px;font-weight:700;color:var(--text-secondary);cursor:pointer}
+.se-flow-btn:hover{background:rgba(17,165,81,.08);color:var(--green);border-color:rgba(17,165,81,.25)}
+.se-flow-editor{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-primary)}
+.se-flow-card.active .se-flow-editor{display:block}
+.se-flow-stack{display:grid;gap:12px}
+.se-flow-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.se-choice-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.se-language-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--border-primary);border-radius:12px;background:var(--surface-2)}
+.se-language-item strong{display:block;font-size:13px;color:var(--text-primary)}
+.se-language-item span{display:block;font-size:11px;color:var(--text-muted);margin-top:2px}
+.se-preview-phone{border:1px solid var(--border-primary);border-radius:24px;background:#0f172a;padding:12px}
+.se-preview-screen{background:#fff;border-radius:16px;padding:14px;min-height:420px;color:#111827}
+.se-preview-kicker{display:inline-flex;padding:4px 8px;border-radius:999px;background:#eef2f7;font-size:10px;font-weight:700;color:#475569;margin-bottom:10px}
+.se-preview-step{padding:10px 0;border-bottom:1px solid #e5e7eb}
+.se-preview-step:last-child{border-bottom:none}
+@media(max-width:1280px){.se-question-shell{grid-template-columns:1fr}.se-flow-row{grid-template-columns:1fr}}
+
+
+.se-logic-box{margin-top:12px;padding:12px;border:1px solid var(--border-primary);border-radius:14px;background:var(--surface-1)}
+.se-logic-list{display:grid;gap:10px}
+.se-logic-row{display:grid;grid-template-columns:1.1fr .9fr .9fr auto;gap:8px;align-items:end;padding:10px;border:1px solid var(--border-primary);border-radius:12px;background:var(--surface-2)}
+.se-logic-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.se-inline-note{font-size:11px;color:var(--text-muted);line-height:1.45;margin-top:6px}
+@media(max-width:1000px){.se-logic-row{grid-template-columns:1fr}}
+
+
+.se-tip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;border:1px solid var(--border-primary);background:var(--surface-2);color:var(--text-muted);font-size:11px;font-weight:800;cursor:help;vertical-align:middle;margin-left:6px}
+.se-tip:hover,.se-tip:focus-visible{color:var(--green);border-color:rgba(17,165,81,.28);background:rgba(17,165,81,.06)}
+.se-tip:hover::after,.se-tip:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);width:min(260px,80vw);padding:10px 12px;border-radius:12px;background:#111827;color:#fff;font-size:12px;line-height:1.45;font-weight:500;box-shadow:0 10px 24px rgba(0,0,0,.18);z-index:30;text-align:left}
+.se-tip:hover::before,.se-tip:focus-visible::before{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom-color:#111827;z-index:31}
+.se-onboard{margin:0 0 var(--space-4);padding:14px 16px;border:1px solid rgba(17,165,81,.2);background:rgba(17,165,81,.06);border-radius:16px}
+.se-onboard h3{margin:0 0 6px;font-size:14px;color:var(--text-primary)}
+.se-onboard p{margin:0;font-size:12px;color:var(--text-secondary);line-height:1.5;max-width:none}
+.se-onboard-steps{display:grid;gap:8px;margin-top:10px}
+.se-onboard-step{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--text-secondary)}
+.se-onboard-step b{color:var(--text-primary)}
+
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="brand-content" style="display:none;">
+    <div class="se-header">
+      <h1 id="page-title"><i class="fa-solid fa-pen-to-square" style="color:var(--green);margin-right:var(--space-2)"></i> <span id="title-text">New Survey</span></h1>
+      <span class="cx-badge" id="status-badge" style="display:none"></span>
+      <div class="se-actions">
+        <a href="brand-cx-surveys.html" class="btn btn-sm" style="background:var(--surface-3)"><i class="fa-solid fa-arrow-left"></i> Back</a>
+        <button class="btn btn-sm" id="btn-save" style="background:var(--green);color:#fff;border:none"><i class="fa-solid fa-save"></i> Save</button>
+        <button class="btn btn-sm" id="btn-publish" style="display:none;background:var(--green);color:#fff;border:none"><i class="fa-solid fa-rocket"></i> Publish</button>
+        <button class="btn btn-sm" id="btn-pause" style="display:none;background:var(--orange);color:#fff;border:none"><i class="fa-solid fa-pause"></i> Pause</button>
+        <button class="btn btn-sm" id="btn-unpublish" style="display:none;background:var(--surface-3)"><i class="fa-solid fa-eye-slash"></i> Unpublish</button>
+      </div>
+    </div>
+
+    <div class="se-grid">
+      <div class="se-rail" id="rail">
+        <div class="se-template-card">
+          <div class="se-rail-title" style="margin-bottom:8px">Survey template <span class="se-tip" tabindex="0" data-tip="Templates give you a working starting point. You can still edit every question after applying one.">?</span></div>
+          <label class="se-label" for="s-template-key">Template selection</label>
+          <select class="se-select" id="s-template-key">
+            <option value="">None</option>
+            <optgroup label="GoNoGo Signature">
+              <option value="gng_signature">GoNoGo Signature — Go/No-Go on all 6 categories</option>
+            </optgroup>
+            <optgroup label="Core templates">
+              <option value="nps_short">Short NPS</option>
+              <option value="csat_quick">Quick CSAT</option>
+              <option value="post_visit">Post-visit feedback</option>
+              <option value="post_purchase">Post-purchase</option>
+              <option value="support_followup">Support follow-up</option>
+            </optgroup>
+            <optgroup label="Retail & eCommerce">
+              <option value="retail_store_visit">Retail store visit</option>
+              <option value="ecommerce_delivery">eCommerce delivery</option>
+              <option value="ecommerce_checkout">eCommerce checkout</option>
+            </optgroup>
+            <optgroup label="Restaurants & Hospitality">
+              <option value="restaurant_dining">Restaurant dining</option>
+              <option value="hotel_checkout">Hotel checkout</option>
+            </optgroup>
+            <optgroup label="Healthcare">
+              <option value="clinic_visit">Clinic visit</option>
+              <option value="pharmacy_service">Pharmacy service</option>
+            </optgroup>
+            <optgroup label="Financial services">
+              <option value="bank_branch">Bank branch visit</option>
+              <option value="insurance_claim">Insurance claim follow-up</option>
+            </optgroup>
+            <optgroup label="Telecom & utilities">
+              <option value="telecom_support">Telecom support</option>
+              <option value="utility_service">Utility service interaction</option>
+            </optgroup>
+            <optgroup label="Education & events">
+              <option value="training_event">Training or event feedback</option>
+              <option value="student_support">Student support</option>
+            </optgroup>
+          </select>
+          <div class="se-template-actions">
+            <button class="se-btn-primary" id="btn-apply-template" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> Apply template</button>
+            <button class="se-btn-secondary" id="btn-clear-template" type="button"><i class="fa-solid fa-eraser"></i> Clear template</button>
+          </div>
+          <div class="se-template-chip"><i class="fa-solid fa-layer-group"></i> Templates update the question list instantly</div>
+          <div class="se-template-note">Choose a template, apply it, then fine-tune the questions below.</div>
+        </div>
+
+        <div class="se-rail-title">Questions</div>
+        <div id="q-list"></div>
+        <div class="se-add-bar">
+          <button class="se-btn-primary se-add-btn" id="btn-add-q" type="button"><i class="fa-solid fa-plus"></i> Add question</button>
+        </div>
+      </div>
+
+      <div class="se-pane" id="right-pane">
+        <div class="se-tabs" id="pane-tabs">
+          <button class="se-tab active" data-tab="question">Question</button>
+          <button class="se-tab" data-tab="settings">Survey settings</button>
+          <button class="se-tab" data-tab="preview">Preview</button>
+          <button class="se-tab" data-tab="links" id="tab-links" style="display:none">Distribution</button>
+        </div>
+        <div id="panel-question"></div>
+        <div id="panel-settings" style="display:none"></div>
+        <div id="panel-preview" style="display:none"></div>
+        <div id="panel-links" style="display:none"></div>
+      </div>
+    </div>
+
+    <div style="padding:var(--space-6) 0;text-align:center;">
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo &mdash; CX Suite (internal only)</p>
+    </div>
+  </main>
+</div>
+
+<div class="se-toast" id="toast"></div>
+
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js?v=20260424c"></script>
+<script>
+Components.initTheme();
+document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
+
+var _surveyId = new URLSearchParams(location.search).get('id');
+var _survey = null;
+var _questions = [];
+var _links = [];
+var _selectedIdx = -1;
+var _dirty = false;
+var _saving = false;
+var esc = Components.escapeHTML.bind(Components);
+
+// init() must run AFTER all var/function declarations below so SA_LANGUAGES etc. are defined
+
+var QTYPES = [
+  {v:'info',         l:'Free text / intro', icon:'fa-circle-info'},
+  {v:'short_text',   l:'Short text',       icon:'fa-font'},
+  {v:'long_text',    l:'Long text',        icon:'fa-align-left'},
+  {v:'single_select',l:'Single select',    icon:'fa-circle-dot'},
+  {v:'multi_select', l:'Multi select',     icon:'fa-square-check'},
+  {v:'rating_1_5',   l:'Rating 1–5',       icon:'fa-star'},
+  {v:'star_rating',  l:'Star rating',      icon:'fa-star-half-stroke'},
+  {v:'csat_smiley',  l:'CSAT smiley',      icon:'fa-face-smile'},
+  {v:'nps_0_10',     l:'NPS 0–10',         icon:'fa-gauge-high'},
+  {v:'yes_no',       l:'Yes / No',         icon:'fa-toggle-on'},
+  {v:'dropdown',     l:'Dropdown',         icon:'fa-caret-down'},
+  {v:'date',         l:'Date',             icon:'fa-calendar-day'},
+  {v:'consent',      l:'Consent checkbox', icon:'fa-check-double'}
+];
+
+
+var SA_LANGUAGES = [
+  { code:'en-ZA', name:'English', native:'English' },
+  { code:'af-ZA', name:'Afrikaans', native:'Afrikaans' },
+  { code:'zu-ZA', name:'Zulu', native:'isiZulu' },
+  { code:'xh-ZA', name:'Xhosa', native:'isiXhosa' }
+];
+
+// Kick off init once all top-level declarations are in place
+if (Components.checkBrandAuth()) init();
+
+function ensureQuestionTabMeta(){
+  if(!_survey) _survey = {};
+  if(!Array.isArray(_survey.languages) || !_survey.languages.length){
+    _survey.languages = SA_LANGUAGES.map(function(l){ return { code:l.code, enabled:true }; });
+  }
+}
+
+function questionDefaults(qtype){
+  var q = { qtype:qtype || 'short_text', prompt:'', help_text:'', required:false, options:[], logic:[], formatting:{} };
+  if(['single_select','multi_select','dropdown'].includes(q.qtype)) q.options = ['Option 1','Option 2','Option 3'];
+  if(q.qtype === 'consent') q.options = ['I agree'];
+  if(['short_text','long_text','date'].includes(q.qtype)) q.options = [''];
+  if(q.qtype === 'info'){ q.prompt = 'Add your message here'; q.help_text = ''; q.required = false; q.image_url = ''; }
+  return q;
+}
+
+function addQuestionBlock(qtype){
+  _questions.push(questionDefaults(qtype));
+  _selectedIdx = _questions.length - 1;
+  markDirty();
+  renderRail();
+  renderQuestionPanel();
+}
+
+function questionPreviewHTML(){
+  ensureQuestionTabMeta();
+  var title = (_survey && (_survey.intro_title || _survey.name)) || 'Survey preview';
+  var copy = (_survey && _survey.intro_text) || 'This is how the current survey flow will feel to a respondent.';
+  var langs = (_survey.languages || []).filter(function(l){ return l.enabled; }).map(function(l){
+    var m = SA_LANGUAGES.find(function(x){ return x.code === l.code; });
+    return m ? m.name : l.code;
+  }).join(', ');
+  return '<div class="se-preview-phone"><div class="se-preview-screen"><span class="se-preview-kicker">Step by step preview</span><div style="font-size:18px;font-weight:800;margin-bottom:6px">'+esc(title)+'</div><div style="font-size:12px;color:#64748b;line-height:1.5;margin-bottom:10px">'+esc(copy)+'</div><div style="font-size:11px;color:#0f766e;font-weight:700;margin-bottom:10px">Languages: '+esc(langs || 'None selected')+'</div>'+(_questions.length?_questions.slice(0,5).map(function(q,idx){return '<div class="se-preview-step"><div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:6px">Step '+(idx+1)+'</div><div style="font-size:13px;font-weight:700;margin-bottom:4px">'+esc(q.prompt || qtypeLabel(q.qtype))+'</div><div style="font-size:12px;color:#6b7280">'+esc(q.help_text || qtypeLabel(q.qtype))+'</div></div>';}).join(''):'<div style="font-size:12px;color:#64748b">Add a question block to start the survey flow.</div>')+'</div></div>';
+}
+
+
+function ensureLogicArray(q){ if(!Array.isArray(q.logic)) q.logic = []; }
+function renderEmptyState(){ /* no-op: legacy hook kept for compatibility */ }
+function renderPreview(q){
+  // Minimal single-question preview used by the Preview tab.
+  if(!q) return '';
+  var label = (typeof qtypeLabel === 'function') ? qtypeLabel(q.qtype) : (q.qtype || '');
+  var prompt = esc(q.prompt || label || 'Question');
+  var help = q.help_text ? '<div style="font-size:12px;color:#6b7280;margin-top:4px">'+esc(q.help_text)+'</div>' : '';
+  return '<div class="se-preview-step"><div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:6px">Step 1</div><div style="font-size:14px;font-weight:700">'+prompt+'</div>'+help+'</div>';
+}
+function ensureRichTextFields(q){
+  if(!q.formatting || typeof q.formatting !== 'object') q.formatting = {};
+  if(typeof q.formatting.prompt_html !== 'string') q.formatting.prompt_html = q.prompt || '';
+  if(typeof q.formatting.help_html !== 'string') q.formatting.help_html = q.help_text || '';
+}
+function wireDragSort(){ /* rail drag sort wired separately via wireRailDragDrop */ }
+function buildLogicRowHTML(q, idx, rule, ridx){
+  ensureLogicArray(q);
+  var targetOptions = '<option value="end"'+((rule.action_target||'')==='end'?' selected':'')+'>End survey</option>' + _questions.map(function(item, qIdx){ return '<option value="'+qIdx+'"'+(String(rule.action_target)===String(qIdx)?' selected':'')+'>Go to question '+(qIdx+1)+'</option>'; }).join('');
+  return '<div class="se-logic-row">'
+    + '<div><label class="se-label">Operator</label><select class="se-select" data-logic-field="operator" data-idx="'+idx+'" data-rule-idx="'+ridx+'"><option value="equals"'+(rule.operator==='equals'?' selected':'')+'>Equals</option><option value="not_equals"'+(rule.operator==='not_equals'?' selected':'')+'>Does not equal</option><option value="contains"'+(rule.operator==='contains'?' selected':'')+'>Contains</option><option value="gt"'+(rule.operator==='gt'?' selected':'')+'>Greater than</option><option value="lt"'+(rule.operator==='lt'?' selected':'')+'>Less than</option><option value="answered"'+(rule.operator==='answered'?' selected':'')+'>Answered</option><option value="not_answered"'+(rule.operator==='not_answered'?' selected':'')+'>Not answered</option></select></div>'
+    + '<div><label class="se-label">Value</label><input class="se-input" data-logic-field="value" data-idx="'+idx+'" data-rule-idx="'+ridx+'" value="'+esc(rule.value || '')+'" placeholder="Condition value"></div>'
+    + '<div><label class="se-label">Action</label><select class="se-select" data-logic-field="action_target" data-idx="'+idx+'" data-rule-idx="'+ridx+'">'+targetOptions+'</select></div>'
+    + '<div><button type="button" class="se-flow-btn" data-logic-remove="'+idx+'" data-rule-idx="'+ridx+'"><i class="fa-solid fa-trash"></i></button></div>'
+    + '</div>';
+}
+
+
+function updateQuestionFieldLive(idx, field, value){
+  var q = _questions[idx];
+  if(!q) return;
+  ensureRichTextFields(q);
+  ensureLogicArray(q);
+  if(field === 'required') q.required = !!value;
+  else if(field === 'placeholder') q.options = [value || ''];
+  else q[field] = value;
+  if(field === 'prompt') q.formatting.prompt_html = q.prompt || '';
+  if(field === 'help_text') q.formatting.help_html = q.help_text || '';
+  markDirty();
+  renderRail();
+  var titleEl = document.querySelector('.se-flow-card[data-idx="'+idx+'"] .se-flow-title');
+  if(titleEl) titleEl.textContent = q.prompt || 'Untitled question';
+  var copyEl = document.querySelector('.se-flow-card[data-idx="'+idx+'"] .se-flow-copy');
+  if(copyEl) copyEl.textContent = q.help_text || qtypeLabel(q.qtype);
+  var previewWrap = document.querySelector('.se-question-column .se-preview-phone');
+  if(previewWrap) previewWrap.outerHTML = questionPreviewHTML();
+}
+
+var TEMPLATES = {
+  gng_signature: {
+    intro_title: 'Rate this brand',
+    intro_text: 'Six quick Go or No-Go answers — takes under a minute.',
+    questions: [
+      {qtype:'info', prompt:'At GoNoGo we rate brands on the six things that actually matter. Give a Go or a No-Go based on your real experience.', help_text:'', required:false, options:[], logic:[]},
+      {qtype:'yes_no', prompt:'Compliance & Regulation — do they operate fairly and within the rules?', help_text:'Licensed, transparent, trustworthy.', required:true, options:['Go','No-Go'], logic:[]},
+      {qtype:'yes_no', prompt:'Customer Satisfaction — are customers genuinely happy with this brand?', help_text:'Based on your overall experience.', required:true, options:['Go','No-Go'], logic:[]},
+      {qtype:'yes_no', prompt:'Product Value — is what they offer fair value for the price?', help_text:'Clear fees, no surprises, worth what you pay.', required:true, options:['Go','No-Go'], logic:[]},
+      {qtype:'yes_no', prompt:'Innovation — do they feel modern and forward-thinking?', help_text:'Good tech, good digital experience, keeping up.', required:true, options:['Go','No-Go'], logic:[]},
+      {qtype:'yes_no', prompt:'Customer Support — when you need help, can you get it quickly?', help_text:'And is the issue actually resolved?', required:true, options:['Go','No-Go'], logic:[]},
+      {qtype:'yes_no', prompt:'Accessibility & Security — do they keep your data safe and make things easy?', help_text:'Inclusive, accessible, and secure.', required:true, options:['Go','No-Go'], logic:[]},
+      {qtype:'long_text', prompt:'Tell us why (optional)', help_text:'Anything that drove your Go or No-Go answers above.', required:false, options:['Share your reasons...'], logic:[]}
+    ]
+  },
+  nps_short: {
+    intro_title: 'We value your feedback',
+    intro_text: 'This quick survey helps us understand how your experience went.',
+    questions: [
+      {qtype:'nps_0_10', prompt:'How likely are you to recommend us?', help_text:'0 means not at all likely, 10 means extremely likely.', required:true, options:[], logic:[]},
+      {qtype:'long_text', prompt:'What is the main reason for your score?', help_text:'Optional context helps us improve.', required:false, options:['Tell us more...'], logic:[]}
+    ]
+  },
+  csat_quick: {
+    intro_title: 'How did we do?',
+    intro_text: 'A fast check-in on your recent experience.',
+    questions: [
+      {qtype:'csat_smiley', prompt:'How satisfied are you with your experience?', help_text:'Choose the face that best matches how you feel.', required:true, options:[], logic:[]},
+      {qtype:'long_text', prompt:'What could we improve?', help_text:'Optional', required:false, options:['Tell us more...'], logic:[]}
+    ]
+  },
+  post_visit: {
+    intro_title: 'Thanks for visiting',
+    intro_text: 'We would love to hear about your recent visit.',
+    questions: [
+      {qtype:'nps_0_10', prompt:'How likely are you to recommend us after your visit?', help_text:'', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What stood out most?', help_text:'Choose one', required:false, options:['Service','Speed','Cleanliness','Value'], logic:[]},
+      {qtype:'long_text', prompt:'Tell us more about your experience', help_text:'', required:false, options:['Add a comment'], logic:[]}
+    ]
+  },
+  post_purchase: {
+    intro_title: 'How was your purchase?',
+    intro_text: 'We are checking in after your recent purchase.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How would you rate your purchase experience?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+      {qtype:'yes_no', prompt:'Did you find what you were looking for?', help_text:'', required:true, options:[], logic:[]},
+      {qtype:'long_text', prompt:'Anything else you want to share?', help_text:'Optional', required:false, options:['Your feedback'], logic:[]}
+    ]
+  },
+
+  retail_store_visit: {
+    intro_title: 'Tell us about your store visit',
+    intro_text: 'A few quick questions about your in-store experience.',
+    questions: [
+      {qtype:'csat_smiley', prompt:'How satisfied were you with your store visit today?', help_text:'Choose the face that best fits your visit.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What stood out most?', help_text:'Pick the biggest factor.', required:false, options:['Friendly staff','Product availability','Checkout speed','Store cleanliness'], logic:[]},
+      {qtype:'nps_0_10', prompt:'How likely are you to recommend this store?', help_text:'0 means not likely, 10 means extremely likely.', required:true, options:[], logic:[]}
+    ]
+  },
+  ecommerce_delivery: {
+    intro_title: 'How was your delivery?',
+    intro_text: 'Help us improve delivery speed, communication, and packaging.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How would you rate your delivery experience?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What matters most to you in delivery?', help_text:'Choose one.', required:false, options:['Speed','Updates','Packaging','Courier professionalism'], logic:[]},
+      {qtype:'yes_no', prompt:'Did your order arrive on time?', help_text:'A simple yes or no is enough.', required:true, options:[], logic:[]}
+    ]
+  },
+  ecommerce_checkout: {
+    intro_title: 'Checkout feedback',
+    intro_text: 'We want to make online checkout fast and frictionless.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How easy was checkout?', help_text:'1 is difficult, 5 is effortless.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'Where did you feel the most friction?', help_text:'Choose the biggest issue.', required:false, options:['Shipping costs','Payment options','Login / account','Promo code','None'], logic:[]},
+      {qtype:'nps_0_10', prompt:'How likely are you to buy from us again?', help_text:'0 means not likely, 10 means extremely likely.', required:true, options:[], logic:[]}
+    ]
+  },
+  restaurant_dining: {
+    intro_title: 'Rate your dining experience',
+    intro_text: 'Your feedback helps us improve food, service, and atmosphere.',
+    questions: [
+      {qtype:'csat_smiley', prompt:'How was your overall dining experience?', help_text:'Choose the face that fits best.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What impressed you most?', help_text:'Pick one area.', required:false, options:['Food quality','Service','Atmosphere','Speed'], logic:[]},
+      {qtype:'nps_0_10', prompt:'How likely are you to recommend us?', help_text:'0 means not likely, 10 means extremely likely.', required:true, options:[], logic:[]}
+    ]
+  },
+  hotel_checkout: {
+    intro_title: 'Tell us about your stay',
+    intro_text: 'A short survey to improve the guest experience.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How would you rate your stay overall?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What most influenced your rating?', help_text:'Pick one.', required:false, options:['Room comfort','Cleanliness','Staff service','Facilities','Check-in / check-out'], logic:[]},
+      {qtype:'nps_0_10', prompt:'How likely are you to stay with us again?', help_text:'0 means not likely, 10 means extremely likely.', required:true, options:[], logic:[]}
+    ]
+  },
+  clinic_visit: {
+    intro_title: 'How was your clinic visit?',
+    intro_text: 'Help us improve service, waiting time, and communication.',
+    questions: [
+      {qtype:'csat_smiley', prompt:'How satisfied were you with your visit?', help_text:'Choose the face that best reflects your experience.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'Which area matters most to improve?', help_text:'Choose one.', required:false, options:['Waiting time','Staff communication','Doctor consultation','Reception process'], logic:[]},
+      {qtype:'yes_no', prompt:'Did you get the help you needed?', help_text:'A simple yes or no is enough.', required:true, options:[], logic:[]}
+    ]
+  },
+  pharmacy_service: {
+    intro_title: 'Pharmacy service feedback',
+    intro_text: 'Help us improve speed, advice, and product availability.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How would you rate today’s pharmacy service?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What was most important today?', help_text:'Choose the main reason.', required:false, options:['Prescription fulfilment','Advice from staff','Product availability','Queue speed'], logic:[]},
+      {qtype:'nps_0_10', prompt:'How likely are you to return?', help_text:'0 means not likely, 10 means extremely likely.', required:true, options:[], logic:[]}
+    ]
+  },
+  bank_branch: {
+    intro_title: 'How was your branch visit?',
+    intro_text: 'We use your feedback to improve service and wait times.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How would you rate your branch experience?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What most influenced your visit?', help_text:'Choose one.', required:false, options:['Staff helpfulness','Queue time','Issue resolution','Branch environment'], logic:[]},
+      {qtype:'yes_no', prompt:'Was your issue resolved today?', help_text:'A simple yes or no is enough.', required:true, options:[], logic:[]}
+    ]
+  },
+  insurance_claim: {
+    intro_title: 'Claims feedback',
+    intro_text: 'Help us improve the speed and clarity of our claims process.',
+    questions: [
+      {qtype:'csat_smiley', prompt:'How satisfied are you with the claims process so far?', help_text:'Choose the face that best fits your experience.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What needs the most attention?', help_text:'Choose one area.', required:false, options:['Communication','Speed','Fairness','Ease of process'], logic:[]},
+      {qtype:'nps_0_10', prompt:'How likely are you to recommend our insurance brand?', help_text:'0 means not likely, 10 means extremely likely.', required:true, options:[], logic:[]}
+    ]
+  },
+  telecom_support: {
+    intro_title: 'Support interaction feedback',
+    intro_text: 'Your feedback helps us improve support speed and resolution quality.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How would you rate this support interaction?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What mattered most today?', help_text:'Choose one.', required:false, options:['Speed of response','Knowledge of agent','Issue resolution','Friendliness'], logic:[]},
+      {qtype:'yes_no', prompt:'Was your issue resolved?', help_text:'A simple yes or no is enough.', required:true, options:[], logic:[]}
+    ]
+  },
+  utility_service: {
+    intro_title: 'Service interaction feedback',
+    intro_text: 'Help us improve utility service communication and response.',
+    questions: [
+      {qtype:'csat_smiley', prompt:'How satisfied were you with this service interaction?', help_text:'Choose the face that best reflects your experience.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What most influenced your score?', help_text:'Choose one.', required:false, options:['Response time','Clarity of communication','Issue resolution','Professionalism'], logic:[]},
+      {qtype:'yes_no', prompt:'Did we solve the issue?', help_text:'A simple yes or no is enough.', required:true, options:[], logic:[]}
+    ]
+  },
+  training_event: {
+    intro_title: 'Event feedback',
+    intro_text: 'Tell us how the session went so we can improve future events.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How would you rate the event overall?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What was most valuable?', help_text:'Choose one.', required:false, options:['Speaker quality','Practical insights','Venue / online setup','Content relevance'], logic:[]},
+      {qtype:'nps_0_10', prompt:'How likely are you to attend another event?', help_text:'0 means not likely, 10 means extremely likely.', required:true, options:[], logic:[]}
+    ]
+  },
+  student_support: {
+    intro_title: 'Student support feedback',
+    intro_text: 'Your feedback helps us improve guidance and turnaround times.',
+    questions: [
+      {qtype:'csat_smiley', prompt:'How satisfied were you with the support you received?', help_text:'Choose the face that best fits your experience.', required:true, options:[], logic:[]},
+      {qtype:'single_select', prompt:'What mattered most?', help_text:'Choose one.', required:false, options:['Clarity','Friendliness','Speed','Outcome'], logic:[]},
+      {qtype:'yes_no', prompt:'Did you get the support you needed?', help_text:'A simple yes or no is enough.', required:true, options:[], logic:[]}
+    ]
+  },
+  support_followup: {
+    intro_title: 'Support follow-up',
+    intro_text: 'Please let us know how your support experience went.',
+    questions: [
+      {qtype:'rating_1_5', prompt:'How satisfied are you with the support you received?', help_text:'', required:true, options:[], logic:[]},
+      {qtype:'yes_no', prompt:'Was your issue resolved?', help_text:'', required:true, options:[], logic:[]},
+      {qtype:'long_text', prompt:'What could we have done better?', help_text:'Optional', required:false, options:['Share details'], logic:[]}
+    ]
+  }
+};
+
+function qtypeLabel(v){ for(var i=0;i<QTYPES.length;i++) if(QTYPES[i].v===v) return QTYPES[i].l; return v; }
+function qtypeIcon(v){ for(var i=0;i<QTYPES.length;i++) if(QTYPES[i].v===v) return QTYPES[i].icon; return 'fa-question'; }
+
+async function init() {
+  var user = Components.getBrandUser();
+  if (!user) return;
+
+  document.getElementById('brand-content').style.display = '';
+  document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
+
+  wireEvents();
+  renderSettingsPanel();
+
+  if (_surveyId) {
+    try {
+      var data = await GoNoGoAPI.cx.getSurvey(_surveyId);
+      _survey = data.survey;
+      _questions = (data.questions || []).map(function(q){
+        var cj = q.content_json || {};
+        return {
+          qtype:q.qtype,
+          prompt:q.prompt || '',
+          help_text:q.help_text || q.helptext || '',
+          required:!!q.required,
+          options:Array.isArray(q.options) ? q.options : [],
+          logic:Array.isArray(q.logic) ? q.logic : (Array.isArray(q.logic_rules) ? q.logic_rules : []),
+          formatting: (cj && typeof cj.formatting === 'object' && cj.formatting) ? cj.formatting : {},
+          image_url: (cj && cj.image_url) || ''
+        };
+      });
+      _links = data.links || [];
+      document.getElementById('title-text').textContent = 'Edit: ' + (_survey.name || 'Survey');
+      document.getElementById('tab-links').style.display = '';
+      populateSettings();
+      ensureQuestionTabMeta();
+      updateStatusUI();
+      renderLinks();
+    } catch(e) {
+      toast('Could not load survey: ' + (e.message || 'error'), 'error');
+      return;
+    }
+  } else {
+    _questions = [];
+    populateSettingsDefaults();
+  }
+
+  if (_questions.length > 0) _selectedIdx = 0;
+  renderRail();
+  renderQuestionPanel();
+}
+
+function wireEvents() {
+  document.getElementById('btn-save').addEventListener('click', save);
+  document.getElementById('btn-publish').addEventListener('click', function(){ setStatus('active'); });
+  document.getElementById('btn-pause').addEventListener('click', function(){ setStatus('paused'); });
+  document.getElementById('btn-unpublish').addEventListener('click', function(){ setStatus('draft'); });
+
+  document.getElementById('btn-add-q').addEventListener('click', function(){
+    showTab('question');
+    renderEmptyState('add');
+  });
+
+  var templateSelect = document.getElementById('s-template-key');
+  if (templateSelect) {
+    templateSelect.addEventListener('change', function(){
+      markDirty();
+      if (_survey) _survey.template_key = this.value || null;
+    });
+  }
+
+  var applyTplBtn = document.getElementById('btn-apply-template');
+  if (applyTplBtn) {
+    applyTplBtn.addEventListener('click', function(){
+      var key = document.getElementById('s-template-key').value;
+      if (!key) { toast('Select a template first', 'error'); return; }
+      applyTemplate(key, false);
+    });
+  }
+
+  var clearTplBtn = document.getElementById('btn-clear-template');
+  if (clearTplBtn) {
+    clearTplBtn.addEventListener('click', function(){
+      document.getElementById('s-template-key').value = '';
+      if (_survey) _survey.template_key = null;
+      markDirty();
+      toast('Template selection cleared', 'success');
+    });
+  }
+
+  document.querySelectorAll('.se-tab').forEach(function(t){
+    t.addEventListener('click', function(){ showTab(t.dataset.tab); });
+  });
+
+  window.addEventListener('beforeunload', function(e){
+    if (_dirty && !_saving) { e.preventDefault(); e.returnValue = ''; }
+  });
+}
+
+function markDirty(){ _dirty = true; }
+
+function showTab(name) {
+  document.querySelectorAll('.se-tab').forEach(function(t){
+    t.classList.toggle('active', t.dataset.tab === name);
+  });
+
+  var pq = document.getElementById('panel-question');
+  var ps = document.getElementById('panel-settings');
+  var pp = document.getElementById('panel-preview');
+  var pl = document.getElementById('panel-links');
+
+  if (pq) pq.style.display = name === 'question' ? '' : 'none';
+  if (ps) ps.style.display = name === 'settings' ? '' : 'none';
+  if (pp) pp.style.display = name === 'preview' ? '' : 'none';
+  if (pl) pl.style.display = name === 'links' ? '' : 'none';
+
+  if (name === 'question') renderQuestionPanel();
+  if (name === 'preview') renderSurveyPreview();
+  if (name === 'links') renderLinks();
+}
+
+function qtypePickerHTML(titleHtml) {
+  var html = '<div class="se-empty"><div class="se-empty-icon"><i class="fa-solid fa-clipboard-list"></i></div>';
+  html += (titleHtml || '<h3>Choose a question type</h3><p>Pick the format that best fits what you want to learn.</p>');
+  html += '<div class="se-qtype-grid">';
+  QTYPES.forEach(function(t){
+    html += '<div class="se-qtype-card" data-qtype="' + t.v + '"><i class="fa-solid ' + t.icon + '"></i><span class="se-qtype-card-title">' + esc(t.l) + '</span></div>';
+  });
+  html += '</div></div>';
+  return html;
+}
+
+function wireQtypePicker(root) {
+  root.querySelectorAll('.se-qtype-card').forEach(function(el){
+    el.addEventListener('click', function(){ addQuestion(el.dataset.qtype); });
+  });
+}
+
+function addQuestion(qtype) {
+  _questions.push(questionDefaults(qtype));
+  _selectedIdx = _questions.length - 1;
+  markDirty();
+  renderRail();
+  renderQuestionPanel();
+  showTab('question');
+}
+
+function deleteQuestion(idx) {
+  _questions.splice(idx, 1);
+  if (_selectedIdx >= _questions.length) _selectedIdx = _questions.length - 1;
+  if (_selectedIdx < 0) _selectedIdx = -1;
+  markDirty();
+  renderRail();
+  renderQuestionPanel();
+}
+
+function renderRail() {
+  var list = document.getElementById('q-list');
+  if (!_questions.length) {
+    list.innerHTML = '';
+    renderEmptyState();
+    return;
+  }
+
+  list.innerHTML = _questions.map(function(q, i){
+    var active = i === _selectedIdx ? ' active' : '';
+    var icon = qtypeIcon(q.qtype);
+    var label = q.prompt ? esc(q.prompt) : '<em style="color:var(--text-muted)">Untitled</em>';
+    var logicCount = Array.isArray(q.logic) ? q.logic.length : 0;
+
+    return '<div class="se-q-item' + active + '" data-idx="' + i + '" draggable="true">' +
+      '<span class="handle"><i class="fa-solid fa-grip-vertical"></i></span>' +
+      '<span class="qicon"><i class="fa-solid ' + icon + '"></i></span>' +
+      '<span class="qlabel">' + label +
+        '<div class="se-q-meta">' +
+          '<span class="se-q-pill">' + esc(qtypeLabel(q.qtype)) + '</span>' +
+          (logicCount ? '<span class="se-q-pill logic"><i class="fa-solid fa-code-branch"></i> ' + logicCount + ' rule' + (logicCount === 1 ? '' : 's') + '</span>' : '') +
+        '</div>' +
+      '</span>' +
+      (q.required ? '<span class="req-dot"><i class="fa-solid fa-asterisk"></i></span>' : '') +
+      '<button class="del-btn" data-delidx="' + i + '" title="Delete"><i class="fa-solid fa-trash"></i></button>' +
+      '</div>';
+  }).join('');
+
+  list.querySelectorAll('.se-q-item').forEach(function(el){
+    el.addEventListener('click', function(e){
+      if (e.target.closest('.del-btn')) return;
+      _selectedIdx = parseInt(el.dataset.idx, 10);
+      renderRail();
+      renderQuestionPanel();
+      showTab('question');
+    });
+  });
+
+  list.querySelectorAll('.del-btn').forEach(function(b){
+    b.addEventListener('click', function(e){
+      e.stopPropagation();
+      deleteQuestion(parseInt(b.dataset.delidx, 10));
+    });
+  });
+
+  wireRailDragDrop(list);
+}
+
+function wireRailDragDrop(list) {
+  var dragIdx = null;
+  list.querySelectorAll('.se-q-item').forEach(function(el){
+    el.addEventListener('dragstart', function(e){
+      dragIdx = parseInt(el.dataset.idx, 10);
+      el.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragIdx);
+    });
+    el.addEventListener('dragend', function(){ el.classList.remove('dragging'); });
+    el.addEventListener('dragover', function(e){
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', function(){ el.classList.remove('drag-over'); });
+    el.addEventListener('drop', function(e){
+      e.preventDefault();
+      el.classList.remove('drag-over');
+      var toIdx = parseInt(el.dataset.idx, 10);
+      if (dragIdx === null || dragIdx === toIdx) return;
+      var moved = _questions.splice(dragIdx, 1)[0];
+      _questions.splice(toIdx, 0, moved);
+      if (_selectedIdx === dragIdx) _selectedIdx = toIdx;
+      else if (dragIdx < _selectedIdx && toIdx >= _selectedIdx) _selectedIdx--;
+      else if (dragIdx > _selectedIdx && toIdx <= _selectedIdx) _selectedIdx++;
+      markDirty();
+      renderRail();
+      renderQuestionPanel();
+    });
+  });
+}
+
+function renderQuestionPanel() {
+  var panel = document.getElementById('panel-question');
+  if (!panel) return;
+  ensureQuestionTabMeta();
+
+  var html = '';
+  html += '<div class="se-onboard"><h3>How this builder works</h3><p>New users can start in three moves: choose a template, add question blocks, then refine flow and routing.</p><div class="se-onboard-steps"><div class="se-onboard-step"><span>1.</span><span><b>Template:</b> Pick a ready-made survey if you want a faster start.</span></div><div class="se-onboard-step"><span>2.</span><span><b>Blocks:</b> Click or drag question types into the middle flow.</span></div><div class="se-onboard-step"><span>3.</span><span><b>Polish:</b> Edit the card, add logic, and preview the respondent journey on the right.</span></div></div></div>';
+  html += '<div class="se-question-shell">';
+
+  html += '<section class="se-question-column">';
+  html += '<h3>Question blocks <span class="se-tip" tabindex="0" data-tip="These are the building blocks of your survey. Click to add one instantly, or drag it into the flow.">?</span></h3><p>Drag or click a block to add it to the survey flow.</p>';
+  html += '<div class="se-builder-blocks">';
+  html += QTYPES.map(function(t){
+    return '<div class="se-builder-block" draggable="true" data-add-qtype="'+t.v+'">' +
+      '<span class="se-builder-icon"><i class="fa-solid '+t.icon+'"></i></span>' +
+      '<div><div class="se-builder-name">'+esc(t.l)+'</div><div class="se-builder-copy">Add a '+esc(t.l.toLowerCase())+' question to the flow.</div></div>' +
+    '</div>';
+  }).join('');
+  html += '</div>';
+  html += '</section>';
+
+  html += '<section class="se-question-column">';
+  html += '<h3>Survey flow <span class="se-tip" tabindex="0" data-tip="This middle column controls the respondent journey. Reorder questions, edit cards, and add branching logic here.">?</span></h3><p>Build the flow in the middle and edit each question inside the card.</p>';
+  html += '<div class="se-flow-drop" id="se-flow-drop"><i class="fa-solid fa-arrow-down"></i> Drop a question block here to add it to the survey flow</div>';
+  html += '<div class="se-flow-cards">';
+
+  if (!_questions.length) {
+    html += '<div class="se-empty"><div class="se-empty-icon"><i class="fa-solid fa-clipboard-list"></i></div><h3>Start building</h3><p>Add your first question from the left panel.</p></div>';
+  } else {
+    html += _questions.map(function(q, i){
+      if(!q.formatting || typeof q.formatting !== 'object') q.formatting = {};
+      var active = i === _selectedIdx ? ' active' : '';
+      var isSelect = ['single_select','multi_select','dropdown'].includes(q.qtype);
+      var isTextLike = ['short_text','long_text','date'].includes(q.qtype);
+      var isInfo = q.qtype === 'info';
+      var f = q.formatting || {};
+      var choiceHtml = '';
+      if (isSelect) {
+        var opts = (q.options && q.options.length ? q.options : ['Option 1']);
+        choiceHtml = '<div><label class="se-label">Choices</label><div class="se-choice-list">' + opts.map(function(opt, optIdx){
+          return '<div class="se-choice-row"><input class="se-input" data-choice-input="'+i+'" data-choice-index="'+optIdx+'" value="'+esc(opt || '')+'" placeholder="Choice label" /><button type="button" class="se-flow-btn" data-choice-remove="'+i+'" data-choice-index="'+optIdx+'"><i class="fa-solid fa-trash"></i></button></div>';
+        }).join('') + '</div><div style="margin-top:8px"><button type="button" class="se-flow-btn" data-choice-add="'+i+'"><i class="fa-solid fa-plus"></i> Add choice</button></div></div>';
+      }
+      var fmtBar =
+        '<div class="se-fmt-bar" data-fmt-bar="'+i+'">' +
+          '<select data-fmt="size" data-idx="'+i+'" title="Size">' +
+            ['12','14','16','18','20','24','28','32','40'].map(function(sz){ return '<option value="'+sz+'"'+((String(f.size||'')===sz)?' selected':'')+'>'+sz+'px</option>'; }).join('') +
+          '</select>' +
+          '<button type="button" data-fmt="bold" data-idx="'+i+'" class="'+(f.bold?'active':'')+'" title="Bold"><b>B</b></button>' +
+          '<button type="button" data-fmt="italic" data-idx="'+i+'" class="'+(f.italic?'active':'')+'" title="Italic" style="font-style:italic">I</button>' +
+          '<button type="button" data-fmt="underline" data-idx="'+i+'" class="'+(f.underline?'active':'')+'" title="Underline" style="text-decoration:underline">U</button>' +
+          '<select data-fmt="align" data-idx="'+i+'" title="Align">' +
+            [['left','Left'],['center','Center'],['right','Right']].map(function(a){ return '<option value="'+a[0]+'"'+((f.align||'left')===a[0]?' selected':'')+'>'+a[1]+'</option>'; }).join('') +
+          '</select>' +
+          '<input type="color" data-fmt="color" data-idx="'+i+'" value="'+esc(f.color||'#0f172a')+'" title="Text colour">' +
+          '<button type="button" data-fmt="reset" data-idx="'+i+'" title="Reset formatting" style="width:auto;padding:0 8px;font-size:11px">Reset</button>' +
+        '</div>';
+      var infoFields = isInfo
+        ? '<div><label class="se-label">Image URL (optional)</label><input class="se-input" data-field="image_url" data-idx="'+i+'" value="'+esc(q.image_url||'')+'" placeholder="https://..."></div>'
+        : '';
+      var rightCell = isInfo
+        ? ''
+        : (isTextLike?'<label class="se-label">Placeholder</label><input class="se-input" data-field="placeholder" data-idx="'+i+'" value="'+esc((q.options&&q.options[0]) || '')+'" placeholder="Optional placeholder">':'');
+      var requiredRow = isInfo ? '' :
+        '<div class="se-flow-row"><div><label class="se-label">Required</label><label style="display:flex;align-items:center;gap:8px;padding-top:10px"><input type="checkbox" data-field="required" data-idx="'+i+'" '+(q.required?'checked':'')+'> <span class="text-sm text-secondary">Require an answer</span></label></div><div>'+rightCell+'</div></div>';
+      return '<article class="se-flow-card'+active+'" data-idx="'+i+'" draggable="true">' +
+        '<div class="se-flow-top">' +
+          '<span class="handle" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></span>' +
+          '<span class="se-flow-icon"><i class="fa-solid '+qtypeIcon(q.qtype)+'"></i></span>' +
+          '<div class="se-flow-body">' +
+            '<div class="se-flow-title">'+esc(q.prompt || (isInfo?'Free text block':'Untitled question'))+'</div>' +
+            '<div class="se-flow-copy">'+esc(q.help_text || qtypeLabel(q.qtype))+'</div>' +
+            '<div class="se-q-meta"><span class="se-q-pill">'+esc(qtypeLabel(q.qtype))+'</span>'+(q.required?'<span class="se-q-pill">Required</span>':'')+'</div>' +
+            '<div class="se-flow-actions"><button type="button" class="se-flow-btn" data-act="dup" data-idx="'+i+'"><i class="fa-solid fa-copy"></i> Duplicate</button><button type="button" class="se-flow-btn" data-act="del" data-idx="'+i+'"><i class="fa-solid fa-trash"></i> Delete</button></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="se-flow-editor">' +
+          '<div class="se-flow-stack">' +
+            '<div><label class="se-label">Question type</label><select class="se-select" data-field="qtype" data-idx="'+i+'">'+QTYPES.map(function(t){ return '<option value="'+t.v+'"'+(q.qtype===t.v?' selected':'')+'>'+esc(t.l)+'</option>'; }).join('')+'</select></div>' +
+            '<div><label class="se-label">'+(isInfo?'Text content':'Prompt')+'</label>'+fmtBar+'<textarea class="se-textarea" data-field="prompt" data-idx="'+i+'" placeholder="'+(isInfo?'Write any intro, instructions, or context here':'Question text')+'">'+esc(q.prompt || '')+'</textarea></div>' +
+            (isInfo?'':'<div><label class="se-label">Help text</label><textarea class="se-textarea" data-field="help_text" data-idx="'+i+'" placeholder="Optional guidance">'+esc(q.help_text || '')+'</textarea></div>') +
+            infoFields +
+            requiredRow +
+            choiceHtml +
+            '<div class="se-logic-box"><div class="se-logic-head"><label class="se-label" style="margin:0">Branching and routing <span class="se-tip" tabindex="0" data-tip="Branching lets you send people to a different next question based on their answer, or end the survey early.">?</span></label><button type="button" class="se-flow-btn" data-logic-add="'+i+'"><i class="fa-solid fa-plus"></i> Add rule</button></div><div class="se-inline-note">Add routing rules for any question type. You can jump to another question or end the survey.</div><div class="se-logic-list">'+((q.logic&&q.logic.length)?q.logic.map(function(rule,ridx){ return buildLogicRowHTML(q,i,rule,ridx); }).join(''):'<div class="se-inline-note">No rules yet for this question.</div>')+'</div></div>' +
+          '</div>' +
+        '</div>' +
+      '</article>';
+    }).join('');
+  }
+
+  html += '</div>';
+  html += '</section>';
+
+  html += '<aside class="se-question-column">';
+  html += '<h3>Live preview <span class="se-tip" tabindex="0" data-tip="Use this to sense-check the flow. It shows how the current survey would feel to a respondent.">?</span></h3><p>The preview stays visible while you shape the survey flow. Manage launch languages from <b>Survey settings</b>.</p>';
+  html += questionPreviewHTML();
+  html += '</aside>';
+
+  html += '</div>';
+  panel.innerHTML = html;
+
+  panel.querySelectorAll('[data-add-qtype]').forEach(function(el){
+    el.addEventListener('click', function(){ addQuestionBlock(el.dataset.addQtype); });
+    el.addEventListener('dragstart', function(e){ e.dataTransfer.setData('text/plain', el.dataset.addQtype); });
+  });
+
+  // Drop a NEW question type anywhere in the flow column — not just the little block.
+  var drop = document.getElementById('se-flow-drop');
+  var flowCardsBox = panel.querySelector('.se-flow-cards');
+  function _onDragOverNew(e, target){
+    var qt = (e.dataTransfer && e.dataTransfer.getData && e.dataTransfer.getData('text/plain')) || '';
+    // For dragover we can't reliably read the payload in some browsers, so be permissive.
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+    target.classList.add('dragover');
+  }
+  function _wireNewDrop(target){
+    if (!target) return;
+    ['dragenter','dragover'].forEach(function(evt){ target.addEventListener(evt, function(e){ _onDragOverNew(e, target); }); });
+    ['dragleave'].forEach(function(evt){ target.addEventListener(evt, function(){ target.classList.remove('dragover'); }); });
+    target.addEventListener('drop', function(e){
+      e.preventDefault();
+      target.classList.remove('dragover');
+      var qtype = e.dataTransfer.getData('text/plain');
+      // Only treat as “new block” drop if the payload matches a known QTYPE value (avoid reorder collisions).
+      if (qtype && QTYPES.some(function(t){ return t.v === qtype; })) addQuestionBlock(qtype);
+    });
+  }
+  _wireNewDrop(drop);
+  _wireNewDrop(flowCardsBox);
+
+  // Reorder existing flow cards by drag
+  var flowDragIdx = null;
+  panel.querySelectorAll('.se-flow-card').forEach(function(card){
+    card.addEventListener('click', function(e){ if (e.target.closest('button, input, textarea, select, label')) return; _selectedIdx = Number(card.dataset.idx); renderQuestionPanel(); });
+    card.addEventListener('dragstart', function(e){
+      flowDragIdx = Number(card.dataset.idx);
+      e.dataTransfer.effectAllowed = 'move';
+      // Tag the payload so the “new block” drop handler ignores it.
+      e.dataTransfer.setData('text/plain', '__reorder__:' + flowDragIdx);
+      card.classList.add('dragging');
+    });
+    card.addEventListener('dragend', function(){ flowDragIdx = null; card.classList.remove('dragging'); });
+    card.addEventListener('dragover', function(e){ if (flowDragIdx === null) return; e.preventDefault(); e.dataTransfer.dropEffect='move'; card.classList.add('drag-over'); });
+    card.addEventListener('dragleave', function(){ card.classList.remove('drag-over'); });
+    card.addEventListener('drop', function(e){
+      if (flowDragIdx === null) return;
+      e.preventDefault(); e.stopPropagation();
+      card.classList.remove('drag-over');
+      var toIdx = Number(card.dataset.idx);
+      if (flowDragIdx === toIdx) return;
+      var moved = _questions.splice(flowDragIdx, 1)[0];
+      _questions.splice(toIdx, 0, moved);
+      if (_selectedIdx === flowDragIdx) _selectedIdx = toIdx;
+      else if (flowDragIdx < _selectedIdx && toIdx >= _selectedIdx) _selectedIdx--;
+      else if (flowDragIdx > _selectedIdx && toIdx <= _selectedIdx) _selectedIdx++;
+      flowDragIdx = null;
+      markDirty();
+      renderRail();
+      renderQuestionPanel();
+    });
+  });
+
+  // Formatting toolbar wiring
+  panel.querySelectorAll('[data-fmt]').forEach(function(el){
+    var idx = Number(el.dataset.idx);
+    var fmtKey = el.dataset.fmt;
+    var ev = (el.tagName === 'SELECT' || el.type === 'color') ? 'change' : 'click';
+    el.addEventListener(ev, function(){
+      var q = _questions[idx]; if (!q) return;
+      if (!q.formatting || typeof q.formatting !== 'object') q.formatting = {};
+      if (fmtKey === 'reset') { q.formatting = {}; markDirty(); renderQuestionPanel(); return; }
+      if (fmtKey === 'bold' || fmtKey === 'italic' || fmtKey === 'underline') {
+        q.formatting[fmtKey] = !q.formatting[fmtKey];
+      } else {
+        q.formatting[fmtKey] = el.value;
+      }
+      markDirty();
+      renderQuestionPanel();
+    });
+  });
+
+  panel.querySelectorAll('[data-act]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var idx = Number(btn.dataset.idx);
+      if (btn.dataset.act === 'dup') {
+        var clone = JSON.parse(JSON.stringify(_questions[idx]));
+        _questions.splice(idx + 1, 0, clone);
+        _selectedIdx = idx + 1;
+        markDirty();
+        renderRail();
+        renderQuestionPanel();
+      } else if (btn.dataset.act === 'del') {
+        deleteQuestion(idx);
+      }
+    });
+  });
+
+  panel.querySelectorAll('[data-field]').forEach(function(input){
+    var idx = Number(input.dataset.idx);
+    input.addEventListener(input.type === 'checkbox' ? 'change' : 'input', function(){
+      var q = _questions[idx];
+      if (!q) return;
+      if (input.dataset.field === 'qtype') {
+        var next = questionDefaults(input.value);
+        q.qtype = next.qtype;
+        q.options = next.options;
+        markDirty();
+        renderRail();
+        renderQuestionPanel();
+      } else {
+        updateQuestionFieldLive(idx, input.dataset.field, input.type === 'checkbox' ? !!input.checked : input.value);
+      }
+    });
+  });
+
+  panel.querySelectorAll('[data-choice-add]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = Number(btn.dataset.choiceAdd);
+      _questions[idx].options = _questions[idx].options || [];
+      _questions[idx].options.push('New choice');
+      markDirty();
+      renderQuestionPanel();
+    });
+  });
+
+  panel.querySelectorAll('[data-choice-remove]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = Number(btn.dataset.choiceRemove);
+      var optIdx = Number(btn.dataset.choiceIndex);
+      _questions[idx].options = (_questions[idx].options || []).filter(function(_, i){ return i !== optIdx; });
+      if (!_questions[idx].options.length) _questions[idx].options = ['Option 1'];
+      markDirty();
+      renderQuestionPanel();
+    });
+  });
+
+  panel.querySelectorAll('[data-choice-input]').forEach(function(input){
+    input.addEventListener('input', function(){
+      var idx = Number(input.dataset.choiceInput);
+      var optIdx = Number(input.dataset.choiceIndex);
+      _questions[idx].options[optIdx] = input.value;
+      markDirty();
+      renderRail();
+    });
+  });
+
+  panel.querySelectorAll('[data-logic-add]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = Number(btn.dataset.logicAdd);
+      ensureLogicArray(_questions[idx]);
+      _questions[idx].logic.push({ operator:'equals', value:'', action_target:'end' });
+      markDirty();
+      renderQuestionPanel();
+    });
+  });
+
+  panel.querySelectorAll('[data-logic-remove]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = Number(btn.dataset.logicRemove);
+      var ridx = Number(btn.dataset.ruleIdx);
+      ensureLogicArray(_questions[idx]);
+      _questions[idx].logic = _questions[idx].logic.filter(function(_, i){ return i !== ridx; });
+      markDirty();
+      renderQuestionPanel();
+    });
+  });
+
+  panel.querySelectorAll('[data-logic-field]').forEach(function(input){
+    var idx = Number(input.dataset.idx);
+    var ridx = Number(input.dataset.ruleIdx);
+    input.addEventListener(input.tagName === 'SELECT' ? 'change' : 'input', function(){
+      ensureLogicArray(_questions[idx]);
+      if(!_questions[idx].logic[ridx]) _questions[idx].logic[ridx] = { operator:'equals', value:'', action_target:'end' };
+      _questions[idx].logic[ridx][input.dataset.logicField] = input.value;
+      markDirty();
+      renderRail();
+    });
+  });
+
+  wireDragSort();
+}
+
+function renderSettingsPanel() {
+  var html = '';
+  html += '<div class="se-panel-intro"><div><h2>Survey settings</h2><p>Split into setup, branding, experience, and privacy so the page is easier to manage.</p></div></div>';
+
+  html += '<div class="se-settings-subtabs">' +
+    '<button class="se-settings-subtab active" type="button" data-settings-tab="setup">Survey setup</button>' +
+    '<button class="se-settings-subtab" type="button" data-settings-tab="branding">Branding</button>' +
+    '<button class="se-settings-subtab" type="button" data-settings-tab="experience">Survey experience</button>' +
+    '<button class="se-settings-subtab" type="button" data-settings-tab="privacy">Privacy consent</button>' +
+  '</div>';
+
+  html += '<div class="se-settings-section active" data-settings-section="setup">';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Survey name *</label><input class="se-input" id="s-name" placeholder="e.g. Post-visit feedback"></div><div class="se-field"><label class="se-label">Slug</label><input class="se-input" id="s-slug" placeholder="auto from name"></div></div>';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Intro title</label><input class="se-input" id="s-intro-title" placeholder="We’d love your feedback"></div><div class="se-field"><label class="se-label">Status</label><input class="se-input" id="s-status" readonly style="opacity:.6"></div></div>';
+  html += '<div class="se-field"><label class="se-label">Intro text</label><textarea class="se-textarea" id="s-intro-text" placeholder="Shown above the first question"></textarea></div>';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Thank-you title</label><input class="se-input" id="s-ty-title" value="Thank you"></div><div class="se-field"><label class="se-label">Thank-you text</label><input class="se-input" id="s-ty-text" value="Your feedback has been received."></div></div>';
+  html += '<div class="se-toggle-card"><div class="se-toggle-copy"><div class="se-toggle-title">Anonymous responses</div><p class="se-toggle-desc">Hide respondent identity unless contact capture is explicitly enabled elsewhere.</p></div><label class="se-switch"><input type="checkbox" id="s-anon" checked><span class="se-switch-ui"></span></label></div>';
+  html += '<div class="se-toggle-card"><div class="se-toggle-copy"><div class="se-toggle-title">Allow contact capture</div><p class="se-toggle-desc">Store email, phone, or name fields alongside survey responses for follow-up.</p></div><label class="se-switch"><input type="checkbox" id="s-contact" checked><span class="se-switch-ui"></span></label></div>';
+
+  // Launch languages — moved here from the Questions tab to free up flow space.
+  ensureQuestionTabMeta();
+  html += '<h4 class="se-section-h" style="margin-top:18px">Launch languages <span class="se-tip" tabindex="0" data-tip="Respondents pick from the languages enabled here when the survey goes live.">?</span></h4>';
+  html += '<p class="se-inline-note" style="margin:-4px 0 8px">Choose which languages respondents can pick when the survey is live.</p>';
+  html += '<div class="se-language-list">' + SA_LANGUAGES.map(function(lang){
+    var state = (_survey.languages || []).find(function(l){ return l.code === lang.code; }) || { enabled:false };
+    return '<label class="se-language-item"><span><strong>'+esc(lang.name)+'</strong><span>'+esc(lang.native)+' · '+esc(lang.code)+'</span></span><input type="checkbox" data-lang-toggle="'+lang.code+'" '+(state.enabled?'checked':'')+' /></label>';
+  }).join('') + '</div>';
+  html += '</div>';
+
+  html += '<div class="se-settings-section" data-settings-section="branding">';
+  html += '<h4 class="se-section-h" style="margin-top:0">Branding</h4>';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Brand logo URL</label><input class="se-input" id="s-brand-logo" placeholder="https://..."></div><div class="se-field"><label class="se-label">Primary colour</label><input class="se-input" id="s-brand-primary" type="text" placeholder="#11a551"></div></div>';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Accent colour</label><input class="se-input" id="s-brand-accent" type="text" placeholder="#0b7a3b"></div><div class="se-field"><label class="se-label">Survey language</label><select class="se-input" id="s-language"><option value="en">English</option><option value="af">Afrikaans</option><option value="zu">isiZulu</option><option value="xh">isiXhosa</option><option value="fr">Français</option><option value="pt">Português</option></select><div class="se-inline-note" style="font-size:11px;color:var(--text-muted);margin-top:4px">Write your questions in this language. UI labels (Next, Back, Submit) will match automatically.</div></div></div>';
+  html += '<div class="se-mini-note">Templates now belong to the survey structure area so they can shape the question list immediately.</div>';
+  html += '</div>';
+
+  html += '<div class="se-settings-section" data-settings-section="experience">';
+  html += '<h4 class="se-section-h" style="margin-top:0">Survey experience</h4>';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Theme variant</label><select class="se-input" id="s-theme-variant"><option value="classic">Classic</option><option value="party">Party</option></select></div><div class="se-field"><label class="se-label">Progress style</label><select class="se-input" id="s-progress-style"><option value="bar">Bar</option><option value="steps">Steps</option><option value="none">None</option></select></div></div>';
+  html += '<div class="se-toggle-card"><div class="se-toggle-copy"><div class="se-toggle-title">Show progress</div><p class="se-toggle-desc">Display visible progress to help respondents understand how far they are through the survey.</p></div><label class="se-switch"><input type="checkbox" id="s-show-progress" checked><span class="se-switch-ui"></span></label></div>';
+  html += '<div class="se-toggle-card"><div class="se-toggle-copy"><div class="se-toggle-title">Party mode default</div><p class="se-toggle-desc">Start respondents in the faster, swipe-friendly mode while still allowing them to switch back.</p></div><label class="se-switch"><input type="checkbox" id="s-party-default"><span class="se-switch-ui"></span></label></div>';
+  html += '</div>';
+
+  html += '<div class="se-settings-section" data-settings-section="privacy">';
+  html += '<h4 class="se-section-h" style="margin-top:0">Privacy & consent</h4>';
+  html += '<div class="se-privacy-banner"><strong>Important:</strong> This editor saves <code>privacy_notice_text</code> into the survey payload. If the message is missing in the live survey, the respondent-facing survey page likely is not rendering that field yet, even though it is being saved here.</div>';
+  html += '<div class="se-field"><label class="se-label">Privacy notice</label><textarea class="se-textarea" id="s-privacy-notice" placeholder="Shown before contact fields. Explain how their data will be used."></textarea></div>';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Marketing consent label</label><input class="se-input" id="s-marketing-label" placeholder="Keep me updated about offers"></div><div class="se-field"><label class="se-label">Contact retention days</label><input class="se-input" id="s-contact-retention" type="number" min="0" placeholder="e.g. 365"></div></div>';
+  html += '<div class="se-toggle-card"><div class="se-toggle-copy"><div class="se-toggle-title">Enable marketing consent checkbox</div><p class="se-toggle-desc">Show an extra opt-in checkbox when you want permission for future promotions or follow-up marketing.</p></div><label class="se-switch"><input type="checkbox" id="s-marketing-consent"><span class="se-switch-ui"></span></label></div>';
+  html += '</div>';
+
+  document.getElementById('panel-settings').innerHTML = html;
+
+  document.querySelectorAll('.se-settings-subtab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var name = btn.dataset.settingsTab;
+      document.querySelectorAll('.se-settings-subtab').forEach(function(el){ el.classList.toggle('active', el === btn); });
+      document.querySelectorAll('.se-settings-section').forEach(function(section){ section.classList.toggle('active', section.dataset.settingsSection === name); });
+    });
+  });
+
+  document.getElementById('s-name').addEventListener('input', function(){
+    var slug = document.getElementById('s-slug');
+    if (!slug.dataset.manual) slug.value = this.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    markDirty();
+  });
+
+  document.getElementById('s-slug').addEventListener('input', function(){
+    this.dataset.manual = '1';
+    this.value = this.value.toLowerCase().replace(/[^a-z0-9-]/g, '');
+    markDirty();
+  });
+
+  ['s-intro-title','s-intro-text','s-ty-title','s-ty-text','s-brand-logo','s-brand-primary','s-brand-accent','s-privacy-notice','s-marketing-label','s-contact-retention'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.addEventListener('input', markDirty);
+  });
+
+  ['s-anon','s-contact','s-theme-variant','s-progress-style','s-show-progress','s-party-default','s-marketing-consent'].forEach(function(id){
+    var el = document.getElementById(id); if (el) el.addEventListener('change', markDirty);
+  });
+
+  // Wire language toggles (moved from the Questions tab)
+  document.querySelectorAll('[data-lang-toggle]').forEach(function(input){
+    input.addEventListener('change', function(){
+      ensureQuestionTabMeta();
+      _survey.languages = SA_LANGUAGES.map(function(lang){
+        var existing = (_survey.languages || []).find(function(l){ return l.code === lang.code; });
+        return { code:lang.code, enabled: lang.code === input.dataset.langToggle ? !!input.checked : !!(existing && existing.enabled) };
+      });
+      markDirty();
+    });
+  });
+}
+
+function syncTemplateSelector(val) {
+  var el = document.getElementById('s-template-key');
+  if (el) el.value = val || '';
+}
+
+function populateSettings() {
+  var s = _survey || {};
+  document.getElementById('s-name').value = s.name || '';
+  document.getElementById('s-slug').value = s.slug || '';
+  if (s.slug) document.getElementById('s-slug').dataset.manual = '1';
+  document.getElementById('s-intro-title').value = s.intro_title || '';
+  document.getElementById('s-intro-text').value = s.intro_text || '';
+  document.getElementById('s-ty-title').value = s.thank_you_title || 'Thank you';
+  document.getElementById('s-ty-text').value = s.thank_you_text || 'Your feedback has been received.';
+  syncTemplateSelector(s.template_key || '');
+  document.getElementById('s-anon').checked = !!s.is_anonymous;
+  document.getElementById('s-contact').checked = !!s.allow_contact_capture;
+
+  var labels = { draft:'Draft', active:'Published', paused:'Paused', archived:'Archived' };
+  document.getElementById('s-status').value = labels[s.status] || s.status || 'Draft';
+
+  var setIfExists = function(id, val){ var el = document.getElementById(id); if (el) el.value = val; };
+  var checkIfExists = function(id, val){ var el = document.getElementById(id); if (el) el.checked = val; };
+
+  setIfExists('s-brand-logo', s.brand_logo_url || '');
+  setIfExists('s-brand-primary', s.brand_primary_color || '');
+  setIfExists('s-brand-accent', s.brand_accent_color || '');
+  setIfExists('s-language', s.language || 'en');
+  setIfExists('s-theme-variant', s.theme_variant || 'classic');
+  setIfExists('s-progress-style', s.progress_style || 'bar');
+  checkIfExists('s-show-progress', s.show_progress_bar !== false);
+  checkIfExists('s-party-default', !!s.party_mode_default);
+  setIfExists('s-privacy-notice', s.privacy_notice_text || '');
+  checkIfExists('s-marketing-consent', !!s.marketing_consent_enabled);
+  setIfExists('s-marketing-label', s.marketing_consent_label || '');
+  setIfExists('s-contact-retention', (s.contact_retention_days === null || s.contact_retention_days === undefined) ? '' : s.contact_retention_days);
+}
+
+function populateSettingsDefaults() {
+  document.getElementById('s-name').value = '';
+  document.getElementById('s-slug').value = '';
+  document.getElementById('s-intro-title').value = '';
+  document.getElementById('s-intro-text').value = '';
+  document.getElementById('s-ty-title').value = 'Thank you';
+  document.getElementById('s-ty-text').value = 'Your feedback has been received.';
+  document.getElementById('s-anon').checked = true;
+  document.getElementById('s-contact').checked = true;
+  document.getElementById('s-status').value = 'Draft';
+  syncTemplateSelector('');
+  document.getElementById('s-brand-logo').value = '';
+  document.getElementById('s-brand-primary').value = '';
+  document.getElementById('s-brand-accent').value = '';
+  document.getElementById('s-theme-variant').value = 'classic';
+  document.getElementById('s-progress-style').value = 'bar';
+  document.getElementById('s-show-progress').checked = true;
+  document.getElementById('s-party-default').checked = false;
+  document.getElementById('s-privacy-notice').value = '';
+  document.getElementById('s-marketing-consent').checked = false;
+  document.getElementById('s-marketing-label').value = '';
+  document.getElementById('s-contact-retention').value = '';
+}
+
+function updateStatusUI() {
+  var s = _survey ? _survey.status : 'draft';
+  if (s === 'published') s = 'active';
+  if (_survey) _survey.status = s;
+
+  var badge = document.getElementById('status-badge');
+  var labels = { draft:'Draft', active:'Published', paused:'Paused', archived:'Archived' };
+  badge.style.display = '';
+  badge.className = 'cx-badge cx-b-' + s;
+  badge.textContent = labels[s] || s;
+
+  document.getElementById('btn-publish').style.display = (s === 'draft' || s === 'paused') ? '' : 'none';
+  document.getElementById('btn-pause').style.display = s === 'active' ? '' : 'none';
+  document.getElementById('btn-unpublish').style.display = (s === 'active' || s === 'paused') ? '' : 'none';
+
+  var statusInput = document.getElementById('s-status');
+  if (statusInput) statusInput.value = labels[s] || s;
+}
+
+async function setStatus(status) {
+  if (!_survey || !_survey.id) { toast('Save the survey first', 'error'); return; }
+  try {
+    await GoNoGoAPI.cx.setSurveyStatus(_survey.id, status);
+    _survey.status = status;
+    updateStatusUI();
+    toast('Status changed to ' + status, 'success');
+  } catch(e) {
+    toast('Failed: ' + (e.message || 'error'), 'error');
+  }
+}
+
+function applyTemplate(key, askConfirm) {
+  var tpl = TEMPLATES[key];
+  if (!tpl) { toast('Template not found', 'error'); return; }
+
+  if (askConfirm !== false && _questions.length && !confirm('Replace the current question set with this template?')) return;
+
+  _questions = (tpl.questions || []).map(function(q){
+    return {
+      qtype:q.qtype,
+      prompt:q.prompt || '',
+      help_text:q.help_text || '',
+      required:!!q.required,
+      options:Array.isArray(q.options) ? q.options.slice() : [],
+      logic:Array.isArray(q.logic) ? q.logic.slice() : []
+    };
+  });
+
+  var introTitle = document.getElementById('s-intro-title');
+  var introText = document.getElementById('s-intro-text');
+  if (introTitle && !introTitle.value.trim()) introTitle.value = tpl.intro_title || '';
+  if (introText && !introText.value.trim()) introText.value = tpl.intro_text || '';
+
+  if (_survey) _survey.template_key = key;
+  _selectedIdx = _questions.length ? 0 : -1;
+  markDirty();
+  renderRail();
+  renderQuestionPanel();
+  toast('Template applied', 'success');
+}
+
+// Remember last-picked distribution channel across renders
+var _distChannel = 'website';
+
+function renderLinks() {
+  var panel = document.getElementById('panel-links');
+  if (!panel) return;
+
+  var base = window.location.origin + '/cx-survey?t=';
+  var widgetSrc = window.location.origin + '/cx-widget.js';
+  var activeLink = _links.find(function(l){ return !l.revoked; });
+  var activeUrl = activeLink ? base + activeLink.token : '';
+
+  var CHANNELS = [
+    { id:'website',  icon:'fa-code',           title:'Website embed',  blurb:'Floating button or popup on your site' },
+    { id:'link',     icon:'fa-link',           title:'Direct link',    blurb:'Copy a URL to share anywhere' },
+    { id:'qr',       icon:'fa-qrcode',         title:'QR code',        blurb:'For posters, receipts, in-store prompts' },
+    { id:'email',    icon:'fa-envelope',       title:'Email',          blurb:'Open your mail client with a ready-to-send draft' },
+    { id:'sms',      icon:'fa-message',        title:'SMS',            blurb:'Open a text message draft on your device' },
+    { id:'whatsapp', icon:'fa-whatsapp',       title:'WhatsApp', brand:true, blurb:'Share via WhatsApp on mobile or web' },
+    { id:'social',   icon:'fa-share-nodes',    title:'Social',         blurb:'Share on X, LinkedIn, Facebook' },
+    { id:'iframe',   icon:'fa-window-maximize',title:'Plain iframe',   blurb:'Embed the full survey inside any page' }
+  ];
+
+  var html = '';
+  html += '<div class="se-panel-intro"><div><h2>How would you like to distribute your survey?</h2><p>Pick a channel and we\'ll show you everything you need to launch it.</p></div></div>';
+
+  // ── Channel chooser ──
+  html += '<div class="se-dist-chooser" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:18px">';
+  CHANNELS.forEach(function(c){
+    var on = (_distChannel === c.id);
+    html += '<button type="button" class="se-dist-choice" data-dist="' + c.id + '" aria-pressed="' + (on?'true':'false') + '" style="text-align:left;padding:14px;border:1px solid ' + (on ? 'var(--green,#11a551)' : 'var(--border-primary)') + ';border-radius:12px;background:' + (on ? 'rgba(17,165,81,.08)' : 'var(--surface-1,#fff)') + ';cursor:pointer;transition:all .15s ease;box-shadow:' + (on ? '0 0 0 2px rgba(17,165,81,.15)' : 'none') + '">';
+    html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><span style="width:32px;height:32px;border-radius:8px;background:' + (on ? 'var(--green,#11a551)' : 'var(--bg-elev,#f1f5f9)') + ';color:' + (on ? '#fff' : 'var(--text-muted)') + ';display:inline-flex;align-items:center;justify-content:center;font-size:14px"><i class="fa-' + (c.brand ? 'brands' : 'solid') + ' ' + c.icon + '"></i></span><strong style="font-size:13px;color:var(--text-primary)">' + esc(c.title) + '</strong></div>';
+    html += '<div style="font-size:11px;color:var(--text-muted);line-height:1.4">' + esc(c.blurb) + '</div>';
+    html += '</button>';
+  });
+  html += '</div>';
+
+  // ── Active channel content area ──
+  html += '<div id="dist-active" data-dist-active="' + esc(_distChannel) + '"></div>';
+
+  // ── Footer: manage links + control access ──
+  html += '<div style="margin-top:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">';
+  html += '<div class="se-dist-card"><div class="se-dist-icon"><i class="fa-solid fa-paper-plane"></i></div><h3>Manage links</h3><p style="font-size:12px">Every channel above uses a distribution link. Create separate labels so you can track which source drives responses.</p>';
+  if (_links.length) {
+    _links.forEach(function(l){
+      var fullUrl = base + esc(l.token);
+      var statusCls = l.revoked ? 'se-link-revoked' : 'se-link-active';
+      var statusText = l.revoked ? 'Revoked' : 'Active';
+      html += '<div class="se-link-row' + (l.revoked ? ' revoked' : '') + '" style="margin-bottom:6px">' +
+        '<strong style="color:var(--green);min-width:90px;font-size:12px">' + esc(l.label || 'Link') + '</strong>' +
+        '<input readonly value="' + fullUrl + '" style="font-size:12px">' +
+        '<span class="se-link-status ' + statusCls + '">' + statusText + '</span>' +
+        '<button class="se-btn-secondary" type="button" data-copy="' + fullUrl + '" title="Copy URL"><i class="fa-solid fa-copy"></i></button>' +
+        (l.revoked ? '' : '<button class="se-btn-danger" type="button" data-revoke="' + l.id + '" title="Revoke"><i class="fa-solid fa-ban"></i></button>') +
+      '</div>';
+    });
+  }
+  html += '<div style="display:flex;gap:var(--space-2);margin-top:8px;flex-wrap:wrap">';
+  html += '<input class="se-input" id="f-link-label" placeholder="Link label, e.g. In-store QR" style="flex:1;min-width:200px">';
+  html += '<button class="se-btn-primary" id="btn-new-link" type="button"><i class="fa-solid fa-link"></i> Generate new link</button>';
+  html += '</div>';
+  html += '</div>';
+  html += '</div>';
+
+  panel.innerHTML = html;
+
+  // -- chooser click handler --
+  panel.querySelectorAll('[data-dist]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      _distChannel = btn.dataset.dist;
+      renderLinks();
+    });
+  });
+
+  // -- copy/revoke handlers for footer links --
+  panel.querySelectorAll('[data-copy]').forEach(function(b){
+    b.addEventListener('click', function(){
+      navigator.clipboard.writeText(b.dataset.copy);
+      var old = b.innerHTML;
+      b.innerHTML = '<i class="fa-solid fa-check"></i>';
+      setTimeout(function(){ b.innerHTML = old; }, 1200);
+    });
+  });
+  panel.querySelectorAll('[data-revoke]').forEach(function(b){
+    b.addEventListener('click', async function(){
+      if (!confirm('Revoke this link? Respondents will no longer be able to submit.')) return;
+      try {
+        await GoNoGoAPI.cx.revokeLink(b.dataset.revoke);
+        var data = await GoNoGoAPI.cx.getSurvey(_survey.id);
+        _links = data.links || [];
+        renderLinks();
+        toast('Link revoked', 'success');
+      } catch(e) { toast('Revoke failed', 'error'); }
+    });
+  });
+  var newLinkBtn = document.getElementById('btn-new-link');
+  if (newLinkBtn) newLinkBtn.addEventListener('click', createLink);
+
+  // -- render the active channel's content --
+  var activeBox = document.getElementById('dist-active');
+  if (activeBox) renderDistChannel(activeBox, _distChannel, activeLink, activeUrl, widgetSrc);
+}
+
+// Render the body for whichever distribution channel is selected
+function renderDistChannel(box, channel, activeLink, activeUrl, widgetSrc) {
+  // For the Website (Studio) channel, ALWAYS show the live preview — even before a link exists,
+  // using a placeholder token. Real publishing still requires a generated link.
+  if (channel === 'website') {
+    var hasLink = !!activeLink;
+    var token = hasLink ? activeLink.token : 'PREVIEW_TOKEN';
+    var url   = hasLink ? activeUrl : (window.location.origin + '/cx-survey?t=PREVIEW_TOKEN');
+    var label = hasLink ? (activeLink.label || 'Feedback') : 'Feedback';
+
+    var banner = hasLink ? '' :
+      '<div style="background:rgba(245,158,11,.10);border:1px solid rgba(245,158,11,.35);color:#92400e;padding:10px 12px;border-radius:8px;margin-bottom:12px;font-size:13px;display:flex;align-items:center;gap:8px">' +
+      '<i class="fa-solid fa-circle-info"></i>' +
+      '<span>You\u2019re previewing with a placeholder link. Generate a real distribution link below before copying the code.</span>' +
+      '</div>';
+
+    box.innerHTML = '<div class="se-dist-card">' + banner +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+      '<div class="se-dist-icon" style="margin:0"><i class="fa-solid fa-code"></i></div>' +
+      '<div><h3 style="margin:0">Website embed</h3><p style="margin:2px 0 0;color:var(--text-muted);font-size:13px">Design a feedback button or popup, preview it live, then copy the code into your site.</p></div>' +
+      '</div>' +
+      '<div id="embed-studio-root"></div></div>';
+    var studioRoot = document.getElementById('embed-studio-root');
+    if (studioRoot) renderEmbedStudio(studioRoot, url, token, label, widgetSrc);
+    return;
+  }
+
+  if (!activeLink) {
+    box.innerHTML =
+      '<div class="se-dist-card" style="text-align:center;padding:28px">' +
+      '<div class="se-dist-icon" style="margin:0 auto 8px"><i class="fa-solid fa-link"></i></div>' +
+      '<h3 style="margin:0 0 6px">First, create a distribution link</h3>' +
+      '<p style="font-size:13px;color:var(--text-muted);margin:0 0 14px">Every channel sends respondents to a unique survey link. Generate one below to unlock distribution.</p>' +
+      '<button class="se-btn-primary" type="button" onclick="document.getElementById(\'f-link-label\').focus()">Create your first link</button>' +
+      '</div>';
+    return;
+  }
+
+  var shareTxt = encodeURIComponent('Share your feedback with us: ' + activeUrl);
+  var subject  = encodeURIComponent('Quick feedback for ' + (activeLink.label || 'us'));
+  var bodyTxt  = encodeURIComponent('Hi,\n\nWe\'d love your feedback — it takes under a minute:\n' + activeUrl + '\n\nThank you!');
+
+  if (channel === 'link') {
+    box.innerHTML =
+      '<div class="se-dist-card">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="se-dist-icon" style="margin:0"><i class="fa-solid fa-link"></i></div><div><h3 style="margin:0">Direct link</h3><p style="margin:2px 0 0;color:var(--text-muted);font-size:13px">A shareable URL anyone can open in their browser.</p></div></div>' +
+        '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Survey URL</label>' +
+        '<input class="se-input" readonly value="' + esc(activeUrl) + '" id="dc-link-url" style="width:100%;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px">' +
+        '<button class="se-btn-secondary" type="button" id="dc-link-copy" style="margin-top:8px"><i class="fa-solid fa-copy"></i> Copy link</button>' +
+      '</div>';
+    document.getElementById('dc-link-copy').addEventListener('click', function(){
+      navigator.clipboard.writeText(activeUrl);
+      var b = this; var old = b.innerHTML; b.innerHTML = '<i class="fa-solid fa-check"></i> Copied'; setTimeout(function(){ b.innerHTML = old; }, 1200);
+    });
+    return;
+  }
+
+  if (channel === 'qr') {
+    var qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=' + encodeURIComponent(activeUrl);
+    var dlSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=20&format=png&download=1&data=' + encodeURIComponent(activeUrl);
+    box.innerHTML =
+      '<div class="se-dist-card" style="display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start">' +
+        '<div style="flex:0 0 auto;background:#fff;border:1px solid var(--border-primary);border-radius:12px;padding:12px"><img src="' + esc(qrSrc) + '" alt="QR code" style="display:block;width:240px;height:240px"></div>' +
+        '<div style="flex:1;min-width:240px">' +
+          '<h3 style="margin:0 0 6px">QR code</h3>' +
+          '<p style="margin:0 0 14px;color:var(--text-muted);font-size:13px">Print on receipts, posters, table tents, or in-store prompts. Scanning opens the survey on the visitor\'s phone.</p>' +
+          '<a class="se-btn-primary" href="' + esc(dlSrc) + '" download><i class="fa-solid fa-download"></i> Download high-res PNG</a> ' +
+          '<button class="se-btn-secondary" type="button" id="dc-qr-copy" style="margin-left:6px"><i class="fa-solid fa-copy"></i> Copy link</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('dc-qr-copy').addEventListener('click', function(){
+      navigator.clipboard.writeText(activeUrl);
+      var b = this; var old = b.innerHTML; b.innerHTML = '<i class="fa-solid fa-check"></i> Copied'; setTimeout(function(){ b.innerHTML = old; }, 1200);
+    });
+    return;
+  }
+
+  if (channel === 'email') {
+    var mailHref = 'mailto:?subject=' + subject + '&body=' + bodyTxt;
+    box.innerHTML =
+      '<div class="se-dist-card">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="se-dist-icon" style="margin:0"><i class="fa-solid fa-envelope"></i></div><div><h3 style="margin:0">Email</h3><p style="margin:2px 0 0;color:var(--text-muted);font-size:13px">Open your default mail app with a ready-to-send draft, or copy the body and paste into any campaign tool.</p></div></div>' +
+        '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Subject</label>' +
+        '<input class="se-input" readonly value="Quick feedback for ' + esc(activeLink.label || 'us') + '" id="dc-em-sub" style="width:100%;margin-bottom:8px">' +
+        '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Body</label>' +
+        '<textarea class="se-input" id="dc-em-body" readonly style="width:100%;min-height:120px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">Hi,\n\nWe\'d love your feedback — it takes under a minute:\n' + activeUrl + '\n\nThank you!</textarea>' +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+          '<a class="se-btn-primary" href="' + esc(mailHref) + '"><i class="fa-solid fa-envelope-open-text"></i> Open in mail app</a>' +
+          '<button class="se-btn-secondary" type="button" id="dc-em-copy"><i class="fa-solid fa-copy"></i> Copy body</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('dc-em-copy').addEventListener('click', function(){
+      navigator.clipboard.writeText(document.getElementById('dc-em-body').value);
+      var b = this; var old = b.innerHTML; b.innerHTML = '<i class="fa-solid fa-check"></i> Copied'; setTimeout(function(){ b.innerHTML = old; }, 1200);
+    });
+    return;
+  }
+
+  if (channel === 'sms') {
+    var smsHref = 'sms:?body=' + shareTxt;
+    box.innerHTML =
+      '<div class="se-dist-card">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="se-dist-icon" style="margin:0"><i class="fa-solid fa-message"></i></div><div><h3 style="margin:0">SMS</h3><p style="margin:2px 0 0;color:var(--text-muted);font-size:13px">Best on a phone — opens your texts app with a draft. On desktop, just copy the message into your SMS provider.</p></div></div>' +
+        '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Message</label>' +
+        '<textarea class="se-input" id="dc-sms-body" readonly style="width:100%;min-height:80px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">Share your feedback with us: ' + activeUrl + '</textarea>' +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+          '<a class="se-btn-primary" href="' + esc(smsHref) + '"><i class="fa-solid fa-mobile-screen"></i> Open SMS app</a>' +
+          '<button class="se-btn-secondary" type="button" id="dc-sms-copy"><i class="fa-solid fa-copy"></i> Copy message</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('dc-sms-copy').addEventListener('click', function(){
+      navigator.clipboard.writeText(document.getElementById('dc-sms-body').value);
+      var b = this; var old = b.innerHTML; b.innerHTML = '<i class="fa-solid fa-check"></i> Copied'; setTimeout(function(){ b.innerHTML = old; }, 1200);
+    });
+    return;
+  }
+
+  if (channel === 'whatsapp') {
+    var waHref = 'https://wa.me/?text=' + shareTxt;
+    box.innerHTML =
+      '<div class="se-dist-card">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="se-dist-icon" style="margin:0"><i class="fa-brands fa-whatsapp"></i></div><div><h3 style="margin:0">WhatsApp</h3><p style="margin:2px 0 0;color:var(--text-muted);font-size:13px">Open WhatsApp (web or mobile) with a pre-filled message, or copy and paste it into a broadcast list.</p></div></div>' +
+        '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Message</label>' +
+        '<textarea class="se-input" id="dc-wa-body" readonly style="width:100%;min-height:80px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">Share your feedback with us: ' + activeUrl + '</textarea>' +
+        '<div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">' +
+          '<a class="se-btn-primary" href="' + esc(waHref) + '" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Open WhatsApp</a>' +
+          '<button class="se-btn-secondary" type="button" id="dc-wa-copy"><i class="fa-solid fa-copy"></i> Copy message</button>' +
+        '</div>' +
+      '</div>';
+    document.getElementById('dc-wa-copy').addEventListener('click', function(){
+      navigator.clipboard.writeText(document.getElementById('dc-wa-body').value);
+      var b = this; var old = b.innerHTML; b.innerHTML = '<i class="fa-solid fa-check"></i> Copied'; setTimeout(function(){ b.innerHTML = old; }, 1200);
+    });
+    return;
+  }
+
+  if (channel === 'social') {
+    var xHref  = 'https://twitter.com/intent/tweet?text=' + shareTxt;
+    var liHref = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(activeUrl);
+    var fbHref = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(activeUrl);
+    box.innerHTML =
+      '<div class="se-dist-card">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="se-dist-icon" style="margin:0"><i class="fa-solid fa-share-nodes"></i></div><div><h3 style="margin:0">Social</h3><p style="margin:2px 0 0;color:var(--text-muted);font-size:13px">Open a share dialog on X, LinkedIn, or Facebook. The link will be included automatically.</p></div></div>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px">' +
+          '<a class="se-btn-secondary" href="' + esc(xHref) + '" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> Share on X</a>' +
+          '<a class="se-btn-secondary" href="' + esc(liHref) + '" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i> Share on LinkedIn</a>' +
+          '<a class="se-btn-secondary" href="' + esc(fbHref) + '" target="_blank" rel="noopener"><i class="fa-brands fa-facebook"></i> Share on Facebook</a>' +
+        '</div>' +
+      '</div>';
+    return;
+  }
+
+  if (channel === 'iframe') {
+    var iframeCode = '<iframe src="' + activeUrl + '" style="width:100%;min-height:560px;border:0;border-radius:12px" title="Feedback survey"></iframe>';
+    box.innerHTML =
+      '<div class="se-dist-card">' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="se-dist-icon" style="margin:0"><i class="fa-solid fa-window-maximize"></i></div><div><h3 style="margin:0">Plain iframe</h3><p style="margin:2px 0 0;color:var(--text-muted);font-size:13px">Drop the full survey straight into any page — no floating button, no popup. Best for dedicated feedback pages.</p></div></div>' +
+        '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Iframe code</label>' +
+        '<textarea class="se-input" id="dc-if-code" readonly style="width:100%;min-height:90px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">' + iframeCode.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</textarea>' +
+        '<button class="se-btn-secondary" type="button" id="dc-if-copy" style="margin-top:8px"><i class="fa-solid fa-copy"></i> Copy iframe code</button>' +
+      '</div>';
+    document.getElementById('dc-if-copy').addEventListener('click', function(){
+      navigator.clipboard.writeText(document.getElementById('dc-if-code').value);
+      var b = this; var old = b.innerHTML; b.innerHTML = '<i class="fa-solid fa-check"></i> Copied'; setTimeout(function(){ b.innerHTML = old; }, 1200);
+    });
+    return;
+  }
+}
+
+function renderChannelsPanel(box, url, token, label) {
+  var subject = encodeURIComponent('Quick feedback for ' + (label || 'us'));
+  var bodyTxt = encodeURIComponent('Hi,\n\nWe\'d love your feedback — it takes under a minute:\n' + url + '\n\nThank you!');
+  var shareTxt = encodeURIComponent('Share your feedback with us: ' + url);
+  var emailHref = 'mailto:?subject=' + subject + '&body=' + bodyTxt;
+  var smsHref = 'sms:?body=' + shareTxt;
+  var waHref = 'https://wa.me/?text=' + shareTxt;
+  var xHref = 'https://twitter.com/intent/tweet?text=' + shareTxt;
+  var liHref = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+  var fbHref = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+
+  var origin = location.origin;
+  var widgetSrc = origin + '/cx-widget.js';
+
+  var html = '';
+  html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:14px">';
+  html += '<a class="se-btn-secondary" href="' + emailHref + '" target="_blank" rel="noopener"><i class="fa-solid fa-envelope"></i> Email link</a>';
+  html += '<a class="se-btn-secondary" href="' + waHref + '" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>';
+  html += '<a class="se-btn-secondary" href="' + smsHref + '"><i class="fa-solid fa-message"></i> SMS</a>';
+  html += '<a class="se-btn-secondary" href="' + xHref + '" target="_blank" rel="noopener"><i class="fa-brands fa-x-twitter"></i> Share on X</a>';
+  html += '<a class="se-btn-secondary" href="' + liHref + '" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin"></i> LinkedIn</a>';
+  html += '<a class="se-btn-secondary" href="' + fbHref + '" target="_blank" rel="noopener"><i class="fa-brands fa-facebook"></i> Facebook</a>';
+  html += '</div>';
+
+  html += '<h4 style="margin:14px 0 8px;font-size:13px">Embed on your website</h4>';
+  html += '<div data-embed-studio style="margin-bottom:14px"></div>';
+
+  html += '<h4 style="margin:18px 0 8px;font-size:13px">Or use a plain iframe</h4>';
+  var iframeCode = '<iframe src="' + url + '" style="width:100%;min-height:560px;border:0;border-radius:12px" title="Feedback survey"></iframe>';
+  html += '<textarea class="se-input" readonly data-iframe-code style="width:100%;min-height:54px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px">' + iframeCode.replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</textarea>';
+  html += '<button class="se-btn-secondary" type="button" data-copy-iframe style="margin-top:6px"><i class="fa-solid fa-copy"></i> Copy iframe code</button>';
+
+  box.innerHTML = html;
+
+  // Mount full Embed Studio (tabs, live preview, full knob set)
+  var studioMount = box.querySelector('[data-embed-studio]');
+  if (studioMount) renderEmbedStudio(studioMount, url, token, label, widgetSrc);
+
+  function copyTextArea(sel, btn) {
+    var ta = box.querySelector(sel);
+    if (!ta) return;
+    navigator.clipboard.writeText(ta.value);
+    var old = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+    setTimeout(function(){ btn.innerHTML = old; }, 1400);
+  }
+  var copyIframeBtn = box.querySelector('[data-copy-iframe]');
+  if (copyIframeBtn) copyIframeBtn.addEventListener('click', function(){ copyTextArea('[data-iframe-code]', copyIframeBtn); });
+}
+
+// ---------------- Embed Studio (Phase 2A) ----------------
+// Tabs: Style / Triggers / Targeting / Code
+// Live preview iframe runs the real widget against the current config.
+function renderEmbedStudio(mount, url, token, label, widgetSrc) {
+  var origin = location.origin;
+  // Use clean URL to avoid 308 redirect (which trips frame-ancestors before the final response is reached)
+  var previewUrl = origin + '/cx-embed-preview';
+
+  // Defaults — must match cx-widget.js defaults
+  var defaults = {
+    mode: 'tab', position: 'right', vertical: 'middle',
+    label: label || 'Feedback', icon: 'chat',
+    color: '#11a551', textColor: '#ffffff',
+    radius: 8, size: 'md', pulse: false, ping: false, tooltip: '',
+    trigger: 'manual', delay: 0, scroll: 50, selector: '',
+    frequency: 'always', include: '*', exclude: '', sample: 100,
+    animation: 'slide', closable: true
+  };
+  var cfg = Object.assign({}, defaults);
+
+  var TABS = [
+    { id: 'style',    label: 'Style',     icon: 'fa-palette' },
+    { id: 'triggers', label: 'Triggers',  icon: 'fa-bolt' },
+    { id: 'target',   label: 'Targeting', icon: 'fa-bullseye' },
+    { id: 'code',     label: 'Code',      icon: 'fa-code' }
+  ];
+
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // --- Build shell ---
+  var html = '';
+  html += '<div class="se-embed-studio" style="display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:14px;align-items:stretch">';
+
+  // LEFT: tabs + panels
+  html += '<div class="es-left" style="border:1px solid var(--border-primary);border-radius:10px;background:var(--bg-elev,#fafafa);overflow:hidden">';
+  html += '<div class="es-tabs" role="tablist" style="display:flex;border-bottom:1px solid var(--border-primary);background:var(--surface-1,#fff)">';
+  TABS.forEach(function(t, i){
+    html += '<button type="button" class="es-tab" data-tab="' + t.id + '" role="tab" aria-selected="' + (i===0?'true':'false') + '" style="flex:1;padding:10px 6px;border:0;background:transparent;cursor:pointer;font-size:12px;color:var(--text-muted);border-bottom:2px solid transparent;' + (i===0 ? 'color:var(--text-primary);border-bottom-color:var(--accent,#11a551);font-weight:600;background:var(--bg-elev,#fafafa);' : '') + '"><i class="fa-solid ' + t.icon + '"></i> ' + t.label + '</button>';
+  });
+  html += '</div>';
+  html += '<div class="es-panels" style="padding:12px">';
+  TABS.forEach(function(t, i){
+    html += '<div class="es-panel" data-panel="' + t.id + '" role="tabpanel" style="' + (i===0 ? '' : 'display:none;') + '"></div>';
+  });
+  html += '</div>';
+  html += '<div style="display:flex;gap:8px;padding:10px 12px;border-top:1px solid var(--border-primary);background:var(--surface-1,#fff)">';
+  html += '<button type="button" class="se-btn-secondary" data-es-reset style="flex:1"><i class="fa-solid fa-rotate-left"></i> Reset</button>';
+  html += '<button type="button" class="se-btn-secondary" data-es-open style="flex:1"><i class="fa-solid fa-eye"></i> Open in preview</button>';
+  html += '</div>';
+  html += '</div>';
+
+  // RIGHT: preview
+  html += '<div class="es-right" style="border:1px solid var(--border-primary);border-radius:10px;background:#0f172a;overflow:hidden;display:flex;flex-direction:column;min-height:520px">';
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:#1e293b;color:#cbd5e1;font-size:12px">';
+  html += '<span><i class="fa-solid fa-circle" style="color:#ef4444;font-size:8px"></i> <i class="fa-solid fa-circle" style="color:#f59e0b;font-size:8px;margin:0 4px"></i> <i class="fa-solid fa-circle" style="color:#10b981;font-size:8px"></i> &nbsp;Live preview</span>';
+  html += '<span style="display:inline-flex;gap:4px">';
+  html += '<button type="button" class="es-dev" data-dev="desktop" aria-pressed="true" style="background:#334155;border:0;color:#fff;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px"><i class="fa-solid fa-desktop"></i> Desktop</button>';
+  html += '<button type="button" class="es-dev" data-dev="mobile" aria-pressed="false" style="background:transparent;border:1px solid #334155;color:#cbd5e1;padding:4px 8px;border-radius:6px;cursor:pointer;font-size:11px"><i class="fa-solid fa-mobile-screen"></i> Mobile</button>';
+  html += '</span>';
+  html += '</div>';
+  html += '<div class="es-stage" style="flex:1;display:flex;align-items:stretch;justify-content:center;padding:14px;background:repeating-linear-gradient(45deg,#0b1220,#0b1220 10px,#0f172a 10px,#0f172a 20px);overflow:auto">';
+  html += '<iframe data-es-frame src="' + esc(previewUrl) + '" title="Embed preview" style="width:100%;max-width:100%;height:100%;min-height:480px;border:0;border-radius:8px;background:#fff;transition:max-width .25s ease"></iframe>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '</div>'; // /.se-embed-studio
+
+  mount.innerHTML = html;
+
+  // --- Panel builders ---
+  function field(labelTxt, inputHtml, hint){
+    return '<label style="display:flex;flex-direction:column;font-size:11px;color:var(--text-muted);gap:4px">' + esc(labelTxt) + inputHtml + (hint ? '<span style="font-size:10px;color:var(--text-muted);opacity:.75">' + esc(hint) + '</span>' : '') + '</label>';
+  }
+  function sel(key, opts){
+    var o = opts.map(function(p){ return '<option value="' + esc(p.v) + '"' + (String(cfg[key])===String(p.v) ? ' selected' : '') + '>' + esc(p.l) + '</option>'; }).join('');
+    return '<select class="se-input" data-cfg="' + key + '">' + o + '</select>';
+  }
+  function inp(key, type, extra){
+    return '<input class="se-input" type="' + (type||'text') + '" data-cfg="' + key + '" value="' + esc(cfg[key]) + '"' + (extra||'') + '>';
+  }
+  function chk(key, txt){
+    return '<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-primary);cursor:pointer"><input type="checkbox" data-cfg="' + key + '"' + (cfg[key] ? ' checked' : '') + '> ' + esc(txt) + '</label>';
+  }
+  function grid2(inner){ return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + inner + '</div>'; }
+
+  function buildStylePanel(){
+    var h = '';
+    h += grid2(
+      field('Style', sel('mode', [
+        {v:'tab',l:'Side tab'},{v:'bubble',l:'Floating bubble'},{v:'inline',l:'Inline (no launcher)'},{v:'modal',l:'Modal popup'}
+      ])) +
+      field('Icon', sel('icon', [
+        {v:'chat',l:'Chat'},{v:'star',l:'Star'},{v:'smiley',l:'Smiley'},{v:'megaphone',l:'Megaphone'},{v:'none',l:'No icon'}
+      ]))
+    );
+    h += '<div style="height:8px"></div>';
+    h += grid2(
+      field('Position', sel('position', [
+        {v:'right',l:'Right edge'},{v:'left',l:'Left edge'},{v:'bottom-right',l:'Bottom right'},{v:'bottom-left',l:'Bottom left'}
+      ])) +
+      field('Vertical alignment', sel('vertical', [
+        {v:'top',l:'Top'},{v:'middle',l:'Middle'},{v:'bottom',l:'Bottom'}
+      ]))
+    );
+    h += '<div style="height:8px"></div>';
+    h += field('Label', inp('label'));
+    h += '<div style="height:8px"></div>';
+    h += field('Tooltip (hover hint)', inp('tooltip', 'text', ' placeholder="e.g. Share your feedback"'));
+    h += '<div style="height:8px"></div>';
+    h += grid2(
+      field('Background colour', inp('color','color')) +
+      field('Text colour', inp('textColor','color'))
+    );
+    h += '<div style="height:8px"></div>';
+    h += grid2(
+      field('Size', sel('size', [{v:'sm',l:'Small'},{v:'md',l:'Medium'},{v:'lg',l:'Large'}])) +
+      field('Corner radius (px)', inp('radius','number',' min="0" max="40"'))
+    );
+    h += '<div style="height:8px"></div>';
+    h += grid2(
+      field('Animation', sel('animation', [{v:'slide',l:'Slide'},{v:'fade',l:'Fade'},{v:'scale',l:'Scale'}])) +
+      '<div style="display:flex;flex-direction:column;gap:6px;justify-content:flex-end">' + chk('pulse','Pulse highlight') + chk('ping','Attention ping') + chk('closable','Closable by user') + '</div>'
+    );
+    return h;
+  }
+
+  function buildTriggersPanel(){
+    var h = '';
+    h += field('When should the survey appear?', sel('trigger', [
+      {v:'manual',l:'Manual — only when user clicks launcher'},
+      {v:'time',l:'After a time delay'},
+      {v:'scroll',l:'After scroll depth'},
+      {v:'exit_intent',l:'On exit intent (cursor leaves page)'},
+      {v:'click',l:'On click of a CSS selector'}
+    ]));
+    h += '<div style="height:10px"></div>';
+    h += '<div data-trigger-extra></div>';
+    h += '<div style="height:14px"></div>';
+    h += field('How often should it show?', sel('frequency', [
+      {v:'always',l:'Always — every page view'},
+      {v:'session',l:'Once per session'},
+      {v:'day',l:'Once per day'},
+      {v:'week',l:'Once per week'},
+      {v:'once_dismissed',l:'Until the user dismisses it'},
+      {v:'once_submitted',l:'Until the user submits feedback'}
+    ]));
+    return h;
+  }
+
+  function buildTriggerExtra(){
+    var t = cfg.trigger;
+    if (t === 'time')   return field('Delay (seconds)', inp('delay','number',' min="0" max="600"'), 'Survey opens this many seconds after page load.');
+    if (t === 'scroll') return field('Scroll depth (%)', inp('scroll','number',' min="0" max="100"'), 'Opens when the user scrolls past this share of the page.');
+    if (t === 'click')  return field('CSS selector', inp('selector','text',' placeholder="#feedback-btn, .help-link"'), 'Opens when a matching element is clicked.');
+    if (t === 'exit_intent') return '<div style="font-size:12px;color:var(--text-muted)">Opens once when the cursor moves toward the top of the page.</div>';
+    return '<div style="font-size:12px;color:var(--text-muted)">No extra settings — the user opens the survey by clicking the launcher.</div>';
+  }
+
+  function buildTargetPanel(){
+    var h = '';
+    h += field('Show on these URLs', inp('include','text',' placeholder="* or /pricing*, /checkout*"'), 'Comma-separated patterns. Use * as wildcard. Leave * to show everywhere.');
+    h += '<div style="height:8px"></div>';
+    h += field('Hide on these URLs', inp('exclude','text',' placeholder="/admin*, /login"'), 'Comma-separated patterns. Use * as wildcard.');
+    h += '<div style="height:8px"></div>';
+    h += field('Visitor sample (%)', inp('sample','number',' min="1" max="100"'), 'Only this share of visitors will see the widget. Use 100 for everyone.');
+    return h;
+  }
+
+  function buildCodePanel(){
+    var h = '';
+    h += '<label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:4px">Widget code (paste before <code>&lt;/body&gt;</code>)</label>';
+    h += '<textarea class="se-input" data-es-code readonly style="width:100%;min-height:140px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px"></textarea>';
+    h += '<div style="display:flex;gap:8px;margin-top:6px">';
+    h += '<button type="button" class="se-btn-secondary" data-es-copy style="flex:1"><i class="fa-solid fa-copy"></i> Copy code</button>';
+    h += '</div>';
+    h += '<div style="margin-top:10px;font-size:11px;color:var(--text-muted)">The same script tag drives every style — change anything in the other tabs and the snippet here updates automatically.</div>';
+    return h;
+  }
+
+  // --- Code generation ---
+  function buildCode(){
+    var attrs = [];
+    function add(k, v){ if (v == null || v === '') return; attrs.push('data-' + k + '="' + String(v).replace(/"/g,'&quot;') + '"'); }
+    add('token', token);
+    add('mode', cfg.mode);
+    add('position', cfg.position);
+    add('vertical', cfg.vertical);
+    add('label', cfg.label);
+    add('icon', cfg.icon);
+    add('color', cfg.color);
+    add('text-color', cfg.textColor);
+    if (Number(cfg.radius) !== defaults.radius) add('radius', cfg.radius);
+    if (cfg.size !== defaults.size) add('size', cfg.size);
+    if (cfg.pulse) add('pulse','true');
+    if (cfg.ping) add('ping','true');
+    if (cfg.tooltip) add('tooltip', cfg.tooltip);
+    add('trigger', cfg.trigger);
+    if (cfg.trigger === 'time') add('delay', cfg.delay);
+    if (cfg.trigger === 'scroll') add('scroll', cfg.scroll);
+    if (cfg.trigger === 'click' && cfg.selector) add('selector', cfg.selector);
+    add('frequency', cfg.frequency);
+    if (cfg.include && cfg.include !== '*') add('include', cfg.include);
+    if (cfg.exclude) add('exclude', cfg.exclude);
+    if (Number(cfg.sample) !== 100) add('sample', cfg.sample);
+    if (cfg.animation !== defaults.animation) add('animation', cfg.animation);
+    if (cfg.closable === false) add('closable','false');
+    if (cfg.mode === 'inline') add('target','#gonogo-cx');
+    var code = '<script src="' + widgetSrc + '" ' + attrs.join(' ') + ' defer><' + '/script>';
+    if (cfg.mode === 'inline') code = '<div id="gonogo-cx"></div>\n' + code;
+    return code;
+  }
+
+  // --- Preview wiring ---
+  var frame = mount.querySelector('[data-es-frame]');
+  var previewReady = false;
+  var pendingLoad = null;
+  function postToPreview(msg){
+    try { frame.contentWindow.postMessage(msg, '*'); } catch(_) {}
+  }
+  function pushPreview(){
+    var payload = { src: widgetSrc, data: {
+      token: token, mode: cfg.mode, position: cfg.position, vertical: cfg.vertical,
+      label: cfg.label, icon: cfg.icon, color: cfg.color, 'text-color': cfg.textColor,
+      radius: cfg.radius, size: cfg.size,
+      pulse: cfg.pulse ? 'true' : 'false', ping: cfg.ping ? 'true' : 'false',
+      tooltip: cfg.tooltip,
+      trigger: cfg.trigger, delay: cfg.delay, scroll: cfg.scroll, selector: cfg.selector,
+      frequency: cfg.frequency, include: cfg.include, exclude: cfg.exclude, sample: cfg.sample,
+      animation: cfg.animation, closable: cfg.closable ? 'true' : 'false',
+      target: cfg.mode === 'inline' ? '#gonogo-cx' : ''
+    }};
+    if (previewReady) postToPreview({ type: 'gng:preview:load', payload: payload });
+    else pendingLoad = payload;
+  }
+  window.addEventListener('message', function(e){
+    var d = e.data || {};
+    if (d && d.type === 'gng:preview:ready') {
+      previewReady = true;
+      if (pendingLoad) { postToPreview({ type: 'gng:preview:load', payload: pendingLoad }); pendingLoad = null; }
+    }
+  });
+
+  // --- Render & rebind ---
+  function renderPanels(){
+    mount.querySelector('[data-panel="style"]').innerHTML    = buildStylePanel();
+    mount.querySelector('[data-panel="triggers"]').innerHTML = buildTriggersPanel();
+    mount.querySelector('[data-panel="target"]').innerHTML   = buildTargetPanel();
+    mount.querySelector('[data-panel="code"]').innerHTML     = buildCodePanel();
+    var extra = mount.querySelector('[data-trigger-extra]');
+    if (extra) extra.innerHTML = buildTriggerExtra();
+    var ta = mount.querySelector('[data-es-code]');
+    if (ta) ta.value = buildCode();
+    bindInputs();
+  }
+  function bindInputs(){
+    mount.querySelectorAll('[data-cfg]').forEach(function(el){
+      var key = el.dataset.cfg;
+      var handler = function(){
+        var v;
+        if (el.type === 'checkbox') v = el.checked;
+        else if (el.type === 'number') v = el.value === '' ? '' : Number(el.value);
+        else v = el.value;
+        cfg[key] = v;
+        // re-render the trigger-extra block if trigger changed
+        if (key === 'trigger') {
+          var extra = mount.querySelector('[data-trigger-extra]');
+          if (extra) { extra.innerHTML = buildTriggerExtra(); bindInputs(); }
+        }
+        var ta = mount.querySelector('[data-es-code]');
+        if (ta) ta.value = buildCode();
+        pushPreview();
+      };
+      el.addEventListener('input', handler);
+      el.addEventListener('change', handler);
+    });
+  }
+
+  // --- Tab switching ---
+  mount.querySelectorAll('[data-tab]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.dataset.tab;
+      mount.querySelectorAll('[data-tab]').forEach(function(b){
+        var active = b.dataset.tab === id;
+        b.setAttribute('aria-selected', active ? 'true' : 'false');
+        b.style.color = active ? 'var(--text-primary)' : 'var(--text-muted)';
+        b.style.borderBottomColor = active ? 'var(--accent,#11a551)' : 'transparent';
+        b.style.fontWeight = active ? '600' : '';
+        b.style.background = active ? 'var(--bg-elev,#fafafa)' : 'transparent';
+      });
+      mount.querySelectorAll('[data-panel]').forEach(function(p){
+        p.style.display = p.dataset.panel === id ? '' : 'none';
+      });
+    });
+  });
+
+  // --- Device toggle ---
+  mount.querySelectorAll('.es-dev').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var dev = btn.dataset.dev;
+      mount.querySelectorAll('.es-dev').forEach(function(b){
+        var on = b === btn;
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        b.style.background = on ? '#334155' : 'transparent';
+        b.style.border = on ? '0' : '1px solid #334155';
+        b.style.color = on ? '#fff' : '#cbd5e1';
+      });
+      frame.style.maxWidth = (dev === 'mobile') ? '390px' : '100%';
+    });
+  });
+
+  // --- Reset & open ---
+  var resetBtn = mount.querySelector('[data-es-reset]');
+  if (resetBtn) resetBtn.addEventListener('click', function(){
+    cfg = Object.assign({}, defaults);
+    renderPanels();
+    pushPreview();
+  });
+  var openBtn = mount.querySelector('[data-es-open]');
+  if (openBtn) openBtn.addEventListener('click', function(){
+    postToPreview({ type: 'gng:preview:open' });
+  });
+
+  // --- Copy ---
+  mount.addEventListener('click', function(e){
+    var t = e.target.closest('[data-es-copy]');
+    if (!t) return;
+    var ta = mount.querySelector('[data-es-code]');
+    if (!ta) return;
+    try { navigator.clipboard.writeText(ta.value); } catch(_){}
+    var old = t.innerHTML;
+    t.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+    setTimeout(function(){ t.innerHTML = old; }, 1400);
+  });
+
+  // Initial render + push
+  renderPanels();
+  pushPreview();
+}
+
+function showQrModal(url, label) {
+  var existing = document.getElementById('qr-modal');
+  if (existing) existing.remove();
+
+  var qrSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=' + encodeURIComponent(url);
+  var dlSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=20&format=png&download=1&data=' + encodeURIComponent(url);
+
+  var m = document.createElement('div');
+  m.id = 'qr-modal';
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  m.innerHTML =
+    '<div style="background:var(--surface-0,#0b1220);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:24px;max-width:440px;width:100%;text-align:center;">' +
+      '<h3 style="margin:0 0 4px;font-size:16px;">QR code</h3>' +
+      '<p class="text-xs text-muted" style="margin:0 0 16px;">' + esc(label || 'Survey link') + '</p>' +
+      '<div style="background:#fff;padding:12px;border-radius:8px;display:inline-block;"><img src="' + qrSrc + '" alt="QR code" width="320" height="320" style="display:block;"></div>' +
+      '<p class="text-xs text-muted" style="margin:12px 0 4px;word-break:break-all;">' + esc(url) + '</p>' +
+      '<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;">' +
+        '<a class="se-btn-primary" href="' + dlSrc + '" download="survey-qr.png"><i class="fa-solid fa-download"></i> Download PNG</a>' +
+        '<button class="se-btn-secondary" id="qr-close" type="button">Close</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(m);
+  m.addEventListener('click', function(e){
+    if (e.target === m) m.remove();
+  });
+
+  document.getElementById('qr-close').addEventListener('click', function(){
+    m.remove();
+  });
+}
+
+async function createLink() {
+  if (!_survey || !_survey.id) {
+    toast('Save the survey first', 'error');
+    return;
+  }
+
+  var s = _survey.status;
+  if (s !== 'active') {
+    if (!confirm('Survey is not published — links will not accept responses until you publish. Continue?')) return;
+  }
+
+  var label = document.getElementById('f-link-label').value.trim();
+
+  try {
+    await GoNoGoAPI.cx.createLink(_survey.id, label);
+    document.getElementById('f-link-label').value = '';
+    var data = await GoNoGoAPI.cx.getSurvey(_survey.id);
+    _links = data.links || [];
+    renderLinks();
+    toast('Link created', 'success');
+  } catch(e) {
+    toast('Could not create link: ' + (e.message || 'error'), 'error');
+  }
+}
+
+function renderSurveyPreview() {
+  var panel = document.getElementById('panel-preview');
+  if (!panel) return;
+
+  var introTitle = document.getElementById('s-intro-title') && document.getElementById('s-intro-title').value.trim()
+    ? document.getElementById('s-intro-title').value.trim()
+    : 'Survey preview';
+
+  var introText = document.getElementById('s-intro-text') && document.getElementById('s-intro-text').value.trim()
+    ? document.getElementById('s-intro-text').value.trim()
+    : 'This is how the survey will look before a respondent starts.';
+
+  var privacyText = document.getElementById('s-privacy-notice') && document.getElementById('s-privacy-notice').value.trim()
+    ? document.getElementById('s-privacy-notice').value.trim()
+    : 'No privacy notice set yet.';
+
+  var firstQ = _questions.length ? _questions[0] : null;
+
+  var html = '';
+  html += '<div class="se-panel-intro"><div><h2>Survey preview</h2><p>Preview the opening state, always-visible privacy notice, and the first survey question.</p></div></div>';
+  html += '<div class="se-survey-preview-shell">';
+  html += '<div class="se-preview-banner"><strong>Privacy notice</strong><br>' + esc(privacyText) + '</div>';
+  html += '<div class="se-preview-hero"><h3>' + esc(introTitle) + '</h3><p>' + esc(introText) + '</p></div>';
+  html += '<div class="se-preview-body">';
+  html += '<div class="se-preview-topbar"><div style="font-size:12px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.08em;">Respondent view</div><div class="se-preview-progress"><span></span></div></div>';
+
+  if (firstQ) {
+    html += '<div class="se-preview-card">' + renderPreview(firstQ) + '</div>';
+  } else {
+    html += '<div class="se-preview-card"><div class="se-hint">No questions yet. Apply a template or add your first question.</div></div>';
+  }
+
+  html += '</div></div>';
+  panel.innerHTML = html;
+}
+
+function syncQuestionsFromDOM() {
+  // Safety net: pull latest values directly from the live DOM for each question card
+  // so that typed-but-unblurred text is captured at save time.
+  var panel = document.getElementById('panel-question');
+  if (!panel) return;
+  panel.querySelectorAll('.se-flow-card[data-idx]').forEach(function(card){
+    var idx = Number(card.dataset.idx);
+    var q = _questions[idx];
+    if (!q) return;
+    var promptEl = card.querySelector('textarea[data-field="prompt"]');
+    var helpEl = card.querySelector('textarea[data-field="help_text"]');
+    var reqEl = card.querySelector('input[data-field="required"]');
+    var phEl = card.querySelector('input[data-field="placeholder"]');
+    if (promptEl) q.prompt = promptEl.value;
+    if (helpEl) q.help_text = helpEl.value;
+    if (reqEl) q.required = !!reqEl.checked;
+    if (phEl) q.options = [phEl.value || ''];
+  });
+}
+
+async function save() {
+  syncQuestionsFromDOM();
+
+  var name = document.getElementById('s-name').value.trim();
+  if (!name) {
+    toast('Survey name is required', 'error');
+    showTab('settings');
+    document.getElementById('s-name').focus();
+    return;
+  }
+
+  if (!_questions.length) {
+    toast('Add at least one question', 'error');
+    return;
+  }
+
+  for (var i = 0; i < _questions.length; i++) {
+    if (!_questions[i].prompt || !_questions[i].prompt.trim()) {
+      toast('Question ' + (i + 1) + ' needs a prompt', 'error');
+      _selectedIdx = i;
+      renderRail();
+      renderQuestionPanel();
+      showTab('question');
+      return;
+    }
+
+    if (
+      (_questions[i].qtype === 'single_select' || _questions[i].qtype === 'multi_select' || _questions[i].qtype === 'dropdown') &&
+      (!_questions[i].options || _questions[i].options.filter(Boolean).length < 2)
+    ) {
+      toast('Question ' + (i + 1) + ' needs at least 2 options', 'error');
+      _selectedIdx = i;
+      renderRail();
+      renderQuestionPanel();
+      showTab('question');
+      return;
+    }
+  }
+
+  var btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+  _saving = true;
+
+  try {
+    var retentionVal = document.getElementById('s-contact-retention').value.trim();
+
+    var payload = {
+      id: _survey ? _survey.id : null,
+      name: name,
+      slug: document.getElementById('s-slug').value.trim() || null,
+      intro_title: document.getElementById('s-intro-title').value.trim(),
+      intro_text: document.getElementById('s-intro-text').value.trim(),
+      thank_you_title: document.getElementById('s-ty-title').value.trim(),
+      thank_you_text: document.getElementById('s-ty-text').value.trim(),
+      is_anonymous: document.getElementById('s-anon').checked,
+      allow_contact_capture: document.getElementById('s-contact').checked,
+
+      status: (function(){
+        var v = _survey ? _survey.status : 'draft';
+        return ['draft','active','paused','archived'].indexOf(v) !== -1 ? v : 'draft';
+      })(),
+
+      template_key: document.getElementById('s-template-key').value || null,
+      brand_logo_url: document.getElementById('s-brand-logo').value.trim() || null,
+      brand_primary_color: document.getElementById('s-brand-primary').value.trim() || null,
+      brand_accent_color: document.getElementById('s-brand-accent').value.trim() || null,
+      language: (document.getElementById('s-language') && document.getElementById('s-language').value) || 'en',
+
+      theme_variant: document.getElementById('s-theme-variant').value || 'classic',
+      progress_style: document.getElementById('s-progress-style').value || 'bar',
+      show_progress_bar: document.getElementById('s-show-progress').checked,
+      party_mode_default: !!document.getElementById('s-party-default').checked,
+
+      privacy_notice_text: document.getElementById('s-privacy-notice').value.trim() || null,
+      marketing_consent_enabled: document.getElementById('s-marketing-consent').checked,
+      marketing_consent_label: document.getElementById('s-marketing-label').value.trim() || null,
+      contact_retention_days: retentionVal ? parseInt(retentionVal, 10) : null,
+
+      questions: _questions.map(function(q){
+        return {
+          qtype: q.qtype,
+          prompt: (q.prompt || '').trim(),
+          help_text: (q.help_text || '').trim(),
+          required: !!q.required,
+          options: Array.isArray(q.options) ? q.options : [],
+          logic: Array.isArray(q.logic) ? q.logic : [],
+          formatting: (q.formatting && typeof q.formatting === 'object') ? q.formatting : {},
+          image_url: q.image_url || null
+        };
+      }).filter(function(q){
+        return q.prompt;
+      })
+    };
+
+    var resultId;
+    try {
+      resultId = await GoNoGoAPI.cx.upsertSurvey(payload);
+    } catch (err) {
+      var msg = (err && err.message) || '';
+      // Retry once with a unique slug suffix if we hit the unique constraint
+      if (/duplicate key|already exists|23505/i.test(msg)) {
+        var suffix = '-' + Math.random().toString(36).slice(2, 6);
+        payload.slug = ((payload.slug || payload.name || 'survey').toString().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')) + suffix;
+        resultId = await GoNoGoAPI.cx.upsertSurvey(payload);
+      } else {
+        throw err;
+      }
+    }
+
+    var id = (_survey && _survey.id) || resultId;
+    // Establish _survey/_surveyId immediately so the rest of the UI knows we have a saved record,
+    // even if the follow-up getSurvey call fails (network/auth blip won't hide the fact that save succeeded).
+    if (id) {
+      _survey = _survey || {};
+      _survey.id = id;
+      _surveyId = id;
+      try {
+        var data = await GoNoGoAPI.cx.getSurvey(id);
+        if (data && data.survey) {
+          _survey = data.survey;
+          _surveyId = _survey.id;
+          _questions = (data.questions || []).map(function(q){
+            var cj = q.content_json || {};
+            return {
+              qtype: q.qtype,
+              prompt: q.prompt || '',
+              help_text: q.help_text || q.helptext || '',
+              required: !!q.required,
+              options: q.options || [],
+              logic: q.logic || q.logic_rules || [],
+              formatting: (cj && typeof cj.formatting === 'object' && cj.formatting) ? cj.formatting : {},
+              image_url: (cj && cj.image_url) || ''
+            };
+          });
+          _links = data.links || [];
+        }
+      } catch(reloadErr) {
+        // Don't fail save just because reload failed; _survey.id is already set.
+        console.warn('Survey saved but reload failed:', reloadErr);
+      }
+    }
+
+    if (id && !window.location.search.includes('id=')) {
+      history.replaceState(null, '', 'brand-cx-survey-edit.html?id=' + id);
+    }
+
+    document.getElementById('title-text').textContent = 'Edit: ' + (_survey.name || 'Survey');
+    document.getElementById('tab-links').style.display = '';
+    updateStatusUI();
+    renderRail();
+    renderQuestionPanel();
+    renderLinks();
+    _dirty = false;
+    toast('Survey saved', 'success');
+  } catch(e) {
+    toast('Save failed: ' + (e.message || 'error'), 'error');
+  } finally {
+    _saving = false;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-save"></i> Save';
+  }
+}
+
+function toast(msg, type) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'se-toast ' + (type || 'success') + ' show';
+  clearTimeout(el.t);
+  el.t = setTimeout(function(){
+    el.classList.remove('show');
+  }, 3000);
+}
+</script>
+</body>
+</html>

@@ -33,7 +33,13 @@
     { "source": "/account", "destination": "/account.html" },
     { "source": "/auth/reset", "destination": "/auth/reset.html" },
     { "source": "/admin-scoring", "destination": "/admin-scoring.html" },
-    { "source": "/admin-users", "destination": "/admin-users.html" }
+    { "source": "/admin-users", "destination": "/admin-users.html" },
+    { "source": "/brand-cx", "destination": "/brand-cx.html" },
+    { "source": "/brand-cx-surveys", "destination": "/brand-cx-surveys.html" },
+    { "source": "/brand-cx-responses", "destination": "/brand-cx-responses.html" },
+    { "source": "/brand-cx-case", "destination": "/brand-cx-case.html" },
+    { "source": "/brand-cx-survey-edit", "destination": "/brand-cx-survey-edit.html" },
+    { "source": "/cx-survey", "destination": "/cx-survey.html" }
   ],
   "headers": [
     {
@@ -46,6 +52,41 @@
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=()" },
         { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
         { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://www.google-analytics.com https://region1.google-analytics.com https://cdn.jsdelivr.net; frame-ancestors 'none'" }
+      ]
+    },
+    {
+      "source": "/cx-embed-preview",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; frame-src https:; frame-ancestors 'self'" }
+      ]
+    },
+    {
+      "source": "/cx-embed-preview.html",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; frame-src https:; frame-ancestors 'self'" }
+      ]
+    },
+    {
+      "source": "/cx-survey",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "ALLOWALL" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; frame-ancestors *" }
+      ]
+    },
+    {
+      "source": "/cx-survey.html",
+      "headers": [
+        { "key": "X-Frame-Options", "value": "ALLOWALL" },
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co; frame-ancestors *" }
+      ]
+    },
+    {
+      "source": "/cx-widget.js",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Cache-Control", "value": "public, max-age=300" }
       ]
     },
     {

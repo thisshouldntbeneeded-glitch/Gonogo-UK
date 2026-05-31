@@ -1404,6 +1404,57 @@ var GoNoGoAPI = (function () {
     // Direct Supabase request (for admin pages)
     supabaseRequest: function (path, options) {
       return supabaseRequest(path, options);
+    },
+
+    // ==========================================
+    // CX SUITE (internal customer feedback)
+    // ==========================================
+    cx: {
+      _brandCtx: function () {
+        var brand = GoNoGoStorage.get('brandUser') || {};
+        return {
+          brand_slug: brand.brand_slug || '',
+          market_code: (brand.region || SITE_REGION || 'uk').toLowerCase()
+        };
+      },
+      _call: function (fn, body) {
+        var auth = GoNoGoAPI._getCallerAuth();
+        return supabaseRequest('rpc/' + fn, { method: 'POST', body: Object.assign({}, body, auth) });
+      },
+      listSurveys: function () {
+        var c = this._brandCtx();
+        return this._call('cx_list_surveys', { p_brand_slug: c.brand_slug, p_market_code: c.market_code });
+      },
+      getSurvey: function (id) { return this._call('cx_get_survey', { p_survey_id: id }); },
+      upsertSurvey: function (payload) {
+        var c = this._brandCtx();
+        return this._call('cx_upsert_survey', { p_brand_slug: c.brand_slug, p_market_code: c.market_code, p_payload: payload });
+      },
+      setSurveyStatus: function (id, status) { return this._call('cx_set_survey_status', { p_survey_id: id, p_status: status }); },
+      deleteSurvey: function (id) { return this._call('cx_delete_survey', { p_survey_id: id }); },
+      createLink: function (surveyId, label) { return this._call('cx_create_link', { p_survey_id: surveyId, p_label: label || null }); },
+      revokeLink: function (linkId) { return this._call('cx_revoke_link', { p_link_id: linkId }); },
+      getKpis: function () {
+        var c = this._brandCtx();
+        return this._call('cx_get_kpis', { p_brand_slug: c.brand_slug, p_market_code: c.market_code });
+      },
+      getSurveyDashboard: function (surveyId, rangeDays) {
+        return this._call('cx_get_survey_dashboard', { p_survey_id: surveyId, p_range_days: (rangeDays === 0 || rangeDays) ? rangeDays : 30 });
+      },
+      listResponses: function (filters) {
+        var c = this._brandCtx();
+        return this._call('cx_list_responses', { p_brand_slug: c.brand_slug, p_market_code: c.market_code, p_filters: filters || {} });
+      },
+      getResponse: function (id) { return this._call('cx_get_response', { p_response_id: id }); },
+      updateCase: function (responseId, payload) { return this._call('cx_update_case', { p_response_id: responseId, p_payload: payload }); },
+      addCaseNote: function (caseId, body) { return this._call('cx_add_case_note', { p_case_id: caseId, p_body: body }); },
+      // Public (anon) calls
+      publicGetSurvey: function (token) {
+        return supabaseRequest('rpc/get_cx_survey_by_token', { method: 'POST', body: { p_token: token } });
+      },
+      publicSubmit: function (token, answers, contact, metadata) {
+        return supabaseRequest('rpc/submit_cx_response', { method: 'POST', body: { p_token: token, p_answers: answers, p_contact: contact || {}, p_metadata: metadata || {} } });
+      }
     }
   };
 })();

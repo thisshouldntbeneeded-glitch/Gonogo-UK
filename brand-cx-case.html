@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Detail - GoNoGo Brand Portal</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  .case-grid { display: grid; grid-template-columns: 1fr 360px; gap: var(--space-5); }
+  @media (max-width: 900px) { .case-grid { grid-template-columns: 1fr; } }
+  .chip { display:inline-block; padding:2px 10px; border-radius:999px; font-size:var(--text-xs); font-weight:600; }
+  .chip-pos { background:#dcfce7; color:#15803d; }
+  .chip-neu { background:#f1f5f9; color:#475569; }
+  .chip-neg { background:#fee2e2; color:#b91c1c; }
+  .ans-row { padding: var(--space-3) 0; border-bottom:1px solid var(--border-primary); }
+  .ans-row:last-child { border-bottom:0; }
+  .ans-q { font-weight:600; color:var(--text-primary); margin-bottom:4px; }
+  .ans-v { color:var(--text-secondary); white-space:pre-wrap; }
+  .note { padding: var(--space-3); background: var(--surface-2); border-radius: var(--radius-sm); margin-bottom: var(--space-2); }
+  .note-meta { font-size: var(--text-xs); color: var(--text-muted); margin-bottom: 4px; }
+  .form-row { margin-bottom: var(--space-3); }
+  .form-row label { display:block; font-size:var(--text-sm); font-weight:600; margin-bottom:4px; color:var(--text-secondary); }
+  .form-row select, .form-row input, .form-row textarea { width:100%; padding:8px 10px; border:1px solid var(--border-primary); border-radius:var(--radius-sm); background:var(--surface-1); color:var(--text-primary); font-size:var(--text-sm); }
+  .form-row textarea { min-height:80px; resize:vertical; }
+</style>
+</head>
+<body>
+<div id="sidebar-container"></div>
+<main id="brand-content" style="display:none;" class="brand-main">
+  <div class="page-header">
+    <a href="/brand-cx-responses" class="btn btn-sm" style="margin-bottom:var(--space-3);"><i class="fas fa-arrow-left"></i> Back to responses</a>
+    <h1 id="page-title">Response detail</h1>
+    <p id="page-sub" class="page-sub"></p>
+  </div>
+  <div id="case-body"></div>
+</main>
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js?v=20260424c"></script>
+<script>
+if (Components.checkBrandAuth()) init();
+
+async function init() {
+  var user = Components.getBrandUser();
+  if (!user) return;
+  document.getElementById('brand-content').style.display = '';
+  document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-responses');
+
+  var respId = new URLSearchParams(location.search).get('r');
+  if (!respId) {
+    document.getElementById('case-body').innerHTML = '<div class="card"><p>Missing response id.</p></div>';
+    return;
+  }
+
+  try {
+    var data = await GoNoGoAPI.cx.getResponse(respId);
+    if (!data || !data.response) throw new Error('Response not found');
+    render(data);
+  } catch (e) {
+    document.getElementById('case-body').innerHTML = '<div class="card"><p>Error loading response: ' + Components.escapeHTML(e.message || String(e)) + '</p></div>';
+  }
+}
+
+function sentimentChip(s) {
+  var cls = s === 'positive' ? 'chip-pos' : (s === 'negative' ? 'chip-neg' : 'chip-neu');
+  return '<span class="chip ' + cls + '">' + Components.escapeHTML(s || 'neutral') + '</span>';
+}
+
+function answerValue(a) {
+  if (a.value_text !== null && a.value_text !== undefined && a.value_text !== '') return Components.escapeHTML(String(a.value_text));
+  if (a.value_number !== null && a.value_number !== undefined) return Components.escapeHTML(String(a.value_number));
+  if (a.value_json) {
+    try {
+      if (Array.isArray(a.value_json)) return Components.escapeHTML(a.value_json.join(', '));
+      return Components.escapeHTML(JSON.stringify(a.value_json));
+    } catch(e) { return ''; }
+  }
+  return '<em style="color:var(--text-muted)">(no answer)</em>';
+}
+
+function render(data) {
+  var r = data.response;
+  var s = data.survey || {};
+  var answers = data.answers || [];
+  var c = data.case || { status: 'new', priority: 'normal', tags: [], resolution_summary: '' };
+  var notes = data.notes || [];
+
+  document.getElementById('page-title').textContent = s.name || 'Response';
+  var submitted = r.submitted_at ? new Date(r.submitted_at).toLocaleString() : '';
+  var contactBits = [];
+  if (!r.is_anonymous) {
+    if (r.contact_name) contactBits.push(Components.escapeHTML(r.contact_name));
+    if (r.contact_email) contactBits.push(Components.escapeHTML(r.contact_email));
+    if (r.contact_phone) contactBits.push(Components.escapeHTML(r.contact_phone));
+  }
+  document.getElementById('page-sub').innerHTML = submitted + (contactBits.length ? ' &middot; ' + contactBits.join(' &middot; ') : '');
+
+  var metaBits = [];
+  metaBits.push(sentimentChip(r.sentiment));
+  if (r.nps_score !== null && r.nps_score !== undefined) metaBits.push('<span class="chip chip-neu">NPS ' + r.nps_score + '</span>');
+  if (r.rating_avg !== null && r.rating_avg !== undefined) metaBits.push('<span class="chip chip-neu">Rating ' + Number(r.rating_avg).toFixed(1) + '</span>');
+
+  var answersHtml = answers.map(function(a){
+    return '<div class="ans-row"><div class="ans-q">' + Components.escapeHTML(a.prompt || '') + '</div>' +
+           '<div class="ans-v">' + answerValue(a) + '</div></div>';
+  }).join('');
+
+  var tagsStr = (c.tags || []).join(', ');
+
+  var notesHtml = notes.map(function(n){
+    return '<div class="note"><div class="note-meta">' + Components.escapeHTML(n.author_name || 'Unknown') + ' &middot; ' + new Date(n.created_at).toLocaleString() + '</div>' +
+           '<div>' + Components.escapeHTML(n.body || '') + '</div></div>';
+  }).join('') || '<p style="color:var(--text-muted);font-size:var(--text-sm);">No notes yet.</p>';
+
+  document.getElementById('case-body').innerHTML =
+    '<div class="case-grid">' +
+      '<div>' +
+        '<div class="card"><div style="margin-bottom:var(--space-3);">' + metaBits.join(' ') + '</div>' +
+          '<h3 style="margin-top:0;">Answers</h3>' + (answersHtml || '<p style="color:var(--text-muted);">No answers recorded.</p>') +
+        '</div>' +
+        '<div class="card"><h3 style="margin-top:0;">Notes</h3>' + notesHtml +
+          '<div style="margin-top:var(--space-3);">' +
+            '<textarea id="note-body" placeholder="Add a note..." style="width:100%;min-height:70px;padding:8px;border:1px solid var(--border-primary);border-radius:var(--radius-sm);background:var(--surface-1);color:var(--text-primary);"></textarea>' +
+            '<button class="btn btn-sm" id="add-note-btn" style="margin-top:var(--space-2);"><i class="fas fa-plus"></i> Add note</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div>' +
+        '<div class="card"><h3 style="margin-top:0;">Case</h3>' +
+          '<div class="form-row"><label>Status</label><select id="c-status">' +
+            ['new','in_progress','resolved','closed'].map(function(x){return '<option value="'+x+'"'+(c.status===x?' selected':'')+'>'+x.replace('_',' ')+'</option>';}).join('') +
+          '</select></div>' +
+          '<div class="form-row"><label>Priority</label><select id="c-priority">' +
+            ['low','normal','high','urgent'].map(function(x){return '<option value="'+x+'"'+(c.priority===x?' selected':'')+'>'+x+'</option>';}).join('') +
+          '</select></div>' +
+          '<div class="form-row"><label>Tags (comma separated)</label><input id="c-tags" value="' + Components.escapeHTML(tagsStr) + '"></div>' +
+          '<div class="form-row"><label>Resolution summary</label><textarea id="c-resolution">' + Components.escapeHTML(c.resolution_summary || '') + '</textarea></div>' +
+          '<button class="btn btn-primary btn-sm" id="save-case-btn" style="width:100%;"><i class="fas fa-save"></i> Save case</button>' +
+          '<div id="save-status" style="margin-top:var(--space-2);font-size:var(--text-xs);color:var(--text-muted);"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('save-case-btn').onclick = async function() {
+    var btn = this;
+    btn.disabled = true;
+    var statusEl = document.getElementById('save-status');
+    statusEl.textContent = 'Saving...';
+    try {
+      var tags = document.getElementById('c-tags').value.split(',').map(function(t){return t.trim();}).filter(Boolean);
+      await GoNoGoAPI.cx.updateCase(r.id, {
+        status: document.getElementById('c-status').value,
+        priority: document.getElementById('c-priority').value,
+        tags: tags,
+        resolution_summary: document.getElementById('c-resolution').value
+      });
+      statusEl.textContent = 'Saved.';
+      setTimeout(function(){ statusEl.textContent=''; }, 2500);
+    } catch(e) {
+      statusEl.textContent = 'Error: ' + (e.message || String(e));
+    }
+    btn.disabled = false;
+  };
+
+  document.getElementById('add-note-btn').onclick = async function() {
+    var body = document.getElementById('note-body').value.trim();
+    if (!body) return;
+    var btn = this;
+    btn.disabled = true;
+    try {
+      // Ensure a case exists first (updateCase upserts)
+      if (!data.case || !data.case.id) {
+        await GoNoGoAPI.cx.updateCase(r.id, {
+          status: document.getElementById('c-status').value,
+          priority: document.getElementById('c-priority').value,
+          tags: [],
+          resolution_summary: ''
+        });
+      }
+      var fresh = await GoNoGoAPI.cx.getResponse(r.id);
+      if (fresh.case && fresh.case.id) {
+        await GoNoGoAPI.cx.addCaseNote(fresh.case.id, body);
+      }
+      var reloaded = await GoNoGoAPI.cx.getResponse(r.id);
+      render(reloaded);
+    } catch(e) {
+      alert('Error adding note: ' + (e.message || String(e)));
+    }
+    btn.disabled = false;
+  };
+}
+</script>
+</body>
+</html>

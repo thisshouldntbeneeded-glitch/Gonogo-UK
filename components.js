@@ -1595,18 +1595,35 @@ const Components = {
     const user = this.getBrandUser();
     const brandName = user ? Components.escapeHTML(user.display_name || user.brand_slug || 'Brand') : 'Brand Portal';
     const userTier = (user && user.tier) || 'basic';
-    const isFullAccess = userTier === 'full' || (user && user.role === 'admin');
+    const isAdmin = user && user.role === 'admin';
+    const isFullAccess = userTier === 'full' || isAdmin;
+    const isCxOnly = userTier === 'cx_only' && !isAdmin;
+
+    // cx_only gate: if a cx_only user lands on a non-CX page, bounce them to CX Overview
+    if (isCxOnly) {
+      const cxAllowedPages = ['cx','cx-surveys','cx-responses'];
+      if (cxAllowedPages.indexOf(activePage) === -1) {
+        try { window.location.replace('brand-cx.html'); } catch(e) {}
+        return '';
+      }
+    }
     const allLinks = [
       { href: 'brand-dashboard.html', label: 'Dashboard', icon: 'fa-gauge', id: 'dashboard', fullOnly: true },
       { href: 'brand-reviews.html', label: 'Reviews', icon: 'fa-comments', id: 'reviews', fullOnly: false },
+      { href: 'brand-cx.html', label: 'CX Overview', icon: 'fa-heart-pulse', id: 'cx', fullOnly: true, section: 'cx', cx: true },
+      { href: 'brand-cx-surveys.html', label: 'Surveys', icon: 'fa-clipboard-list', id: 'cx-surveys', fullOnly: true, section: 'cx', cx: true },
+      { href: 'brand-cx-responses.html', label: 'Responses', icon: 'fa-inbox', id: 'cx-responses', fullOnly: true, section: 'cx', cx: true },
       { href: 'brand-badge.html', label: 'Score Badge', icon: 'fa-code', id: 'badge', fullOnly: true },
       { href: 'brand-qr.html', label: 'Review QR', icon: 'fa-qrcode', id: 'qr', fullOnly: true }
     ];
-    const links = allLinks.filter(function(l) { return isFullAccess || !l.fullOnly; });
+    const links = allLinks.filter(function(l) {
+      if (isCxOnly) return !!l.cx;
+      return isFullAccess || !l.fullOnly;
+    });
 
     return `
       <aside class="admin-sidebar" id="admin-sidebar">
-        <a href="${isFullAccess ? 'brand-dashboard.html' : 'brand-reviews.html'}" class="logo">
+        <a href="${isFullAccess ? 'brand-dashboard.html' : (isCxOnly ? 'brand-cx.html' : 'brand-reviews.html')}" class="logo">
           <img src="${LOGO_URL}" alt="GoNoGo" style="height:28px;width:auto;">
         </a>
         <div style="background:#1a2d4d;color:#3b82f6;font-size:11px;font-weight:700;text-align:center;padding:6px 12px;border-radius:6px;margin:8px 16px 4px;letter-spacing:0.05em;text-transform:uppercase">

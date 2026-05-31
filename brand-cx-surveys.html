@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>GoNoGo — CX Surveys</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+.cx-table{width:100%;border-collapse:collapse;background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);overflow:hidden}
+.cx-table th,.cx-table td{padding:var(--space-3) var(--space-4);text-align:left;font-size:13px;border-bottom:1px solid var(--border-primary)}
+.cx-table th{background:var(--surface-3);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary)}
+.cx-table tr:last-child td{border-bottom:none}
+.cx-badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.cx-b-draft{background:rgba(148,163,184,.2);color:#cbd5e1}
+.cx-b-active{background:rgba(34,197,94,.18);color:#4ade80}
+.cx-b-published{background:rgba(34,197,94,.18);color:#4ade80}
+.cx-b-paused{background:rgba(234,179,8,.18);color:#fbbf24}
+.cx-b-archived{background:rgba(100,116,139,.18);color:#94a3b8}
+.cx-modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none!important;align-items:center;justify-content:center;z-index:100;padding:var(--space-4)}
+.cx-modal.show{display:flex}
+.cx-modal-card{width:min(100%,820px);max-height:90vh;overflow-y:auto;background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-lg);padding:var(--space-5)}
+.cx-q-row{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-3);margin-bottom:var(--space-2);display:grid;grid-template-columns:auto 150px 1fr auto auto;gap:var(--space-2);align-items:center}
+.cx-q-handle{color:var(--text-muted);cursor:move;font-size:14px}
+.cx-form-input,.cx-form-select,.cx-form-textarea{width:100%;background:var(--surface-1);border:1px solid var(--border-primary);color:var(--text-primary);padding:8px 10px;border-radius:var(--radius-sm);font-size:13px;font-family:inherit}
+.cx-form-textarea{resize:vertical;min-height:60px}
+.cx-form-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-3)}
+.cx-link-row{display:flex;gap:var(--space-2);align-items:center;background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-sm);padding:var(--space-2) var(--space-3);margin-bottom:var(--space-2);font-family:var(--font-mono,ui-monospace,monospace);font-size:12px}
+.cx-link-row input{flex:1;background:transparent;border:none;color:var(--text-primary);font-family:inherit;font-size:12px}
+.cx-link-row.revoked{opacity:.5;text-decoration:line-through}
+.cx-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border-primary);margin-bottom:var(--space-4)}
+.cx-tab{padding:var(--space-3) var(--space-4);font-size:13px;font-weight:600;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;background:none;border-left:none;border-right:none;border-top:none}
+.cx-tab.active{color:var(--text-primary);border-bottom-color:var(--green)}
+
+.cx-page-grid{display:grid;grid-template-columns:280px minmax(0,1fr);gap:var(--space-4);align-items:start}
+@media(max-width:980px){.cx-page-grid{grid-template-columns:1fr}}
+.cx-side-panel,.cx-main-panel{min-width:0}
+.cx-filter-card,.cx-toolbar-card{margin-bottom:var(--space-4)}
+.cx-filter-head{display:flex;justify-content:space-between;align-items:center;gap:var(--space-3);margin-bottom:var(--space-3);flex-wrap:wrap}
+.cx-folder-list{display:grid;gap:8px}
+.cx-folder-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--border-primary);background:var(--surface-2);cursor:pointer;transition:background .16s,border-color .16s,transform .16s}
+.cx-folder-item:hover{background:var(--surface-3);transform:translateY(-1px)}
+.cx-folder-item.active{background:rgba(17,165,81,.08);border-color:rgba(17,165,81,.28)}
+.cx-folder-meta{display:flex;align-items:center;gap:10px;min-width:0}
+.cx-folder-meta i{color:var(--green)}
+.cx-folder-meta strong{display:block;font-size:13px;color:var(--text-primary)}
+.cx-folder-meta span{display:block;font-size:11px;color:var(--text-muted)}
+.cx-folder-count{font-size:11px;font-weight:700;color:var(--text-secondary);background:var(--surface-1);border:1px solid var(--border-primary);padding:3px 8px;border-radius:999px}
+.cx-quick-filters{display:flex;gap:8px;flex-wrap:wrap}
+.cx-chip{padding:8px 11px;border-radius:999px;border:1px solid var(--border-primary);background:var(--surface-2);font-size:12px;font-weight:700;color:var(--text-secondary);cursor:pointer}
+.cx-chip.active{background:rgba(17,165,81,.1);border-color:rgba(17,165,81,.25);color:var(--text-primary)}
+.cx-mini-note{font-size:12px;color:var(--text-muted);line-height:1.45;margin-top:12px}
+.cx-toolbar{display:flex;justify-content:space-between;gap:var(--space-3);align-items:center;flex-wrap:wrap}
+.cx-toolbar-search{display:flex;align-items:center;gap:10px;min-width:280px;flex:1;background:var(--surface-2);border:1px solid var(--border-primary);border-radius:12px;padding:10px 12px}
+.cx-toolbar-search i{color:var(--text-muted)}
+.cx-toolbar-search input{width:100%;background:transparent;border:none;outline:none;color:var(--text-primary);font:inherit}
+.cx-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.cx-table .cx-actions-cell{
+  width:240px;
+  min-width:240px;
+  text-align:right;
+  vertical-align:middle;
+}
+.cx-row-actions{
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:8px;
+  justify-content:end;
+}
+.cx-row-actions .btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  width:100%;
+}
+.cx-row-actions .btn-danger{
+  background:rgba(220,38,38,.12);
+  color:#f87171;
+  border:1px solid rgba(220,38,38,.22);
+}
+.cx-row-actions .btn-danger:hover{
+  background:rgba(220,38,38,.18);
+}
+.cx-soft-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;background:rgba(15,23,42,.06);font-size:11px;font-weight:700;color:var(--text-secondary)}
+.cx-empty-state{display:grid;place-items:center;text-align:center;padding:var(--space-8)}
+.cx-empty-state i{font-size:34px;color:var(--text-muted);margin-bottom:var(--space-3)}
+.cx-empty-state h3{margin:0 0 6px;font-size:18px}
+.cx-empty-state p{margin:0;color:var(--text-muted);max-width:48ch}
+
+@media(max-width:900px){
+  .cx-table .cx-actions-cell{
+    width:200px;
+    min-width:200px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="brand-content" style="display:none;">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title"><i class="fa-solid fa-clipboard-list" style="color:var(--green);margin-right:var(--space-2);"></i> CX Surveys</h1>
+        <p class="text-sm text-secondary">Internal customer-feedback surveys. Responses stay private to your brand.</p>
+      </div>
+      <div style="display:flex;gap:var(--space-2)">
+        <a href="brand-cx-survey-edit.html" class="btn btn-sm" id="btn-new" style="background:var(--green);color:#fff;border:none"><i class="fa-solid fa-plus"></i> New survey</a>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:var(--space-4);background:linear-gradient(180deg,var(--surface-2),var(--surface-1));border:1px solid var(--border-primary)"><div style="display:flex;justify-content:space-between;gap:var(--space-4);align-items:center;flex-wrap:wrap"><div><div class="text-xs text-secondary" style="text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px">Survey management</div><div class="text-sm text-muted">All create and edit actions now open the newer full-page survey editor for a more consistent workflow.</div></div><a href="brand-cx-survey-edit.html" class="btn btn-sm" style="background:var(--surface-3)"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open full editor</a></div></div>
+
+<div id="surveys-container">
+      <div class="card" style="text-align:center;padding:var(--space-8)"><i class="fa-solid fa-spinner fa-spin"></i> <span class="text-sm text-muted">Loading…</span></div>
+    </div>
+
+    <div style="padding:var(--space-6) 0;text-align:center;">
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo &mdash; CX Suite (internal only)</p>
+    </div>
+  </main>
+</div>
+
+<!-- Builder modal -->
+<div class="cx-modal" id="builder-modal">
+  <div class="cx-modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4)">
+      <h2 id="builder-title" style="font-size:18px;font-weight:700;margin:0">New survey</h2>
+      <button class="btn btn-sm" id="builder-close" style="background:var(--surface-3)"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="cx-tabs">
+      <button class="cx-tab active" data-tab="details">Details</button>
+      <button class="cx-tab" data-tab="questions">Questions</button>
+      <button class="cx-tab" data-tab="links" id="tab-links" style="display:none">Share links</button>
+    </div>
+
+    <div class="cx-tab-panel" data-panel="details">
+      <div class="cx-form-row">
+        <div><label class="form-label">Survey name*</label><input class="cx-form-input" id="f-name" placeholder="e.g. Post-visit feedback"></div>
+        <div><label class="form-label">Slug</label><input class="cx-form-input" id="f-slug" placeholder="auto from name"></div>
+      </div>
+      <div class="cx-form-row">
+        <div><label class="form-label">Intro title</label><input class="cx-form-input" id="f-intro-title" placeholder="We'd love your feedback"></div>
+        <div><label class="form-label">Status</label>
+          <select class="cx-form-select" id="f-status">
+            <option value="draft">Draft</option>
+            <option value="active">Active</option>
+            <option value="paused">Paused</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:var(--space-3)"><label class="form-label">Intro text</label><textarea class="cx-form-textarea" id="f-intro-text" placeholder="Shown above the first question"></textarea></div>
+      <div class="cx-form-row">
+        <div><label class="form-label">Thank-you title</label><input class="cx-form-input" id="f-ty-title" value="Thank you"></div>
+        <div><label class="form-label">Thank-you text</label><input class="cx-form-input" id="f-ty-text" value="Your feedback has been received."></div>
+      </div>
+      <div style="display:flex;gap:var(--space-5);margin-bottom:var(--space-4)">
+        <label style="display:flex;gap:var(--space-2);align-items:center;font-size:13px"><input type="checkbox" id="f-anon" checked> Anonymous responses</label>
+        <label style="display:flex;gap:var(--space-2);align-items:center;font-size:13px"><input type="checkbox" id="f-contact" checked> Allow contact capture</label>
+      </div>
+    </div>
+
+    <div class="cx-tab-panel" data-panel="questions" style="display:none">
+      <p class="text-xs text-muted" style="margin-bottom:var(--space-3)">Drag to reorder. Use comma-separated options for select types.</p>
+      <div id="questions-list"></div>
+      <button class="btn btn-sm" id="btn-add-q" style="margin-top:var(--space-2)"><i class="fa-solid fa-plus"></i> Add question</button>
+    </div>
+
+    <div class="cx-tab-panel" data-panel="links" style="display:none">
+      <p class="text-xs text-muted" style="margin-bottom:var(--space-3)">Share links let customers respond without logging in. Revoke any time.</p>
+      <div id="links-list"></div>
+      <div style="display:flex;gap:var(--space-2);margin-top:var(--space-3)">
+        <input class="cx-form-input" id="f-link-label" placeholder="Link label (e.g. In-store QR)" style="flex:1">
+        <button class="btn btn-sm" id="btn-new-link"><i class="fa-solid fa-link"></i> Create link</button>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:var(--space-2);margin-top:var(--space-5);padding-top:var(--space-4);border-top:1px solid var(--border-primary)">
+      <button class="btn btn-sm" id="builder-cancel" style="background:var(--surface-3)">Cancel</button>
+      <button class="btn btn-sm" id="builder-save" style="background:var(--green);color:#fff;border:none"><i class="fa-solid fa-save"></i> Save survey</button>
+    </div>
+  </div>
+</div>
+
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js?v=20260424c"></script>
+<script>
+Components.initTheme();
+document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
+
+var _editing = null; // survey object when editing
+var _questions = [];
+var _links = [];
+var _allRows = [];
+var _folderFilter = 'all';
+var _statusFilter = 'all';
+var _searchTerm = '';
+var esc = Components.escapeHTML.bind(Components);
+
+if (Components.checkBrandAuth()) init();
+
+async function init() {
+  var user = Components.getBrandUser();
+  if (!user) return;
+  document.getElementById('brand-content').style.display = '';
+  document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
+  document.getElementById('builder-close').addEventListener('click', closeBuilder);
+  document.getElementById('builder-cancel').addEventListener('click', closeBuilder);
+  document.getElementById('builder-save').addEventListener('click', save);
+  document.getElementById('btn-add-q').addEventListener('click', function(){ addQuestion(); renderQuestions(); });
+  document.getElementById('btn-new-link').addEventListener('click', createLink);
+  var newFolderBtn = document.getElementById('btn-new-folder');
+  if (newFolderBtn) {
+    newFolderBtn.addEventListener('click', function(){
+      alert('Folders are currently a UI layer suggestion. If you want, I can wire real folder persistence next.');
+    });
+  }
+  var surveySearch = document.getElementById('survey-search');
+  if (surveySearch) {
+    surveySearch.addEventListener('input', function(){
+      _searchTerm = this.value.trim().toLowerCase();
+      renderList();
+    });
+  }
+  document.querySelectorAll('[data-status-filter]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      _statusFilter = btn.dataset.statusFilter;
+      document.querySelectorAll('[data-status-filter]').forEach(function(el){ el.classList.toggle('active', el === btn); });
+      renderList();
+    });
+  });
+  document.querySelectorAll('.cx-tab').forEach(function(t){ t.addEventListener('click', function(){ showTab(t.dataset.tab); }); });
+  await loadList();
+}
+
+async function loadList() {
+  var container = document.getElementById('surveys-container');
+  try {
+    _allRows = await GoNoGoAPI.cx.listSurveys();
+    renderFolders();
+    renderList();
+  } catch (e) {
+    container.innerHTML = '<div class="card" style="padding:var(--space-5);color:var(--red)">Could not load surveys: ' + esc(e.message || 'error') + '</div>';
+  }
+}
+
+function deriveFolder(row) {
+  if (row.archived_at || row.status === 'archived') return 'Archived';
+  if (row.status === 'draft') return 'Drafts';
+  if (row.status === 'active') return 'Live';
+  if (row.status === 'paused') return 'Paused';
+  return 'Unfiled';
+}
+
+function getFilteredRows() {
+  return (_allRows || []).filter(function(r){
+    var folder = deriveFolder(r).toLowerCase();
+    var matchesFolder = _folderFilter === 'all' ? true : folder === _folderFilter;
+    var matchesStatus = _statusFilter === 'all' ? true : (String(r.status || '').toLowerCase() === _statusFilter);
+    var hay = ((r.name || '') + ' ' + (r.slug || '')).toLowerCase();
+    var matchesSearch = !_searchTerm || hay.indexOf(_searchTerm) !== -1;
+    return matchesFolder && matchesStatus && matchesSearch;
+  });
+}
+
+function renderFolders() {
+  var el = document.getElementById('folder-list');
+  if (!el) return;
+  var rows = _allRows || [];
+  var folders = [
+    {key:'all', label:'All surveys', icon:'fa-layer-group', count:rows.length},
+    {key:'drafts', label:'Drafts', icon:'fa-file-pen', count:rows.filter(function(r){ return deriveFolder(r)==='Drafts'; }).length},
+    {key:'live', label:'Live', icon:'fa-bolt', count:rows.filter(function(r){ return deriveFolder(r)==='Live'; }).length},
+    {key:'paused', label:'Paused', icon:'fa-pause', count:rows.filter(function(r){ return deriveFolder(r)==='Paused'; }).length},
+    {key:'archived', label:'Archived', icon:'fa-box-archive', count:rows.filter(function(r){ return deriveFolder(r)==='Archived'; }).length}
+  ];
+  el.innerHTML = folders.map(function(f){
+    return '<button class="cx-folder-item' + (_folderFilter === f.key ? ' active' : '') + '" data-folder="' + f.key + '" type="button">' +
+      '<span class="cx-folder-meta"><i class="fa-solid ' + f.icon + '"></i><span><strong>' + esc(f.label) + '</strong><span>Organisation shortcut</span></span></span>' +
+      '<span class="cx-folder-count">' + f.count + '</span></button>';
+  }).join('');
+  el.querySelectorAll('[data-folder]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      _folderFilter = btn.dataset.folder;
+      renderFolders();
+      renderList();
+    });
+  });
+}
+
+function renderList() {
+  var container = document.getElementById('surveys-container');
+  var rows = getFilteredRows();
+  if (!rows.length) {
+    container.innerHTML = '<div class="card cx-empty-state"><div><i class="fa-solid fa-folder-open"></i><h3>No surveys found</h3><p>Try another search or filter, or create a new survey in the full editor.</p><a href="brand-cx-survey-edit.html" class="btn btn-sm" style="background:var(--green);color:#fff;border:none;margin-top:var(--space-3)"><i class="fa-solid fa-plus"></i> New survey</a></div></div>';
+    return;
+  }
+  var html = '<table class="cx-table"><thead><tr><th>Name</th><th>Status</th><th>Folder</th><th>Responses</th><th>Links</th><th>Updated</th><th></th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var folder = deriveFolder(r);
+    html += '<tr>' +
+      '<td><strong>' + esc(r.name) + '</strong><div class="text-xs text-muted">/' + esc(r.slug || '') + '</div></td>' +
+      '<td><span class="cx-badge cx-b-' + esc(String(r.status || 'draft')) + '">' + esc(String(r.status || 'draft')) + '</span></td>' +
+      '<td><span class="cx-soft-badge"><i class="fa-solid fa-folder"></i> ' + esc(folder) + '</span></td>' +
+      '<td>' + (r.response_count || 0) + '</td>' +
+      '<td>' + (r.link_count || 0) + '</td>' +
+      '<td class="text-xs text-muted">' + fmtDate(r.updated_at) + '</td>' +
+      '<td class="cx-actions-cell"><div class="cx-row-actions">' +
+        '<a href="brand-cx-survey-edit.html?id=' + encodeURIComponent(r.id) + '" class="btn btn-sm"><i class="fa-solid fa-pen-to-square"></i> Edit</a>' +
+        '<button class="btn btn-sm" data-duplicate="' + r.id + '"><i class="fa-solid fa-copy"></i> Duplicate</button>' +
+        '<button class="btn btn-sm" data-archive="' + r.id + '"><i class="fa-solid fa-box-archive"></i> ' + (String(r.status) === 'archived' ? 'Restore' : 'Archive') + '</button>' +
+        '<button class="btn btn-sm btn-danger" data-delete="' + r.id + '"><i class="fa-solid fa-trash"></i> Delete</button>' +
+      '</div></td>' +
+    '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+  container.querySelectorAll('[data-duplicate]').forEach(function(btn){
+    btn.addEventListener('click', function(){ duplicateSurvey(btn.dataset.duplicate); });
+  });
+  container.querySelectorAll('[data-archive]').forEach(function(btn){
+    btn.addEventListener('click', function(){ toggleArchive(btn.dataset.archive); });
+  });
+  container.querySelectorAll('[data-delete]').forEach(function(btn){
+    btn.addEventListener('click', function(){ deleteSurvey(btn.dataset.delete); });
+  });
+}
+
+async function duplicateSurvey(id) {
+  try {
+    var data = await GoNoGoAPI.cx.getSurvey(id);
+    var s = data.survey || {};
+    var questions = (data.questions || []).map(function(q){
+      return {
+        qtype: q.qtype,
+        prompt: q.prompt || '',
+        help_text: q.help_text || q.helptext || '',
+        required: !!q.required,
+        options: Array.isArray(q.options) ? q.options : [],
+        logic: Array.isArray(q.logic) ? q.logic : []
+      };
+    });
+    var name = 'Copy of ' + (s.name || 'Survey');
+    var slugBase = String((s.slug || name).toLowerCase()).replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    var slug = (slugBase ? slugBase : 'survey-copy') + '-copy';
+    var payload = {
+      name: name,
+      slug: slug,
+      intro_title: s.intro_title || '',
+      intro_text: s.intro_text || '',
+      thank_you_title: s.thank_you_title || 'Thank you',
+      thank_you_text: s.thank_you_text || 'Your feedback has been received.',
+      is_anonymous: !!s.is_anonymous,
+      allow_contact_capture: !!s.allow_contact_capture,
+      status: 'draft',
+      template_key: s.template_key || null,
+      brand_logo_url: s.brand_logo_url || null,
+      brand_primary_color: s.brand_primary_color || null,
+      brand_accent_color: s.brand_accent_color || null,
+      theme_variant: s.theme_variant || 'classic',
+      progress_style: s.progress_style || 'bar',
+      show_progress_bar: s.show_progress_bar !== false,
+      party_mode_default: !!s.party_mode_default,
+      privacy_notice_text: s.privacy_notice_text || null,
+      marketing_consent_enabled: !!s.marketing_consent_enabled,
+      marketing_consent_label: s.marketing_consent_label || null,
+      contact_retention_days: s.contact_retention_days || null,
+      questions: questions
+    };
+    var newId = await GoNoGoAPI.cx.upsertSurvey(payload);
+    window.location.href = 'brand-cx-survey-edit.html?id=' + encodeURIComponent(newId);
+  } catch (e) {
+    alert('Could not duplicate survey: ' + (e.message || 'error'));
+  }
+}
+
+async function toggleArchive(id) {
+  try {
+    var row = (_allRows || []).find(function(r){ return String(r.id) === String(id); });
+    var nextStatus = row && String(row.status) === 'archived' ? 'draft' : 'archived';
+    await GoNoGoAPI.cx.setSurveyStatus(id, nextStatus);
+    await loadList();
+  } catch (e) {
+    alert('Could not update survey status: ' + (e.message || 'error'));
+  }
+}
+
+async function deleteSurvey(id) {
+  var row = (_allRows || []).find(function(r){ return String(r.id) === String(id); });
+  var name = row && row.name ? row.name : 'this survey';
+  if (!confirm('Delete "' + name + '" permanently? This cannot be undone.')) return;
+
+  try {
+    await GoNoGoAPI.cx.deleteSurvey(id);
+    await loadList();
+  } catch (e) {
+    alert('Could not delete survey: ' + (e.message || 'error'));
+  }
+}
+
+function fmtDate(s){ if(!s) return ''; var d = new Date(s); return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}); }
+
+function openNew() {
+  _editing = null; _questions = []; _links = [];
+  document.getElementById('builder-title').textContent = 'New survey';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-slug').value = '';
+  document.getElementById('f-intro-title').value = '';
+  document.getElementById('f-intro-text').value = '';
+  document.getElementById('f-ty-title').value = 'Thank you';
+  document.getElementById('f-ty-text').value = 'Your feedback has been received.';
+  document.getElementById('f-anon').checked = true;
+  document.getElementById('f-contact').checked = true;
+  document.getElementById('f-status').value = 'draft';
+  document.getElementById('tab-links').style.display = 'none';
+  addQuestion({qtype:'nps_0_10', prompt:'How likely are you to recommend us?', required:true});
+  addQuestion({qtype:'long_text', prompt:'Tell us more about your experience', required:false});
+  renderQuestions();
+  showTab('details');
+  document.getElementById('builder-modal').classList.add('show');
+}
+
+async function openEdit(id) {
+  try {
+    var data = await GoNoGoAPI.cx.getSurvey(id);
+    _editing = data.survey;
+    _questions = data.questions || [];
+    _links = data.links || [];
+    document.getElementById('builder-title').textContent = 'Edit: ' + _editing.name;
+    document.getElementById('f-name').value = _editing.name || '';
+    document.getElementById('f-slug').value = _editing.slug || '';
+    document.getElementById('f-intro-title').value = _editing.intro_title || '';
+    document.getElementById('f-intro-text').value = _editing.intro_text || '';
+    document.getElementById('f-ty-title').value = _editing.thank_you_title || 'Thank you';
+    document.getElementById('f-ty-text').value = _editing.thank_you_text || '';
+    document.getElementById('f-anon').checked = !!_editing.is_anonymous;
+    document.getElementById('f-contact').checked = !!_editing.allow_contact_capture;
+    document.getElementById('f-status').value = _editing.status || 'draft';
+    document.getElementById('tab-links').style.display = '';
+    renderQuestions();
+    renderLinks();
+    showTab('details');
+    document.getElementById('builder-modal').classList.add('show');
+  } catch (e) { alert('Could not load survey: ' + (e.message || 'error')); }
+}
+
+function closeBuilder() { document.getElementById('builder-modal').classList.remove('show'); }
+
+function showTab(name) {
+  document.querySelectorAll('.cx-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab === name); });
+  document.querySelectorAll('.cx-tab-panel').forEach(function(p){ p.style.display = p.dataset.panel === name ? '' : 'none'; });
+}
+
+var QTYPES = [
+  {v:'short_text',l:'Short text'},{v:'long_text',l:'Long text'},
+  {v:'single_select',l:'Single select'},{v:'multi_select',l:'Multi select'},
+  {v:'rating_1_5',l:'Rating 1–5'},{v:'nps_0_10',l:'NPS 0–10'},
+  {v:'yes_no',l:'Yes / No'},{v:'email',l:'Email'},
+  {v:'phone',l:'Phone'},{v:'name',l:'Name'},{v:'consent',l:'Consent checkbox'}
+];
+
+function addQuestion(q) {
+  _questions.push(q || {qtype:'short_text', prompt:'', required:false, options:[]});
+}
+
+function renderQuestions() {
+  var list = document.getElementById('questions-list');
+  list.innerHTML = _questions.map(function(q, i){
+    var opts = QTYPES.map(function(t){ return '<option value="'+t.v+'"' + (t.v===q.qtype?' selected':'') + '>'+t.l+'</option>'; }).join('');
+    var showOptions = q.qtype === 'single_select' || q.qtype === 'multi_select';
+    var optsVal = Array.isArray(q.options) ? q.options.join(', ') : '';
+    return '<div class="cx-q-row"><span class="cx-q-handle">⋮⋮</span>' +
+      '<select class="cx-form-select" data-i="'+i+'" data-k="qtype">'+opts+'</select>' +
+      '<input class="cx-form-input" data-i="'+i+'" data-k="prompt" value="'+esc(q.prompt||'')+'" placeholder="Question prompt">' +
+      '<label style="font-size:12px;white-space:nowrap"><input type="checkbox" data-i="'+i+'" data-k="required"' + (q.required?' checked':'') + '> Required</label>' +
+      '<button class="btn btn-sm" data-del="'+i+'" style="background:var(--surface-3);color:var(--red)"><i class="fa-solid fa-trash"></i></button>' +
+      (showOptions ? '<div style="grid-column:1/-1;margin-top:6px"><input class="cx-form-input" data-i="'+i+'" data-k="options" value="'+esc(optsVal)+'" placeholder="Options (comma-separated)"></div>' : '') +
+      '</div>';
+  }).join('');
+  list.querySelectorAll('[data-k]').forEach(function(el){
+    el.addEventListener('change', function(){ updateQ(el); renderQuestions(); });
+    el.addEventListener('input', function(){ updateQ(el); });
+  });
+  list.querySelectorAll('[data-del]').forEach(function(b){
+    b.addEventListener('click', function(){ _questions.splice(parseInt(b.dataset.del,10),1); renderQuestions(); });
+  });
+}
+
+function updateQ(el) {
+  var i = parseInt(el.dataset.i,10); var k = el.dataset.k;
+  if (k === 'required') _questions[i][k] = el.checked;
+  else if (k === 'options') _questions[i][k] = el.value.split(',').map(function(s){return s.trim();}).filter(Boolean);
+  else _questions[i][k] = el.value;
+}
+
+async function save() {
+  var btn = document.getElementById('builder-save');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+  try {
+    var payload = {
+      id: _editing ? _editing.id : null,
+      name: document.getElementById('f-name').value.trim(),
+      slug: document.getElementById('f-slug').value.trim() || null,
+      intro_title: document.getElementById('f-intro-title').value.trim(),
+      intro_text: document.getElementById('f-intro-text').value.trim(),
+      thank_you_title: document.getElementById('f-ty-title').value.trim(),
+      thank_you_text: document.getElementById('f-ty-text').value.trim(),
+      is_anonymous: document.getElementById('f-anon').checked,
+      allow_contact_capture: document.getElementById('f-contact').checked,
+      status: document.getElementById('f-status').value,
+      questions: _questions.filter(function(q){ return q.prompt && q.prompt.trim(); })
+    };
+    if (!payload.name) throw new Error('Name is required');
+    var id = await GoNoGoAPI.cx.upsertSurvey(payload);
+    if (!_editing) {
+      var data = await GoNoGoAPI.cx.getSurvey(id);
+      _editing = data.survey; _links = data.links || [];
+      document.getElementById('tab-links').style.display = '';
+      renderLinks();
+    }
+    closeBuilder();
+    await loadList();
+  } catch (e) {
+    alert('Save failed: ' + (e.message || 'error'));
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-save"></i> Save survey';
+  }
+}
+
+function renderLinks() {
+  var list = document.getElementById('links-list');
+  if (!_links.length) { list.innerHTML = '<p class="text-sm text-muted">No share links yet.</p>'; return; }
+  var base = window.location.origin + '/cx-survey?t=';
+  list.innerHTML = _links.map(function(l){
+    return '<div class="cx-link-row' + (l.revoked?' revoked':'') + '">' +
+      '<strong style="color:var(--green);min-width:130px">' + esc(l.label || 'Link') + '</strong>' +
+      '<input readonly value="' + base + esc(l.token) + '">' +
+      '<button class="btn btn-sm" data-copy="' + base + esc(l.token) + '"><i class="fa-solid fa-copy"></i></button>' +
+      (l.revoked ? '' : '<button class="btn btn-sm" data-revoke="' + l.id + '" style="color:var(--red)"><i class="fa-solid fa-ban"></i></button>') +
+      '</div>';
+  }).join('');
+  list.querySelectorAll('[data-copy]').forEach(function(b){
+    b.addEventListener('click', function(){ navigator.clipboard.writeText(b.dataset.copy); b.innerHTML = '<i class="fa-solid fa-check"></i>'; setTimeout(function(){b.innerHTML='<i class="fa-solid fa-copy"></i>';},1200); });
+  });
+  list.querySelectorAll('[data-revoke]').forEach(function(b){
+    b.addEventListener('click', async function(){ if(!confirm('Revoke this link? Respondents will no longer be able to submit.')) return; try { await GoNoGoAPI.cx.revokeLink(b.dataset.revoke); var data = await GoNoGoAPI.cx.getSurvey(_editing.id); _links = data.links || []; renderLinks(); } catch(e){ alert('Revoke failed'); } });
+  });
+}
+
+async function createLink() {
+  if (!_editing) { alert('Save the survey first.'); return; }
+  if (_editing.status !== 'active') { if (!confirm('Survey is not active — links will not accept responses until you set status to Active. Continue?')) return; }
+  var label = document.getElementById('f-link-label').value.trim();
+  try {
+    await GoNoGoAPI.cx.createLink(_editing.id, label);
+    document.getElementById('f-link-label').value = '';
+    var data = await GoNoGoAPI.cx.getSurvey(_editing.id);
+    _links = data.links || [];
+    renderLinks();
+  } catch (e) { alert('Could not create link: ' + (e.message || 'error')); }
+}
+</script>
+</body>
+</html>

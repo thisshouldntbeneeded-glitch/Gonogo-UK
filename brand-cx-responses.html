@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>GoNoGo — CX Responses</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+.cx-shell{display:flex;flex-direction:column;gap:var(--space-4)}
+.cx-toolbar{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;justify-content:space-between;background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4)}
+.cx-toolbar-left,.cx-toolbar-right{display:flex;flex-wrap:wrap;gap:var(--space-2);align-items:center}
+.cx-toolbar select,.cx-toolbar input[type=date],.cx-search{background:var(--surface-1);border:1px solid var(--border-primary);color:var(--text-primary);padding:9px 11px;border-radius:var(--radius-sm);font-size:13px;min-height:38px}
+.cx-search{min-width:260px}
+.cx-statline{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center;color:var(--text-muted);font-size:12px;font-weight:600}
+.cx-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--surface-3);border:1px solid var(--border-primary);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text-secondary)}
+.cx-table-card{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);overflow:hidden}
+.cx-table-top{display:flex;justify-content:space-between;gap:var(--space-3);align-items:center;padding:var(--space-4);border-bottom:1px solid var(--border-primary);background:linear-gradient(180deg,var(--surface-2),var(--surface-1))}
+.cx-table-top h3{margin:0;font-size:15px;font-weight:800}
+.cx-table-top p{margin:4px 0 0;font-size:12px;color:var(--text-muted)}
+.cx-col-toggle{position:relative}
+.cx-col-menu{position:absolute;right:0;top:calc(100% + 8px);width:min(320px,90vw);background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-3);box-shadow:0 12px 36px rgba(0,0,0,.24);display:none;z-index:40}
+.cx-col-menu.open{display:block}
+.cx-col-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}
+.cx-col-item{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--text-primary)}
+.cx-table-wrap{overflow:auto}
+.cx-table{width:100%;border-collapse:separate;border-spacing:0;min-width:1220px}
+.cx-table th{position:sticky;top:0;background:var(--surface-1);z-index:1;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-secondary);text-align:left;padding:12px;border-bottom:1px solid var(--border-primary);white-space:nowrap}
+.cx-table td{padding:12px;border-bottom:1px solid var(--border-primary);vertical-align:top;font-size:13px;color:var(--text-primary)}
+.cx-table tbody tr:hover{background:var(--surface-3)}
+.cx-main-cell strong{display:block;font-size:13px;margin-bottom:4px}
+.cx-main-cell small{display:block;color:var(--text-muted);line-height:1.45;max-width:46ch}
+.cx-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.cx-status-new{background:rgba(59,130,246,.16);color:#60a5fa}
+.cx-status-reviewed{background:rgba(148,163,184,.18);color:#cbd5e1}
+.cx-status-resolved{background:rgba(34,197,94,.16);color:#4ade80}
+.cx-status-archived{background:rgba(100,116,139,.18);color:#94a3b8}
+.cx-sent-promoter{background:rgba(34,197,94,.14);color:#4ade80}
+.cx-sent-passive{background:rgba(234,179,8,.16);color:#fbbf24}
+.cx-sent-detractor{background:rgba(239,68,68,.18);color:#fb7185}
+.cx-sent-neutral{background:rgba(148,163,184,.18);color:#cbd5e1}
+.cx-pri-low{background:rgba(100,116,139,.18);color:#94a3b8}
+.cx-pri-normal{background:rgba(59,130,246,.16);color:#60a5fa}
+.cx-pri-high{background:rgba(234,88,12,.18);color:#fb923c}
+.cx-pri-urgent{background:rgba(239,68,68,.18);color:#f87171}
+.cx-muted{color:var(--text-muted)}
+.cx-num{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1,'lnum' 1}
+.cx-linkbtn{display:inline-flex;align-items:center;gap:8px}
+.cx-empty{padding:var(--space-8);text-align:center;color:var(--text-muted)}
+.cx-empty i{font-size:30px;margin-bottom:var(--space-3);display:block}
+@media (max-width:900px){.cx-toolbar{align-items:flex-start}.cx-toolbar-right{width:100%}.cx-search{min-width:unset;flex:1}}
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="brand-content" style="display:none;">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title"><i class="fa-solid fa-table" style="color:var(--green);margin-right:var(--space-2);"></i> Survey response data</h1>
+        <p class="text-sm text-secondary">A clean data table for every response captured, with export controls and flexible visible columns.</p>
+      </div>
+    </div>
+
+    <div class="cx-shell">
+      <section class="cx-toolbar">
+        <div class="cx-toolbar-left">
+          <select id="f-survey"><option value="">All surveys</option></select>
+          <select id="f-status">
+            <option value="">All status</option>
+            <option value="new">New</option>
+            <option value="reviewed">Reviewed</option>
+            <option value="resolved">Resolved</option>
+            <option value="archived">Archived</option>
+          </select>
+          <select id="f-sentiment">
+            <option value="">All sentiment</option>
+            <option value="promoter">Promoters</option>
+            <option value="passive">Passives</option>
+            <option value="detractor">Detractors</option>
+          </select>
+          <input type="date" id="f-since">
+          <input class="cx-search" id="f-search" type="search" placeholder="Search survey, comment, contact or response ID">
+        </div>
+        <div class="cx-toolbar-right">
+          <button class="btn btn-sm" id="btn-refresh" style="background:var(--surface-3)"><i class="fa-solid fa-rotate"></i> Refresh</button>
+          <button class="btn btn-sm" id="btn-export-all" style="background:var(--green);color:#fff;border:none"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+          <div class="cx-col-toggle">
+            <button class="btn btn-sm" id="btn-columns" style="background:var(--surface-3)"><i class="fa-solid fa-table-columns"></i> Columns</button>
+            <div class="cx-col-menu" id="cx-col-menu">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <strong style="font-size:13px">Visible columns</strong>
+                <button type="button" id="btn-columns-reset" class="text-xs text-muted">Reset</button>
+              </div>
+              <div class="cx-col-grid" id="cx-col-grid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="cx-statline">
+        <span class="cx-pill"><i class="fa-solid fa-database"></i> Stored response rows</span>
+        <span id="count-label">Loading…</span>
+        <span id="filter-label"></span>
+      </div>
+
+      <section class="cx-table-card">
+        <div class="cx-table-top">
+          <div>
+            <h3>Responses table</h3>
+            <p>Designed for review, export, and field-level control rather than card-by-card browsing.</p>
+          </div>
+          <a href="brand-cx.html" class="btn btn-sm cx-linkbtn" style="background:var(--surface-3)"><i class="fa-solid fa-arrow-left"></i> Back to overview</a>
+        </div>
+        <div class="cx-table-wrap">
+          <table class="cx-table">
+            <thead><tr id="cx-head-row"></tr></thead>
+            <tbody id="resp-tbody">
+              <tr><td colspan="20"><div class="cx-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading response data…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js?v=20260424c"></script>
+<script>
+Components.initTheme();
+document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-responses');
+var esc = Components.escapeHTML.bind(Components);
+var allRows = [];
+var currentRows = [];
+var defaultColumns = ['submitted_at','survey_name','response_id','response_status','sentiment','nps_score','rating_avg','contact_name','contact_email','preview_text','case_priority','case_status'];
+var columns = [
+  {key:'submitted_at',label:'Submitted',required:true,render:function(r){return '<span class="cx-num">'+esc(fmtDateFull(r.submitted_at))+'</span>';},csv:function(r){return fmtDateFull(r.submitted_at);}},
+  {key:'survey_name',label:'Survey',required:true,render:function(r){return '<strong>'+esc(r.survey_name || 'Survey')+'</strong><small class="cx-muted">'+esc(r.survey_id || '')+'</small>';},csv:function(r){return r.survey_name || ''; }},
+  {key:'response_id',label:'Response ID',render:function(r){return '<span class="cx-num">'+esc(r.response_id || '')+'</span>';},csv:function(r){return r.response_id || ''; }},
+  {key:'response_status',label:'Status',render:function(r){var v=r.response_status||'new';return '<span class="cx-chip cx-status-'+esc(v)+'">'+esc(v)+'</span>';},csv:function(r){return r.response_status || 'new';}},
+  {key:'sentiment',label:'Sentiment',render:function(r){var v=getSentiment(r);return '<span class="cx-chip cx-sent-'+esc(v)+'">'+esc(v)+'</span>';},csv:function(r){return getSentiment(r);}},
+  {key:'nps_score',label:'NPS',render:function(r){return '<span class="cx-num">'+(r.nps_score===0||r.nps_score?esc(String(r.nps_score)):'<span class="cx-muted">—</span>')+'</span>';},csv:function(r){return r.nps_score ?? ''; }},
+  {key:'rating_avg',label:'Rating',render:function(r){return '<span class="cx-num">'+(r.rating_avg===0||r.rating_avg?esc(String(r.rating_avg)):'<span class="cx-muted">—</span>')+'</span>';},csv:function(r){return r.rating_avg ?? ''; }},
+  {key:'contact_name',label:'Name',render:function(r){return esc((r.contact&&r.contact.name)||'Anonymous');},csv:function(r){return (r.contact&&r.contact.name)||''; }},
+  {key:'contact_email',label:'Email',render:function(r){return esc((r.contact&&r.contact.email)||'');},csv:function(r){return (r.contact&&r.contact.email)||''; }},
+  {key:'contact_phone',label:'Phone',render:function(r){return esc((r.contact&&r.contact.phone)||'');},csv:function(r){return (r.contact&&r.contact.phone)||''; }},
+  {key:'preview_text',label:'Comment',required:true,render:function(r){return '<div class="cx-main-cell"><strong>'+esc((r.preview_text||'').slice(0,110) || '(No comment)')+'</strong><small>'+esc((r.preview_text||'').slice(110,240))+'</small></div>';},csv:function(r){return r.preview_text || ''; }},
+  {key:'case_priority',label:'Priority',render:function(r){var v=r.case_priority||'normal';return '<span class="cx-chip cx-pri-'+esc(v)+'">'+esc(v)+'</span>';},csv:function(r){return r.case_priority || 'normal';}},
+  {key:'case_status',label:'Case',render:function(r){var v=r.case_status||'';return v?'<span class="cx-chip cx-status-'+esc(v.replace('_','-'))+'">'+esc(v)+'</span>':'<span class="cx-muted">—</span>';},csv:function(r){return r.case_status || ''; }},
+  {key:'survey_id',label:'Survey ID',render:function(r){return '<span class="cx-num">'+esc(r.survey_id || '')+'</span>';},csv:function(r){return r.survey_id || ''; }}
+];
+var visible = new Set(defaultColumns);
+
+if (Components.checkBrandAuth()) init();
+
+async function init(){
+  var user = Components.getBrandUser();
+  if (!user) return;
+  document.getElementById('brand-content').style.display = '';
+  document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-responses');
+  bindUI();
+  buildColumnMenu();
+  try {
+    var surveys = await GoNoGoAPI.cx.listSurveys();
+    var sel = document.getElementById('f-survey');
+    (surveys || []).forEach(function(s){ var o = document.createElement('option'); o.value = s.id; o.textContent = s.name; sel.appendChild(o); });
+  } catch (e) {}
+  await load();
+}
+
+function bindUI(){
+  document.getElementById('btn-refresh').addEventListener('click', load);
+  ['f-survey','f-status','f-sentiment','f-since'].forEach(function(id){ document.getElementById(id).addEventListener('change', load); });
+  document.getElementById('f-search').addEventListener('input', applyFilters);
+  document.getElementById('btn-export-all').addEventListener('click', exportCSV);
+  document.getElementById('btn-columns').addEventListener('click', function(e){ e.stopPropagation(); document.getElementById('cx-col-menu').classList.toggle('open'); });
+  document.getElementById('btn-columns-reset').addEventListener('click', function(){ visible = new Set(defaultColumns); syncColumnInputs(); renderTable(currentRows); });
+  document.addEventListener('click', function(e){ if(!document.getElementById('cx-col-menu').contains(e.target) && e.target.id !== 'btn-columns'){ document.getElementById('cx-col-menu').classList.remove('open'); } });
+}
+
+function buildColumnMenu(){
+  var grid = document.getElementById('cx-col-grid');
+  grid.innerHTML = columns.map(function(c){
+    return '<label class="cx-col-item"><input type="checkbox" data-col="'+esc(c.key)+'" '+(visible.has(c.key)?'checked':'')+' '+(c.required?'disabled':'')+'> <span>'+esc(c.label)+(c.required?' *':'')+'</span></label>';
+  }).join('');
+  grid.querySelectorAll('input[data-col]').forEach(function(input){
+    input.addEventListener('change', function(){ if (this.checked) visible.add(this.dataset.col); else visible.delete(this.dataset.col); renderTable(currentRows); });
+  });
+}
+
+function syncColumnInputs(){
+  document.querySelectorAll('input[data-col]').forEach(function(input){ input.checked = visible.has(input.dataset.col); });
+}
+
+async function load(){
+  var tbody = document.getElementById('resp-tbody');
+  tbody.innerHTML = '<tr><td colspan="20"><div class="cx-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading response data…</div></td></tr>';
+  var filters = {
+    survey_id: document.getElementById('f-survey').value,
+    status: document.getElementById('f-status').value,
+    sentiment: document.getElementById('f-sentiment').value,
+    since: document.getElementById('f-since').value
+  };
+  try {
+    allRows = await GoNoGoAPI.cx.listResponses(filters) || [];
+    applyFilters();
+  } catch (e) {
+    tbody.innerHTML = '<tr><td colspan="20"><div class="cx-empty"><i class="fa-solid fa-triangle-exclamation"></i>Could not load responses: '+esc(e.message || 'error')+'</div></td></tr>';
+  }
+}
+
+function applyFilters(){
+  var q = (document.getElementById('f-search').value || '').trim().toLowerCase();
+  currentRows = allRows.filter(function(r){
+    if (!q) return true;
+    var hay = [r.survey_name, r.response_id, r.preview_text, r.survey_id, r.response_status, r.case_status, r.case_priority, r.contact&&r.contact.name, r.contact&&r.contact.email, r.contact&&r.contact.phone].filter(Boolean).join(' ').toLowerCase();
+    return hay.indexOf(q) !== -1;
+  });
+  document.getElementById('count-label').textContent = currentRows.length + ' response' + (currentRows.length === 1 ? '' : 's');
+  document.getElementById('filter-label').textContent = q ? 'Search: “' + q + '”' : '';
+  renderTable(currentRows);
+}
+
+function renderTable(rows){
+  var head = document.getElementById('cx-head-row');
+  var tbody = document.getElementById('resp-tbody');
+  var cols = columns.filter(function(c){ return visible.has(c.key); });
+  head.innerHTML = cols.map(function(c){ return '<th>'+esc(c.label)+'</th>'; }).join('');
+  if (!rows.length){
+    tbody.innerHTML = '<tr><td colspan="'+cols.length+'"><div class="cx-empty"><i class="fa-solid fa-inbox"></i>No responses match these filters.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function(r){
+    return '<tr data-rid="'+esc(r.response_id || '')+'">' + cols.map(function(c){ return '<td>' + c.render(r) + '</td>'; }).join('') + '</tr>';
+  }).join('');
+  tbody.querySelectorAll('tr[data-rid]').forEach(function(tr){
+    tr.addEventListener('click', function(){ window.location.href = 'brand-cx-case.html?r=' + tr.dataset.rid; });
+    tr.style.cursor = 'pointer';
+  });
+}
+
+function getSentiment(r){
+  return r.sentiment || (r.nps_score >= 9 ? 'promoter' : r.nps_score >= 7 ? 'passive' : r.nps_score !== null && r.nps_score !== undefined ? 'detractor' : 'neutral');
+}
+
+function fmtDateFull(s){
+  if(!s) return '';
+  var d = new Date(s);
+  if (isNaN(d)) return s;
+  return d.toLocaleString([], {year:'numeric', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+function csvEscape(v){
+  var s = String(v == null ? '' : v);
+  return /[",\n]/.test(s) ? '"' + s.replace(/"/g,'""') + '"' : s;
+}
+
+function exportCSV(){
+  var cols = columns.filter(function(c){ return visible.has(c.key); });
+  var lines = [cols.map(function(c){ return csvEscape(c.label); }).join(',')];
+  currentRows.forEach(function(r){ lines.push(cols.map(function(c){ return csvEscape(c.csv(r)); }).join(',')); });
+  var blob = new Blob([lines.join('\n')], {type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cx-responses-export.csv';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 0);
+}
+</script>
+</body>
+</html>
