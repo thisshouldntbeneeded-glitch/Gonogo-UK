@@ -301,7 +301,7 @@
 <div class="s-wrap" id="root">
   <div class="s-shell"><div class="s-card"><p>Loading…</p></div></div>
 </div>
-<script src="api.js?v=20260601a"></script>
+<script src="api.js?v=20260601b"></script>
 <script>
 var _qs = new URLSearchParams(location.search);
 var token = _qs.get('t');
@@ -382,7 +382,16 @@ async function load() {
     if (!res || !res.ok) { showError((res && res.error) || 'Survey not available.'); return; }
     state.survey = res.survey;
     state.questions = res.questions || [];
-    if (res.survey && res.survey.language && I18N[res.survey.language]) state.lang = res.survey.language;
+    // Snapshot base (untranslated) survey + question copies so we can re-apply translations on language switch
+    snapshotBaseCopies();
+    // Default to survey language, fall back to en
+    var defLang = (res.survey && res.survey.language && I18N[res.survey.language]) ? res.survey.language : 'en';
+    var stored = null; try { stored = localStorage.getItem('cx_lang'); } catch(_){}
+    var available = getAvailableLangs();
+    var initial = defLang;
+    if (stored && available.indexOf(stored) !== -1) initial = stored;
+    state.lang = initial;
+    applyLanguage(initial);
     applyBrandTheme();
     state.mode = 'classic';
     applyModeClass();
@@ -390,6 +399,84 @@ async function load() {
   } catch(e) {
     showError(e.message || 'Failed to load survey.');
   }
+}
+
+function snapshotBaseCopies(){
+  var s = state.survey || {};
+  s._base = {
+    intro_title: s.intro_title || '',
+    intro_text: s.intro_text || '',
+    thank_you_title: s.thank_you_title || '',
+    thank_you_text: s.thank_you_text || ''
+  };
+  (state.questions || []).forEach(function(q){
+    q._base = {
+      prompt: q.prompt || '',
+      help_text: q.help_text || '',
+      options: Array.isArray(q.options) ? q.options.slice() : []
+    };
+  });
+}
+
+function getAvailableLangs(){
+  var s = state.survey || {};
+  var def = (s.language && I18N[s.language]) ? s.language : 'en';
+  var set = {};
+  set[def] = true;
+  var i18n = s.i18n || {};
+  ['ui','survey'].forEach(function(bucket){
+    var b = i18n[bucket] || {};
+    Object.keys(b).forEach(function(code){ if (code) set[code] = true; });
+  });
+  if (Array.isArray(i18n.questions)) {
+    i18n.questions.forEach(function(qmap){
+      if (qmap && typeof qmap === 'object') {
+        Object.keys(qmap).forEach(function(code){ if (code) set[code] = true; });
+      }
+    });
+  }
+  return Object.keys(set);
+}
+
+function applyLanguage(lang){
+  if (!lang) lang = 'en';
+  var s = state.survey || {};
+  var i18n = s.i18n || {};
+  var base = s._base || {};
+
+  // Merge UI label overrides into I18N[lang] (do not replace the language object entirely)
+  var uiOver = (i18n.ui && i18n.ui[lang]) || null;
+  if (uiOver && typeof uiOver === 'object') {
+    if (!I18N[lang]) I18N[lang] = {};
+    Object.keys(uiOver).forEach(function(k){
+      var v = uiOver[k];
+      if (typeof v === 'string' && v.trim()) I18N[lang][k] = v;
+    });
+  }
+
+  // Override survey-level texts (fall back to base when not translated)
+  var sTr = (i18n.survey && i18n.survey[lang]) || {};
+  s.intro_title = (sTr.intro_title && sTr.intro_title.trim()) ? sTr.intro_title : base.intro_title;
+  s.intro_text = (sTr.intro_text && sTr.intro_text.trim()) ? sTr.intro_text : base.intro_text;
+  s.thank_you_title = (sTr.thank_you_title && sTr.thank_you_title.trim()) ? sTr.thank_you_title : base.thank_you_title;
+  s.thank_you_text = (sTr.thank_you_text && sTr.thank_you_text.trim()) ? sTr.thank_you_text : base.thank_you_text;
+
+  // Override per-question texts
+  var qMaps = Array.isArray(i18n.questions) ? i18n.questions : [];
+  (state.questions || []).forEach(function(q, idx){
+    var qb = q._base || { prompt:'', help_text:'', options:[] };
+    var qt = (qMaps[idx] && qMaps[idx][lang]) || {};
+    q.prompt = (qt.prompt && qt.prompt.trim()) ? qt.prompt : qb.prompt;
+    q.help_text = (qt.help_text && qt.help_text.trim()) ? qt.help_text : qb.help_text;
+    if (Array.isArray(qt.options) && qt.options.length) {
+      q.options = qb.options.map(function(opt, oi){
+        var trv = qt.options[oi];
+        return (typeof trv === 'string' && trv.trim()) ? trv : opt;
+      });
+    } else {
+      q.options = qb.options.slice();
+    }
+  });
 }
 
 
@@ -470,6 +557,7 @@ function renderIntro() {
   var html = '<div class="s-shell">';
   html += renderBrandHeader();
   html += '<div class="s-card">';
+  html += renderLangPickerHTML();
   if (s.intro_title) html += '<h1 class="s-intro-title">' + esc(s.intro_title) + '</h1>';
   if (s.intro_text) html += '<p class="s-intro-text">' + esc(s.intro_text) + '</p>';
   if (!s.intro_title && !s.intro_text) html += '<h1 class="s-intro-title">' + t('share') + '</h1><p class="s-intro-text">' + t('intro') + '</p>';
@@ -491,8 +579,24 @@ function bindLangPicker(){
   el.onchange = function(){
     state.lang = el.value || 'en';
     try { localStorage.setItem('cx_lang', state.lang); } catch(_){}
+    applyLanguage(state.lang);
     render();
   };
+}
+
+function renderLangPickerHTML(){
+  var langs = getAvailableLangs();
+  if (!langs || langs.length < 2) return '';
+  var cur = state.lang || 'en';
+  var html = '<div class="s-lang-pick" style="display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:13px;color:#64748b">';
+  html += '<label for="lang-pick">' + esc(t('language')) + ':</label>';
+  html += '<select id="lang-pick" class="s-text-input" style="max-width:180px;padding:6px 8px">';
+  langs.forEach(function(code){
+    var name = LANG_NAMES[code] || code.toUpperCase();
+    html += '<option value="' + esc(code) + '"' + (code===cur?' selected':'') + '>' + esc(name) + '</option>';
+  });
+  html += '</select></div>';
+  return html;
 }
 
 /* Evaluate this question's logic; returns next index, or -2 to end-survey. */

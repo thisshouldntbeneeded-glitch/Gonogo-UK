@@ -408,11 +408,13 @@
         <div class="se-tabs" id="pane-tabs">
           <button class="se-tab active" data-tab="question">Question</button>
           <button class="se-tab" data-tab="settings">Survey settings</button>
+          <button class="se-tab" data-tab="translations">Translations</button>
           <button class="se-tab" data-tab="preview">Preview</button>
           <button class="se-tab" data-tab="links" id="tab-links" style="display:none">Distribution</button>
         </div>
         <div id="panel-question"></div>
         <div id="panel-settings" style="display:none"></div>
+        <div id="panel-translations" style="display:none"></div>
         <div id="panel-preview" style="display:none"></div>
         <div id="panel-links" style="display:none"></div>
       </div>
@@ -428,7 +430,7 @@
 
 <script src="data/helpers.js"></script>
 <script src="components.js"></script>
-<script src="api.js?v=20260601a"></script>
+<script src="api.js?v=20260601b"></script>
 <script>
 Components.initTheme();
 document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
@@ -436,10 +438,23 @@ document.getElementById('sidebar-container').innerHTML = Components.renderBrandS
 var _surveyId = new URLSearchParams(location.search).get('id');
 var _survey = null;
 var _questions = [];
+var _i18n = { ui: {}, questions: [] };
 var _links = [];
 var _selectedIdx = -1;
 var _dirty = false;
 var _saving = false;
+
+// Keys for UI label overrides (mirrors runtime I18N keys in cx-survey.html)
+var UI_LABEL_KEYS = [
+  { k:'start',    label:'Start button',         placeholder:'Start' },
+  { k:'back',     label:'Back button',          placeholder:'Back' },
+  { k:'next',     label:'Next button',          placeholder:'Next' },
+  { k:'submit',   label:'Submit button',        placeholder:'Submit' },
+  { k:'qof',      label:'Question counter',     placeholder:'Question {n} of {t}' },
+  { k:'share',    label:'Intro heading',        placeholder:'Share your feedback' },
+  { k:'intro',    label:'Intro subtitle',       placeholder:'A few quick questions — your answers go straight to the brand.' },
+  { k:'required', label:'Required field error', placeholder:'This question is required.' }
+];
 var esc = Components.escapeHTML.bind(Components);
 
 // init() must run AFTER all var/function declarations below so UK_LANGUAGES etc. are defined
@@ -766,6 +781,9 @@ async function init() {
           image_url: (cj && cj.image_url) || ''
         };
       });
+      _i18n = (_survey && _survey.i18n && typeof _survey.i18n === 'object') ? _survey.i18n : {};
+      if (!_i18n.ui) _i18n.ui = {};
+      if (!Array.isArray(_i18n.questions)) _i18n.questions = [];
       _links = data.links || [];
       document.getElementById('title-text').textContent = 'Edit: ' + (_survey.name || 'Survey');
       document.getElementById('tab-links').style.display = '';
@@ -843,15 +861,18 @@ function showTab(name) {
 
   var pq = document.getElementById('panel-question');
   var ps = document.getElementById('panel-settings');
+  var pt = document.getElementById('panel-translations');
   var pp = document.getElementById('panel-preview');
   var pl = document.getElementById('panel-links');
 
   if (pq) pq.style.display = name === 'question' ? '' : 'none';
   if (ps) ps.style.display = name === 'settings' ? '' : 'none';
+  if (pt) pt.style.display = name === 'translations' ? '' : 'none';
   if (pp) pp.style.display = name === 'preview' ? '' : 'none';
   if (pl) pl.style.display = name === 'links' ? '' : 'none';
 
   if (name === 'question') renderQuestionPanel();
+  if (name === 'translations') renderTranslationsPanel();
   if (name === 'preview') renderSurveyPreview();
   if (name === 'links') renderLinks();
 }
@@ -2213,6 +2234,200 @@ async function createLink() {
   }
 }
 
+function getEnabledExtraLangs() {
+  // The default language (s-language) is the one questions are authored in — do not translate it.
+  var def = (document.getElementById('s-language') && document.getElementById('s-language').value) || (_survey && _survey.language) || 'en';
+  var enabled = (_survey && Array.isArray(_survey.languages)) ? _survey.languages.filter(function(l){ return l.enabled; }).map(function(l){ return l.code; }) : [];
+  // Codes in _survey.languages are full codes like 'zu-ZA'; reduce to short codes ('zu') to match I18N runtime.
+  var short = enabled.map(function(c){ return (c || '').split('-')[0]; });
+  // De-dupe and drop the default.
+  var seen = {}; var out = [];
+  short.forEach(function(c){ if (c && c !== def && !seen[c]) { seen[c] = 1; out.push(c); } });
+  return { def: def, extras: out };
+}
+
+function langDisplayName(code) {
+  var m = SA_LANGUAGES.find(function(l){ return l.code.split('-')[0] === code; });
+  return m ? (m.name + ' (' + m.native + ')') : code;
+}
+
+function ensureI18nShape() {
+  if (!_i18n || typeof _i18n !== 'object') _i18n = {};
+  if (!_i18n.ui || typeof _i18n.ui !== 'object') _i18n.ui = {};
+  if (!Array.isArray(_i18n.questions)) _i18n.questions = [];
+  // Keep questions array length in sync with _questions length
+  while (_i18n.questions.length < _questions.length) _i18n.questions.push({});
+  if (_i18n.questions.length > _questions.length) _i18n.questions.length = _questions.length;
+}
+
+function renderTranslationsPanel() {
+  var panel = document.getElementById('panel-translations');
+  if (!panel) return;
+  ensureI18nShape();
+
+  var meta = getEnabledExtraLangs();
+  var extras = meta.extras;
+
+  var html = '<div class="se-panel-intro"><div><h2>Translations</h2><p>Provide translated text for each enabled language. The default authoring language is <strong>' + esc(langDisplayName(meta.def)) + '</strong> — enable extra languages in <em>Survey settings → Launch languages</em>.</p></div></div>';
+
+  if (!extras.length) {
+    html += '<div class="se-empty" style="padding:24px;border:1px dashed var(--border-primary);border-radius:8px;text-align:center">' +
+            '<div class="se-empty-icon"><i class="fa-solid fa-language"></i></div>' +
+            '<h3 style="margin:8px 0 4px">No extra languages enabled yet</h3>' +
+            '<p style="color:var(--text-muted);font-size:13px">Open <strong>Survey settings → Launch languages</strong> and tick at least one language other than your default to start translating.</p>' +
+            '</div>';
+    panel.innerHTML = html;
+    return;
+  }
+
+  if (!_questions.length) {
+    html += '<div class="se-empty" style="padding:24px;border:1px dashed var(--border-primary);border-radius:8px;text-align:center"><p style="color:var(--text-muted);font-size:13px">Add some questions on the <strong>Question</strong> tab first, then come back here to translate them.</p></div>';
+    panel.innerHTML = html;
+    return;
+  }
+
+  // Tabs to switch between extra languages
+  html += '<div class="se-tabs" style="margin-bottom:12px">';
+  extras.forEach(function(code, i){
+    html += '<button type="button" class="se-tab' + (i===0?' active':'') + '" data-tr-langtab="' + esc(code) + '">' + esc(langDisplayName(code)) + '</button>';
+  });
+  html += '</div>';
+
+  extras.forEach(function(code, i){
+    html += '<div data-tr-pane="' + esc(code) + '" style="display:' + (i===0?'block':'none') + '">';
+    html += renderTranslationsForLang(code);
+    html += '</div>';
+  });
+
+  panel.innerHTML = html;
+
+  // Tab switching
+  panel.querySelectorAll('[data-tr-langtab]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var code = btn.dataset.trLangtab;
+      panel.querySelectorAll('[data-tr-langtab]').forEach(function(b){ b.classList.toggle('active', b===btn); });
+      panel.querySelectorAll('[data-tr-pane]').forEach(function(p){ p.style.display = (p.dataset.trPane === code) ? 'block' : 'none'; });
+    });
+  });
+
+  // Wire inputs
+  panel.querySelectorAll('[data-tr-q-field]').forEach(function(el){
+    el.addEventListener('input', function(){
+      var code = el.dataset.trLang;
+      var idx = parseInt(el.dataset.trQIdx, 10);
+      var field = el.dataset.trQField;
+      ensureI18nShape();
+      if (!_i18n.questions[idx]) _i18n.questions[idx] = {};
+      if (!_i18n.questions[idx][code]) _i18n.questions[idx][code] = {};
+      _i18n.questions[idx][code][field] = el.value;
+      markDirty();
+    });
+  });
+  panel.querySelectorAll('[data-tr-q-opt]').forEach(function(el){
+    el.addEventListener('input', function(){
+      var code = el.dataset.trLang;
+      var idx = parseInt(el.dataset.trQIdx, 10);
+      var oi = parseInt(el.dataset.trQOpt, 10);
+      ensureI18nShape();
+      if (!_i18n.questions[idx]) _i18n.questions[idx] = {};
+      if (!_i18n.questions[idx][code]) _i18n.questions[idx][code] = {};
+      if (!Array.isArray(_i18n.questions[idx][code].options)) _i18n.questions[idx][code].options = [];
+      _i18n.questions[idx][code].options[oi] = el.value;
+      markDirty();
+    });
+  });
+  panel.querySelectorAll('[data-tr-survey-field]').forEach(function(el){
+    el.addEventListener('input', function(){
+      var code = el.dataset.trLang;
+      var field = el.dataset.trSurveyField;
+      ensureI18nShape();
+      if (!_i18n.survey) _i18n.survey = {};
+      if (!_i18n.survey[code]) _i18n.survey[code] = {};
+      _i18n.survey[code][field] = el.value;
+      markDirty();
+    });
+  });
+  panel.querySelectorAll('[data-tr-ui]').forEach(function(el){
+    el.addEventListener('input', function(){
+      var code = el.dataset.trLang;
+      var key = el.dataset.trUi;
+      ensureI18nShape();
+      if (!_i18n.ui[code]) _i18n.ui[code] = {};
+      _i18n.ui[code][key] = el.value;
+      markDirty();
+    });
+  });
+}
+
+function renderTranslationsForLang(code) {
+  var t = (_i18n.questions || []);
+  var sTr = (_i18n.survey && _i18n.survey[code]) || {};
+  var uTr = (_i18n.ui && _i18n.ui[code]) || {};
+  var introTitle = (_survey && _survey.intro_title) || '';
+  var introText = (_survey && _survey.intro_text) || '';
+  var tyTitle = (_survey && _survey.thank_you_title) || 'Thank you';
+  var tyText = (_survey && _survey.thank_you_text) || 'Your feedback has been received.';
+
+  var html = '';
+
+  // Survey-level texts
+  html += '<div class="se-settings-section active" style="display:block;margin-bottom:18px">';
+  html += '<h4 class="se-section-h" style="margin-top:0">Intro & thank-you copy</h4>';
+  html += '<div class="se-field"><label class="se-label">Intro title — original</label><input class="se-input" value="' + esc(introTitle) + '" disabled style="opacity:.6"></div>';
+  html += '<div class="se-field"><label class="se-label">Intro title — ' + esc(code) + '</label><input class="se-input" data-tr-survey-field="intro_title" data-tr-lang="' + esc(code) + '" value="' + esc(sTr.intro_title || '') + '" placeholder="Translate the intro title"></div>';
+  html += '<div class="se-field"><label class="se-label">Intro text — original</label><textarea class="se-textarea" disabled style="opacity:.6">' + esc(introText) + '</textarea></div>';
+  html += '<div class="se-field"><label class="se-label">Intro text — ' + esc(code) + '</label><textarea class="se-textarea" data-tr-survey-field="intro_text" data-tr-lang="' + esc(code) + '" placeholder="Translate the intro text">' + esc(sTr.intro_text || '') + '</textarea></div>';
+  html += '<div class="se-row">';
+  html += '<div class="se-field"><label class="se-label">Thank-you title — original</label><input class="se-input" value="' + esc(tyTitle) + '" disabled style="opacity:.6"></div>';
+  html += '<div class="se-field"><label class="se-label">Thank-you title — ' + esc(code) + '</label><input class="se-input" data-tr-survey-field="thank_you_title" data-tr-lang="' + esc(code) + '" value="' + esc(sTr.thank_you_title || '') + '" placeholder="Translate"></div>';
+  html += '</div>';
+  html += '<div class="se-row">';
+  html += '<div class="se-field"><label class="se-label">Thank-you text — original</label><input class="se-input" value="' + esc(tyText) + '" disabled style="opacity:.6"></div>';
+  html += '<div class="se-field"><label class="se-label">Thank-you text — ' + esc(code) + '</label><input class="se-input" data-tr-survey-field="thank_you_text" data-tr-lang="' + esc(code) + '" value="' + esc(sTr.thank_you_text || '') + '" placeholder="Translate"></div>';
+  html += '</div>';
+  html += '</div>';
+
+  // UI labels
+  html += '<details class="se-settings-section active" style="display:block;margin-bottom:18px;border:1px solid var(--border-primary);border-radius:8px;padding:12px 14px">';
+  html += '<summary style="cursor:pointer;font-weight:600;font-size:13px">UI label overrides (Start / Back / Next / Submit …)</summary>';
+  html += '<p style="margin:8px 0 6px;color:var(--text-muted);font-size:12px">Optional. Leave blank to use the built-in translation. Only fill what you want to override.</p>';
+  UI_LABEL_KEYS.forEach(function(item){
+    html += '<div class="se-row">';
+    html += '<div class="se-field"><label class="se-label">' + esc(item.label) + '</label><input class="se-input" data-tr-ui="' + esc(item.k) + '" data-tr-lang="' + esc(code) + '" placeholder="' + esc(item.placeholder) + '" value="' + esc(uTr[item.k] || '') + '"></div>';
+    html += '</div>';
+  });
+  html += '</details>';
+
+  // Questions
+  html += '<h4 class="se-section-h">Questions</h4>';
+  _questions.forEach(function(q, idx){
+    var qTr = (t[idx] && t[idx][code]) || {};
+    var opts = Array.isArray(q.options) ? q.options : [];
+    html += '<div class="se-settings-section active" style="display:block;margin-bottom:14px;border:1px solid var(--border-primary);border-radius:8px;padding:12px 14px">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><strong style="font-size:12px;color:var(--text-muted)">Q' + (idx+1) + ' · ' + esc(q.qtype) + '</strong></div>';
+    html += '<div class="se-field"><label class="se-label">Prompt — original</label><textarea class="se-textarea" disabled style="opacity:.6;min-height:46px">' + esc(q.prompt || '') + '</textarea></div>';
+    html += '<div class="se-field"><label class="se-label">Prompt — ' + esc(code) + '</label><textarea class="se-textarea" data-tr-q-field="prompt" data-tr-q-idx="' + idx + '" data-tr-lang="' + esc(code) + '" placeholder="Translate the prompt" style="min-height:46px">' + esc(qTr.prompt || '') + '</textarea></div>';
+    if (q.help_text) {
+      html += '<div class="se-field"><label class="se-label">Help text — original</label><input class="se-input" value="' + esc(q.help_text) + '" disabled style="opacity:.6"></div>';
+      html += '<div class="se-field"><label class="se-label">Help text — ' + esc(code) + '</label><input class="se-input" data-tr-q-field="help_text" data-tr-q-idx="' + idx + '" data-tr-lang="' + esc(code) + '" value="' + esc(qTr.help_text || '') + '" placeholder="Translate the help text"></div>';
+    }
+    if (['single_select','multi_select','dropdown','yes_no','consent'].indexOf(q.qtype) !== -1 && opts.length) {
+      html += '<div class="se-field"><label class="se-label">Options</label>';
+      opts.forEach(function(opt, oi){
+        var trVal = (Array.isArray(qTr.options) && qTr.options[oi]) || '';
+        html += '<div class="se-row" style="margin-top:4px">';
+        html += '<div class="se-field"><input class="se-input" value="' + esc(opt) + '" disabled style="opacity:.6"></div>';
+        html += '<div class="se-field"><input class="se-input" data-tr-q-opt="' + oi + '" data-tr-q-idx="' + idx + '" data-tr-lang="' + esc(code) + '" value="' + esc(trVal) + '" placeholder="Translate option"></div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+
+  return html;
+}
+
 function renderSurveyPreview() {
   var panel = document.getElementById('panel-preview');
   if (!panel) return;
@@ -2361,7 +2576,16 @@ async function save() {
         };
       }).filter(function(q){
         return q.prompt;
-      })
+      }),
+
+      i18n: (function(){
+        ensureI18nShape();
+        return {
+          ui: _i18n.ui || {},
+          survey: _i18n.survey || {},
+          questions: Array.isArray(_i18n.questions) ? _i18n.questions : []
+        };
+      })()
     };
 
     var resultId;
@@ -2405,6 +2629,13 @@ async function save() {
             };
           });
           _links = data.links || [];
+          if (_survey && _survey.i18n && typeof _survey.i18n === 'object') {
+            _i18n = {
+              ui: _survey.i18n.ui || {},
+              survey: _survey.i18n.survey || {},
+              questions: Array.isArray(_survey.i18n.questions) ? _survey.i18n.questions : []
+            };
+          }
         }
       } catch(reloadErr) {
         // Don't fail save just because reload failed; _survey.id is already set.
