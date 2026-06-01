@@ -630,7 +630,9 @@ var GoNoGoAPI = (function () {
             if (res.body && res.body.ok && res.body.public_url) {
               return { ok: true, public_url: res.body.public_url };
             }
-            return { ok: false, error: (res.body && res.body.error) || ('Upload failed (HTTP ' + res.status + ')') };
+            var msg = (res.body && res.body.error) || ('Upload failed (HTTP ' + res.status + ')');
+            if (res.body && res.body.detail) msg += ' — ' + res.body.detail;
+            return { ok: false, error: msg };
           })
           .catch(function (err) {
             return { ok: false, error: (err && err.message) || 'Network error' };
