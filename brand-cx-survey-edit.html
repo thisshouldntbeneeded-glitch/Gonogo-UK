@@ -430,7 +430,7 @@
 
 <script src="data/helpers.js"></script>
 <script src="components.js"></script>
-<script src="api.js?v=20260601b"></script>
+<script src="api.js?v=20260601c"></script>
 <script>
 Components.initTheme();
 document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
@@ -1856,7 +1856,14 @@ function renderEmbedStudio(mount, url, token, label, widgetSrc) {
     frequency: 'always', include: '*', exclude: '', sample: 100,
     animation: 'slide', closable: true
   };
+  var saved = (typeof _survey !== 'undefined' && _survey && _survey.embed_config && typeof _survey.embed_config === 'object') ? _survey.embed_config : {};
   var cfg = Object.assign({}, defaults);
+  Object.keys(defaults).forEach(function(k){
+    if (Object.prototype.hasOwnProperty.call(saved, k) && saved[k] !== null && saved[k] !== undefined) {
+      cfg[k] = saved[k];
+    }
+  });
+  window._embedCfg = cfg;
 
   var TABS = [
     { id: 'style',    label: 'Style',     icon: 'fa-palette' },
@@ -2151,7 +2158,8 @@ function renderEmbedStudio(mount, url, token, label, widgetSrc) {
   // --- Reset & open ---
   var resetBtn = mount.querySelector('[data-es-reset]');
   if (resetBtn) resetBtn.addEventListener('click', function(){
-    cfg = Object.assign({}, defaults);
+    Object.keys(cfg).forEach(function(k){ delete cfg[k]; });
+    Object.assign(cfg, defaults);
     renderPanels();
     pushPreview();
   });
@@ -2585,7 +2593,10 @@ async function save() {
           survey: _i18n.survey || {},
           questions: Array.isArray(_i18n.questions) ? _i18n.questions : []
         };
-      })()
+      })(),
+      embed_config: (window._embedCfg && typeof window._embedCfg === 'object')
+        ? Object.assign({}, window._embedCfg)
+        : ((_survey && _survey.embed_config && typeof _survey.embed_config === 'object') ? _survey.embed_config : {})
     };
 
     var resultId;

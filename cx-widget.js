@@ -159,8 +159,8 @@
       '.gng-cx-launcher.size-md{padding:11px 18px;font-size:14px}',
       '.gng-cx-launcher.size-lg{padding:14px 22px;font-size:15px}',
 
-      '.gng-cx-launcher.tab-right{right:0;transform-origin:right top;border-radius:8px 8px 0 0}',
-      '.gng-cx-launcher.tab-left{left:0;transform-origin:left top;border-radius:8px 8px 0 0}',
+      '.gng-cx-launcher.tab-right{right:14px;transform-origin:right top;border-radius:8px 8px 0 0}',
+      '.gng-cx-launcher.tab-left{left:14px;transform-origin:left top;border-radius:8px 8px 0 0}',
       '.gng-cx-launcher.tab-right.v-top{top:80px;transform:rotate(-90deg) translateX(100%)}',
       '.gng-cx-launcher.tab-right.v-middle{top:50%;transform:rotate(-90deg) translate(50%,-50%)}',
       '.gng-cx-launcher.tab-right.v-bottom{bottom:80px;transform:rotate(-90deg) translateX(100%)}',
