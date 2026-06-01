@@ -294,6 +294,46 @@
   @media (max-width:640px){.s-shell{max-width:100%}.s-swipe-card{padding:24px 18px 18px}.s-swipe-inner{gap:16px}.s-swipe-hint{grid-template-columns:repeat(2,minmax(0,1fr));font-size:10px}.s-party-grid-compact.cols-11{grid-template-columns:repeat(4,minmax(0,1fr))}.s-party-mascot{bottom:64px;padding:16px;width:min(360px,92vw)}.s-party-mascot-blob{width:76px;height:76px}.s-party-mascot-blob span{font-size:40px}.s-party-mascot-copy strong{font-size:18px}}
 
   *:focus-visible { outline: 2px solid var(--s-primary); outline-offset: 2px; }
+
+  /* ── Layer 1: Motion polish ── */
+  /* Card enter animation: every render of the question card fades + slides in */
+  @keyframes s-card-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes s-card-out-fwd { to { opacity: 0; transform: translateY(-10px); } }
+  @keyframes s-card-out-back { to { opacity: 0; transform: translateY(10px); } }
+  .s-card-anim { animation: s-card-in .26s cubic-bezier(.22,.61,.36,1) both; }
+  .s-card-anim.is-leaving-fwd { animation: s-card-out-fwd .18s ease both; }
+  .s-card-anim.is-leaving-back { animation: s-card-out-back .18s ease both; }
+  @media (prefers-reduced-motion: reduce) { .s-card-anim, .s-card-anim.is-leaving-fwd, .s-card-anim.is-leaving-back { animation: none !important; } }
+
+  /* Choice press feedback — brief scale on tap */
+  .s-choice { transition: background .14s ease, border-color .14s ease, color .14s ease, transform .12s ease, box-shadow .14s ease; }
+  .s-choice:active { transform: scale(.97); }
+  .s-choice.s-press { animation: s-press .22s ease; }
+  @keyframes s-press { 0%{transform:scale(1)} 40%{transform:scale(.94)} 100%{transform:scale(1)} }
+  .s-choice.active { box-shadow: 0 4px 14px rgba(17,165,81,.22); }
+  .s-choice.star.active { box-shadow: 0 4px 14px rgba(245,158,11,.28); }
+  .s-choice.nps-red.active { box-shadow: 0 4px 14px rgba(220,38,38,.24); }
+  .s-choice.nps-amber.active { box-shadow: 0 4px 14px rgba(217,119,6,.24); }
+
+  /* Star/rating cascade — stagger pop on light-up */
+  @keyframes s-cascade-pop { 0%{transform:scale(1)} 35%{transform:scale(1.18)} 100%{transform:scale(1)} }
+  .s-choice.s-cascade { animation: s-cascade-pop .32s cubic-bezier(.34,1.56,.64,1) both; }
+
+  /* Segmented progress dots */
+  .s-dots { display:flex; gap:4px; margin-bottom: 8px; }
+  .s-dots > i { flex:1; height:4px; border-radius:999px; background: var(--s-border); transition: background .25s ease, transform .25s ease; }
+  .s-dots > i.done { background: var(--s-primary); }
+  .s-dots > i.current { background: var(--s-primary); transform: scaleY(1.5); }
+  body.party-mode .s-dots > i { background: rgba(255,255,255,.18); }
+  body.party-mode .s-dots > i.done, body.party-mode .s-dots > i.current { background: var(--s-primary); }
+
+  /* Submit button spinner */
+  .s-btn.is-loading { position: relative; color: transparent !important; pointer-events: none; }
+  .s-btn.is-loading::after { content:''; position:absolute; left:50%; top:50%; width:18px; height:18px; margin:-9px 0 0 -9px; border:2.5px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation: s-spin .7s linear infinite; }
+  @keyframes s-spin { to { transform: rotate(360deg); } }
+
+  /* Progress bar fill smoother */
+  .s-progress > span { transition: width .35s cubic-bezier(.22,.61,.36,1); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 </head>
@@ -301,7 +341,7 @@
 <div class="s-wrap" id="root">
   <div class="s-shell"><div class="s-card"><p>Loading…</p></div></div>
 </div>
-<script src="api.js?v=20260601d"></script>
+<script src="api.js?v=20260601e"></script>
 <script>
 var _qs = new URLSearchParams(location.search);
 var token = _qs.get('t');
@@ -556,7 +596,7 @@ function renderIntro() {
   var s = state.survey || {};
   var html = '<div class="s-shell">';
   html += renderBrandHeader();
-  html += '<div class="s-card">';
+  html += '<div class="s-card s-card-anim">';
   html += renderLangPickerHTML();
   if (s.intro_title) html += '<h1 class="s-intro-title">' + esc(s.intro_title) + '</h1>';
   if (s.intro_text) html += '<p class="s-intro-text">' + esc(s.intro_text) + '</p>';
@@ -637,10 +677,20 @@ function renderQuestion() {
   var html = '<div class="s-shell">';
   html += renderBrandHeader();
   if (showProgress) {
+    // Segmented dots — visible chapter markers, one per question
+    if (total > 1 && total <= 24) {
+      var _dots = '<div class="s-dots" aria-hidden="true">';
+      for (var _di = 0; _di < total; _di++) {
+        var _cls = _di < state.currentIdx ? 'done' : (_di === state.currentIdx ? 'current' : '');
+        _dots += '<i class="' + _cls + '"></i>';
+      }
+      _dots += '</div>';
+      html += _dots;
+    }
     html += '<div class="s-progress-text">' + t('qof', { n: state.currentIdx + 1, t: total }) + '</div>';
     html += '<div class="s-progress"><span style="width:' + pct + '%"></span></div>';
   }
-  html += '<div class="s-card">';
+  html += '<div class="s-card s-card-anim">';
   var _longPrompt = (q.prompt || '').length > 140;
   var _isInfo = q.qtype === 'info';
   // Inline text formatting from the builder — size/bold/italic/underline/align/color.
@@ -676,7 +726,7 @@ function renderQuestion() {
   wireQuestion(q, state.currentIdx);
   bindModeToggle();
   document.getElementById('btn-prev').onclick = function(){
-    if (state.currentIdx > 0) { syncTextInput(q, state.currentIdx); state.currentIdx--; render(); }
+    if (state.currentIdx > 0) { syncTextInput(q, state.currentIdx); transitionCard('back', function(){ state.currentIdx--; render(); }); }
   };
   document.getElementById('btn-next').onclick = async function(){
     syncTextInput(q, state.currentIdx);
@@ -685,10 +735,17 @@ function renderQuestion() {
     if (nxt === -2 || nxt >= total) { await submit(); return; }
     if (state.currentIdx === total - 1) { await submit(); return; }
     celebrateStep();
-    state.currentIdx = nxt;
-    render();
+    transitionCard('fwd', function(){ state.currentIdx = nxt; render(); });
   };
   bindLangPicker();
+}
+
+/* Exit animation helper: adds leaving class, waits, then calls next() */
+function transitionCard(direction, next){
+  var card = document.querySelector('#root .s-card-anim');
+  if (!card || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) { next(); return; }
+  card.classList.add(direction === 'back' ? 'is-leaving-back' : 'is-leaving-fwd');
+  setTimeout(next, 170);
 }
 
 
@@ -1018,6 +1075,9 @@ function wireQuestion(q, idx) {
   // Click handlers on any .s-choice button in current question
   document.querySelectorAll('#q-answer .s-choice').forEach(function(btn){
     btn.onclick = function(){
+      // Press feedback
+      btn.classList.add('s-press');
+      setTimeout(function(){ btn.classList.remove('s-press'); }, 230);
       var raw = btn.getAttribute('data-val');
       var numVal = parseInt(raw, 10);
       if (q.qtype === 'multi_select') {
@@ -1030,7 +1090,7 @@ function wireQuestion(q, idx) {
       } else {
         state.values[q.id] = { value_text: raw };
       }
-      rerenderAnswer(q, idx);
+      rerenderAnswer(q, idx, { cascadeTo: numVal });
     };
   });
   // Text/select inputs
@@ -1043,11 +1103,22 @@ function wireQuestion(q, idx) {
 }
 
 // Re-render just the answer area (preserves buttons highlight after click)
-function rerenderAnswer(q, idx) {
+function rerenderAnswer(q, idx, opts) {
   var wrap = document.getElementById('q-answer');
   if (!wrap) return;
   wrap.innerHTML = renderInput(q, idx);
   wireQuestion(q, idx);
+  // Star/rating cascade: stagger-pop all lit choices up to selected value
+  if (opts && opts.cascadeTo !== undefined && !isNaN(opts.cascadeTo) &&
+      (q.qtype === 'rating_1_5' || q.qtype === 'star_rating' || q.qtype === 'csat_smiley' || q.qtype === 'nps_0_10')) {
+    var lit = wrap.querySelectorAll('.s-choice.active');
+    lit.forEach(function(el, i){
+      setTimeout(function(){
+        el.classList.add('s-cascade');
+        setTimeout(function(){ el.classList.remove('s-cascade'); }, 340);
+      }, i * 40);
+    });
+  }
 }
 
 function syncTextInput(q, idx) {
@@ -1113,7 +1184,7 @@ function celebrateStep(successBias) {
 /* ────────── Submit ────────── */
 async function submit() {
   var nextBtn = document.getElementById('btn-next');
-  if (nextBtn) { nextBtn.disabled = true; nextBtn.textContent = 'Submitting…'; }
+  if (nextBtn) { nextBtn.disabled = true; nextBtn.classList.add('is-loading'); }
 
   var answers = [];
   var contact = {};
@@ -1147,7 +1218,7 @@ async function submit() {
       try { window.parent.postMessage({ type: 'gonogo:cx:submitted', response_id: res.response_id, source: SRC || null }, '*'); } catch (_) {}
     }
   } catch (e) {
-    if (nextBtn) { nextBtn.disabled = false; nextBtn.textContent = 'Submit'; }
+    if (nextBtn) { nextBtn.disabled = false; nextBtn.classList.remove('is-loading'); }
     var errEl = document.getElementById('q-error');
     if (errEl) errEl.textContent = e.message || 'Submit failed. Try again.';
   }
@@ -1157,7 +1228,7 @@ function renderThankYou() {
   var s = state.survey || {};
   var html = '<div class="s-shell">';
   html += renderBrandHeader();
-  html += '<div class="s-card s-thank">';
+  html += '<div class="s-card s-thank s-card-anim">';
   html += '<h2>' + esc(s.thank_you_title || 'Thank you.') + '</h2>';
   html += '<p>' + esc(s.thank_you_text || 'Your feedback has been shared with the brand.') + '</p>';
   html += '</div>';
