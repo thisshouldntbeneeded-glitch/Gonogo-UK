@@ -632,6 +632,7 @@ var GoNoGoAPI = (function () {
             }
             var msg = (res.body && res.body.error) || ('Upload failed (HTTP ' + res.status + ')');
             if (res.body && res.body.detail) msg += ' — ' + res.body.detail;
+            if (res.body && res.body.storage_body) msg += ' — ' + res.body.storage_body;
             return { ok: false, error: msg };
           })
           .catch(function (err) {
