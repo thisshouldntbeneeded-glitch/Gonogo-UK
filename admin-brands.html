@@ -187,12 +187,13 @@
                 <th onclick="sortTable('overallScore')">Score <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th>Verdict</th>
                 <th>Status</th>
+                <th>Plan</th>
                 <th onclick="sortTable('lastUpdated')">Updated <i class="fa-solid fa-sort" style="opacity:0.3;font-size:10px;"></i></th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="brands-tbody">
-              <tr><td colspan="8" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">Loading brands...</td></tr>
+              <tr><td colspan="9" style="text-align:center;padding:var(--space-8);color:var(--text-muted)">Loading brands...</td></tr>
             </tbody>
           </table>
         </div>
@@ -444,7 +445,7 @@
   <script src="data/data.js"></script>
   <script src="data/helpers.js"></script>
   <script src="components.js"></script>
-  <script src="api.js?v=20260601k"></script>
+  <script src="api.js?v=20260601n"></script>
 
   <script>
     document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('brands');
@@ -878,6 +879,7 @@
           '<td>' + Components.renderScoreBadge(b.overallScore) + '</td>' +
           '<td>' + Components.renderVerdictBadge(b.verdict) + '</td>' +
           '<td>' + statusBadge + '</td>' +
+          '<td>' + (function(){ var pt=(b.planTier||'starter'); var lbl=pt.charAt(0).toUpperCase()+pt.slice(1); var bg=pt==='starter'?'#e5e7eb':'#dcfce7'; var fg=pt==='starter'?'#374151':'#065f46'; return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;background:'+bg+';color:'+fg+';">'+lbl+'</span>'; })() + '</td>' +
           '<td><span class="text-xs text-muted">' + Components.formatRelativeDate(b.lastUpdated) + '</span></td>' +
           '<td>' +
             '<div style="display:flex;gap:var(--space-1);">' +

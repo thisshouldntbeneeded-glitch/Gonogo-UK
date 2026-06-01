@@ -135,7 +135,8 @@ var GoNoGoAPI = (function () {
       breakdown: row.framework_breakdown || [],
       scoring_breakdown: row.scoring_breakdown || null,
       is_active: row.is_active !== false,
-      status: row.status || 'live'
+      status: row.status || 'live',
+      planTier: row.plan_tier || 'starter'
     };
   }
 
@@ -737,6 +738,14 @@ var GoNoGoAPI = (function () {
       return supabaseRequest('rpc/admin_update_brand_tier', {
         method: 'POST',
         body: Object.assign({ p_user_id: userId, p_tier: tier }, auth)
+      });
+    },
+
+    setBrandPlanTier: function (brandSlug, planTier) {
+      var auth = this._getCallerAuth();
+      return supabaseRequest('rpc/admin_set_brand_plan_tier', {
+        method: 'POST',
+        body: Object.assign({ p_brand_slug: brandSlug, p_plan_tier: planTier }, auth)
       });
     },
 
