@@ -582,10 +582,12 @@ var GoNoGoAPI = (function () {
     },
 
     // Upload a brand logo via the gated Edge Function. Returns { ok, public_url } or { ok: false, error }
-    adminUploadBrandLogo: function (brandSlug, file) {
+    // Works for both admin users (any brand) and brand users (their own brand only) — the
+    // edge function checks _verify_admin_caller first, then _verify_brand_caller scoped to brand_slug.
+    uploadBrandLogo: function (brandSlug, file) {
       var auth = this._getCallerAuth();
       if (!auth.p_caller_id || !auth.p_caller_hash) {
-        return Promise.resolve({ ok: false, error: 'Not signed in as admin' });
+        return Promise.resolve({ ok: false, error: 'Not signed in' });
       }
       if (!file) return Promise.resolve({ ok: false, error: 'No file selected' });
       var allowed = ['image/png','image/jpeg','image/jpg','image/webp','image/svg+xml','image/gif'];
@@ -635,6 +637,9 @@ var GoNoGoAPI = (function () {
           });
       });
     },
+
+    // Back-compat alias — older admin-brands page still calls this name.
+    adminUploadBrandLogo: function (brandSlug, file) { return this.uploadBrandLogo(brandSlug, file); },
 
     adminGetUsers: function () {
       var auth = this._getCallerAuth();
