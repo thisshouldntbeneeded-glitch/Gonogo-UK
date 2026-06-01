@@ -301,7 +301,7 @@
 <div class="s-wrap" id="root">
   <div class="s-shell"><div class="s-card"><p>Loading…</p></div></div>
 </div>
-<script src="api.js?v=20260601c"></script>
+<script src="api.js?v=20260601d"></script>
 <script>
 var _qs = new URLSearchParams(location.search);
 var token = _qs.get('t');
@@ -310,7 +310,7 @@ var SRC = _qs.get('src') || '';
 if (EMBED) {
   // tighten layout when embedded inside the widget iframe
   var _embedStyle = document.createElement('style');
-  _embedStyle.textContent = '.s-shell{padding:8px 12px!important;max-width:100%!important;min-height:auto!important}body{background:transparent!important}.s-foot{display:none!important}';
+  _embedStyle.textContent = '.s-shell{padding:8px 12px!important;max-width:100%!important;min-height:auto!important}body{background:transparent!important}.s-foot{display:block!important;margin-top:14px!important;font-size:10px!important}';
   document.head.appendChild(_embedStyle);
 }
 
