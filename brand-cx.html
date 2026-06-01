@@ -63,6 +63,33 @@
 .cx-yesno b{display:block;font-size:22px;font-weight:800}
 .cx-yesno span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
 
+/* Dashboard summary KPI strip */
+.cx-dash-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)}
+.cx-dash-kpi{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.cx-dash-kpi.hero{background:linear-gradient(180deg,rgba(17,165,81,.10),var(--surface-2))}
+.cx-dash-kpi .kpi-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
+.cx-dash-kpi .kpi-value{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--text-primary);line-height:1}
+.cx-dash-kpi .kpi-value small{font-size:13px;font-weight:600;color:var(--text-muted);margin-left:4px}
+.cx-dash-kpi .kpi-sub{font-size:11px;color:var(--text-muted);font-weight:600;display:flex;align-items:center;gap:4px}
+.cx-delta-up{color:#4ade80}
+.cx-delta-down{color:#fb7185}
+.cx-delta-flat{color:var(--text-muted)}
+
+/* Density toggle */
+.cx-density{display:inline-flex;gap:4px;background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-sm);padding:3px;margin-left:var(--space-2)}
+.cx-density button{background:transparent;color:var(--text-secondary);border:none;padding:6px 10px;font-size:11px;font-weight:700;border-radius:4px;cursor:pointer;letter-spacing:.04em;text-transform:uppercase}
+.cx-density button.active{background:var(--green);color:#fff}
+
+/* Compact density variant */
+.cx-dash-grid.compact{gap:var(--space-3);grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.cx-dash-grid.compact .cx-tile{padding:var(--space-3);gap:var(--space-2)}
+.cx-dash-grid.compact .cx-tile-big{font-size:24px}
+.cx-dash-grid.compact .cx-hist{height:64px}
+
+/* Empty-state tile (no answers yet) */
+.cx-tile.is-empty{opacity:.55;border-style:dashed}
+.cx-tile.is-empty .cx-tile-empty{font-style:italic;text-align:center;padding:var(--space-4) 0}
+
 /* Sparkline */
 .cx-spark{width:100%;height:60px;display:block}
 .cx-spark-wrap{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);margin-bottom:var(--space-5)}
@@ -181,8 +208,13 @@
         <button type="button" data-range="0">All</button>
       </div>
       <span id="cx-dash-meta" style="margin-left:auto;font-size:12px;color:var(--text-muted);font-weight:600"></span>
+      <div class="cx-density" id="cx-density" role="tablist" aria-label="Tile density">
+        <button type="button" data-density="comfortable" class="active">Comfort</button>
+        <button type="button" data-density="compact">Compact</button>
+      </div>
     </div>
 
+    <div class="cx-dash-kpis" id="cx-dash-kpis" style="display:none"></div>
 
     <div class="cx-dash-grid" id="cx-dash"></div>
     <div id="cx-dash-empty" class="cx-tile-empty" style="display:none;text-align:center;padding:var(--space-6) 0">No questions on this survey yet.</div>
@@ -254,7 +286,7 @@ function updateStoryInsights(d) {
 }
 
 </script>
-<script src="api.js?v=20260601e">
+<script src="api.js?v=20260601f">
 function updateNpsMeter(nps) {
   var fill = document.getElementById('cx-nps-meter-fill');
   if (!fill) return;
@@ -297,6 +329,7 @@ async function init() {
   document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx');
 
   wireRangeButtons();
+  wireDensityButtons();
   document.getElementById('cx-survey-pick').addEventListener('change', function(e){
     state.currentSurveyId = e.target.value || null;
     if (state.currentSurveyId) loadSurveyDashboard();
@@ -365,11 +398,36 @@ function wireRangeButtons() {
   });
 }
 
+function applyDensity(d) {
+  var grid = document.getElementById('cx-dash');
+  if (!grid) return;
+  if (d === 'compact') grid.classList.add('compact');
+  else grid.classList.remove('compact');
+  document.querySelectorAll('.cx-density button').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-density') === d);
+  });
+}
+
+function wireDensityButtons() {
+  var saved = 'comfortable';
+  try { saved = localStorage.getItem('cx_dash_density') || 'comfortable'; } catch (_) {}
+  applyDensity(saved);
+  document.querySelectorAll('.cx-density button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var d = btn.getAttribute('data-density') || 'comfortable';
+      applyDensity(d);
+      try { localStorage.setItem('cx_dash_density', d); } catch (_) {}
+    });
+  });
+}
+
 function clearDashboard() {
   document.getElementById('cx-dash').innerHTML = '';
   document.getElementById('cx-dash-empty').style.display = '';
   document.getElementById('cx-spark-wrap').style.display = 'none';
   document.getElementById('cx-dash-meta').textContent = '';
+  var kpis = document.getElementById('cx-dash-kpis');
+  if (kpis) { kpis.style.display = 'none'; kpis.innerHTML = ''; }
 }
 
 async function loadSurveyDashboard() {
@@ -402,12 +460,83 @@ function renderDashboard(d) {
   // Timeline sparkline
   renderSparkline(d.timeline || []);
 
+  // Headline KPI strip
+  renderKpiStrip(d);
+
   var dash = document.getElementById('cx-dash');
   var empty = document.getElementById('cx-dash-empty');
   var qs = Array.isArray(d.questions) ? d.questions : [];
   if (!qs.length) { dash.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
   dash.innerHTML = qs.map(function(q){ return renderTile(q, total); }).join('');
+}
+
+function renderKpiStrip(d) {
+  var wrap = document.getElementById('cx-dash-kpis');
+  if (!wrap) return;
+  var qs = Array.isArray(d.questions) ? d.questions : [];
+  var total = d.total_responses || 0;
+  var prev = d.prev_total_responses || 0;
+  var hasWindow = d.range_days && d.range_days > 0;
+
+  // NPS average across nps questions (weighted by answered count)
+  var npsSum = 0, npsW = 0;
+  // Scale_5 (rating/star/csat) average
+  var rateSum = 0, rateW = 0;
+  // Yes/positive % across yes_no
+  var yesN = 0, yesD = 0;
+  qs.forEach(function(q){
+    var a = q.aggregate || {}; var ans = q.answered || 0;
+    if (a.kind === 'nps' && a.score !== null && a.score !== undefined && ans > 0) {
+      npsSum += Number(a.score) * ans; npsW += ans;
+    } else if (a.kind === 'scale_5' && a.avg !== null && a.avg !== undefined && ans > 0) {
+      rateSum += Number(a.avg) * ans; rateW += ans;
+    } else if (a.kind === 'yes_no') {
+      yesN += (a.yes || 0); yesD += (a.yes || 0) + (a.no || 0);
+    }
+  });
+
+  var npsAvg = npsW ? Math.round(npsSum / npsW) : null;
+  var rateAvg = rateW ? Math.round((rateSum / rateW) * 10) / 10 : null;
+  var yesPct = yesD ? Math.round((yesN / yesD) * 100) : null;
+
+  var cards = [];
+  // Hero: total responses + delta
+  var deltaHtml = '';
+  if (hasWindow) {
+    if (prev > 0) {
+      var diff = total - prev;
+      var pctChange = Math.round((diff / prev) * 100);
+      var arrow = diff > 0 ? '▲' : (diff < 0 ? '▼' : '–');
+      var cls = diff > 0 ? 'cx-delta-up' : (diff < 0 ? 'cx-delta-down' : 'cx-delta-flat');
+      deltaHtml = '<div class="kpi-sub ' + cls + '">' + arrow + ' ' + Math.abs(pctChange) + '% vs prev ' + d.range_days + 'd</div>';
+    } else if (total > 0) {
+      deltaHtml = '<div class="kpi-sub cx-delta-up">▲ New · no prior data</div>';
+    } else {
+      deltaHtml = '<div class="kpi-sub cx-delta-flat">No responses yet</div>';
+    }
+  } else {
+    deltaHtml = '<div class="kpi-sub">All time</div>';
+  }
+  cards.push('<div class="cx-dash-kpi hero"><div class="kpi-label">Responses</div><div class="kpi-value">' + total + '</div>' + deltaHtml + '</div>');
+
+  if (npsAvg !== null) {
+    cards.push('<div class="cx-dash-kpi"><div class="kpi-label">Avg NPS</div><div class="kpi-value">' + npsAvg + '</div><div class="kpi-sub">' + npsW + ' answer' + (npsW===1?'':'s') + '</div></div>');
+  }
+  if (rateAvg !== null) {
+    cards.push('<div class="cx-dash-kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-value">' + rateAvg + '<small>/ 5</small></div><div class="kpi-sub">' + rateW + ' answer' + (rateW===1?'':'s') + '</div></div>');
+  }
+  if (yesPct !== null) {
+    cards.push('<div class="cx-dash-kpi"><div class="kpi-label">Positive %</div><div class="kpi-value">' + yesPct + '<small>%</small></div><div class="kpi-sub">' + yesD + ' yes/no answer' + (yesD===1?'':'s') + '</div></div>');
+  }
+
+  if (cards.length <= 1 && total === 0) {
+    wrap.style.display = 'none';
+    wrap.innerHTML = '';
+    return;
+  }
+  wrap.style.display = '';
+  wrap.innerHTML = cards.join('');
 }
 
 function renderSparkline(points) {
@@ -438,7 +567,7 @@ function renderTile(q, total) {
     + '<div class="cx-tile-meta">' + qtypeLabel(q.qtype) + ' · ' + answered + '</div></div>';
 
   if (!answered) {
-    return '<div class="cx-tile">' + head + '<div class="cx-tile-empty">No answers yet in this range.</div></div>';
+    return '<div class="cx-tile is-empty">' + head + '<div class="cx-tile-empty">No answers yet in this range</div></div>';
   }
 
   var body = '';
@@ -507,7 +636,8 @@ function renderScale5(a, qtype) {
 
 function renderYesNo(a) {
   var y = a.yes || 0, n = a.no || 0, total = y + n;
-  return '<div class="cx-yesno"><div><b style="color:#4ade80">' + y + '</b><span>Yes · ' + pct(y,total) + '%</span></div><div><b style="color:#fb7185">' + n + '</b><span>No · ' + pct(n,total) + '%</span></div></div>';
+  var yLbl = a.yes_label || 'Yes', nLbl = a.no_label || 'No';
+  return '<div class="cx-yesno"><div><b style="color:#4ade80">' + y + '</b><span>' + esc(yLbl) + ' · ' + pct(y,total) + '%</span></div><div><b style="color:#fb7185">' + n + '</b><span>' + esc(nLbl) + ' · ' + pct(n,total) + '%</span></div></div>';
 }
 
 function renderBars(options, total, isMulti) {
