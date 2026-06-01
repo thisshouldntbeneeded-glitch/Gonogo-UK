@@ -430,7 +430,7 @@
 
 <script src="data/helpers.js"></script>
 <script src="components.js"></script>
-<script src="api.js?v=20260601k"></script>
+<script src="api.js?v=20260601l"></script>
 <script>
 Components.initTheme();
 document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
@@ -1401,8 +1401,8 @@ function renderSettingsPanel() {
         + '<div id="s-brand-logo-status" style="font-size:11px;color:var(--text-muted);margin-top:4px;min-height:14px"></div>'
         + '<img id="s-brand-logo-preview" alt="" style="display:none;margin-top:6px;max-height:42px;border-radius:6px;background:var(--surface-1);padding:4px;border:1px solid var(--border-primary)">'
         + '</div>'
-        + '<div class="se-field"><label class="se-label">Primary colour</label><input class="se-input" id="s-brand-primary" type="text" placeholder="#11a551"></div></div>';
-  html += '<div class="se-row"><div class="se-field"><label class="se-label">Accent colour</label><input class="se-input" id="s-brand-accent" type="text" placeholder="#0b7a3b"></div><div class="se-field"><label class="se-label">Survey language</label><select class="se-input" id="s-language"><option value="en">English</option><option value="cy">Cymraeg</option><option value="gd">Gàidhlig</option><option value="pl">Polski</option><option value="fr">Français</option></select><div class="se-inline-note" style="font-size:11px;color:var(--text-muted);margin-top:4px">Write your questions in this language. UI labels (Next, Back, Submit) will match automatically.</div></div></div>';
+        + '<div class="se-field"><label class="se-label">Primary colour</label><div style="display:flex;gap:6px;align-items:stretch"><input type="color" id="s-brand-primary-pick" value="#11a551" title="Pick primary colour" style="width:38px;height:38px;padding:2px;border:1px solid var(--border-primary);border-radius:6px;background:var(--surface-2);cursor:pointer;flex:0 0 auto"><input class="se-input" id="s-brand-primary" type="text" placeholder="#11a551" style="flex:1"></div></div></div>';
+  html += '<div class="se-row"><div class="se-field"><label class="se-label">Accent colour</label><div style="display:flex;gap:6px;align-items:stretch"><input type="color" id="s-brand-accent-pick" value="#0b7a3b" title="Pick accent colour" style="width:38px;height:38px;padding:2px;border:1px solid var(--border-primary);border-radius:6px;background:var(--surface-2);cursor:pointer;flex:0 0 auto"><input class="se-input" id="s-brand-accent" type="text" placeholder="#0b7a3b" style="flex:1"></div></div><div class="se-field"><label class="se-label">Survey language</label><select class="se-input" id="s-language"><option value="en">English</option><option value="cy">Cymraeg</option><option value="gd">Gàidhlig</option><option value="pl">Polski</option><option value="fr">Français</option></select><div class="se-inline-note" style="font-size:11px;color:var(--text-muted);margin-top:4px">Write your questions in this language. UI labels (Next, Back, Submit) will match automatically.</div></div></div>';
   html += '<div class="se-mini-note">Templates now belong to the survey structure area so they can shape the question list immediately.</div>';
   html += '</div>';
 
@@ -1486,6 +1486,21 @@ function populateSettings() {
   document.getElementById('s-status').value = labels[s.status] || s.status || 'Draft';
 
   var setIfExists = function(id, val){ var el = document.getElementById(id); if (el) el.value = val; };
+  var _hexRe = /^#([0-9a-f]{6})$/i;
+  var syncColorPicker = function(textId, pickId){
+    var t = document.getElementById(textId), p = document.getElementById(pickId);
+    if (!t || !p) return;
+    var v = (t.value || '').trim();
+    if (_hexRe.test(v)) p.value = v.toLowerCase();
+  };
+  var bindColorPicker = function(textId, pickId){
+    var t = document.getElementById(textId), p = document.getElementById(pickId);
+    if (!t || !p || p._bound) return; p._bound = true;
+    p.addEventListener('input', function(){ t.value = p.value; if (typeof markDirty === 'function') markDirty(); });
+    t.addEventListener('input', function(){ syncColorPicker(textId, pickId); });
+  };
+  bindColorPicker('s-brand-primary', 's-brand-primary-pick');
+  bindColorPicker('s-brand-accent',  's-brand-accent-pick');
   var checkIfExists = function(id, val){ var el = document.getElementById(id); if (el) el.checked = val; };
 
   setIfExists('s-brand-logo', s.brand_logo_url || '');
@@ -1493,6 +1508,8 @@ function populateSettings() {
   setSurveyLogoStatus('', false);
   setIfExists('s-brand-primary', s.brand_primary_color || '');
   setIfExists('s-brand-accent', s.brand_accent_color || '');
+  syncColorPicker('s-brand-primary', 's-brand-primary-pick');
+  syncColorPicker('s-brand-accent',  's-brand-accent-pick');
   setIfExists('s-language', s.language || 'en');
   setIfExists('s-theme-variant', s.theme_variant || 'classic');
   setIfExists('s-progress-style', s.progress_style || 'bar');
@@ -1518,6 +1535,8 @@ function populateSettingsDefaults() {
   document.getElementById('s-brand-logo').value = '';
   document.getElementById('s-brand-primary').value = '';
   document.getElementById('s-brand-accent').value = '';
+  var _pp = document.getElementById('s-brand-primary-pick'); if (_pp) _pp.value = '#11a551';
+  var _ap = document.getElementById('s-brand-accent-pick');  if (_ap) _ap.value = '#0b7a3b';
   document.getElementById('s-theme-variant').value = 'classic';
   document.getElementById('s-progress-style').value = 'bar';
   document.getElementById('s-show-progress').checked = true;
