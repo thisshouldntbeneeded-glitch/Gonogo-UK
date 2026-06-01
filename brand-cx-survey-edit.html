@@ -428,7 +428,7 @@
 
 <script src="data/helpers.js"></script>
 <script src="components.js"></script>
-<script src="api.js?v=20260531a"></script>
+<script src="api.js?v=20260601a"></script>
 <script>
 Components.initTheme();
 document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
@@ -1593,11 +1593,32 @@ function renderDistChannel(box, channel, activeLink, activeUrl, widgetSrc) {
       '<span>You\u2019re previewing with a placeholder link. Generate a real distribution link below before copying the code.</span>' +
       '</div>';
 
+    var howGuide = '<details class="se-embed-guide" style="margin-bottom:14px;border:1px solid var(--border-primary);border-radius:8px;background:var(--surface-2);overflow:hidden">' +
+      '<summary style="cursor:pointer;padding:12px 14px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px;list-style:none"><i class="fa-solid fa-circle-question" style="color:var(--brand-primary,#11a551)"></i> How to install this on your website <span style="margin-left:auto;font-weight:400;font-size:11px;color:var(--text-muted)">click to expand</span></summary>' +
+      '<div style="padding:0 16px 14px 16px;font-size:13px;line-height:1.55;color:var(--text-secondary)">' +
+        '<p style="margin:0 0 10px">The embed is a single <code style="background:var(--surface-3);padding:1px 5px;border-radius:4px">&lt;script&gt;</code> tag. Paste it once before the closing <code style="background:var(--surface-3);padding:1px 5px;border-radius:4px">&lt;/body&gt;</code> tag on every page you want the survey to appear on.</p>' +
+        '<ol style="margin:0 0 12px 18px;padding:0">' +
+          '<li style="margin-bottom:6px"><strong>Configure the look</strong> below (mode, colour, trigger, frequency, page rules). The preview on the right updates live.</li>' +
+          '<li style="margin-bottom:6px"><strong>Click &ldquo;Copy code&rdquo;</strong> in the studio to grab the snippet.</li>' +
+          '<li style="margin-bottom:6px"><strong>Paste it into your site</strong> just before <code style="background:var(--surface-3);padding:1px 5px;border-radius:4px">&lt;/body&gt;</code>. Works in plain HTML, WordPress (Theme File Editor or a custom-HTML block), Shopify (theme.liquid), Webflow (Custom Code &rarr; Footer Code), Squarespace (Code Injection &rarr; Footer), Wix (Custom Code in Settings), and any other CMS that supports custom script tags.</li>' +
+          '<li style="margin-bottom:6px"><strong>Publish</strong> your site and load any page — the widget appears according to the trigger you chose.</li>' +
+        '</ol>' +
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:10px 0 4px">' +
+          '<div style="background:var(--surface-3);padding:10px 12px;border-radius:6px"><div style="font-weight:600;font-size:12px;margin-bottom:4px">Modes</div><div style="font-size:12px;color:var(--text-muted)"><b>Tab</b> sticky side tab · <b>Bubble</b> floating circle · <b>Modal</b> popup over the page · <b>Inline</b> in a chosen element</div></div>' +
+          '<div style="background:var(--surface-3);padding:10px 12px;border-radius:6px"><div style="font-weight:600;font-size:12px;margin-bottom:4px">Triggers</div><div style="font-size:12px;color:var(--text-muted)"><b>Manual</b> visitor clicks · <b>Time</b> after N seconds · <b>Scroll</b> at N% of page · <b>Exit intent</b> mouse leaves · <b>Click</b> on a CSS selector</div></div>' +
+          '<div style="background:var(--surface-3);padding:10px 12px;border-radius:6px"><div style="font-weight:600;font-size:12px;margin-bottom:4px">Inline mode</div><div style="font-size:12px;color:var(--text-muted)">Set <b>Mode</b> to <i>inline</i> and add an empty <code>&lt;div id=&quot;gonogo-cx&quot;&gt;&lt;/div&gt;</code> where you want the survey to render.</div></div>' +
+          '<div style="background:var(--surface-3);padding:10px 12px;border-radius:6px"><div style="font-weight:600;font-size:12px;margin-bottom:4px">Page rules</div><div style="font-size:12px;color:var(--text-muted)"><b>Include / Exclude</b> use URL patterns separated by commas, e.g. <code>/checkout/*, /thank-you</code>.</div></div>' +
+        '</div>' +
+        '<p style="margin:10px 0 0;font-size:12px;color:var(--text-muted)"><i class="fa-solid fa-shield-halved"></i> Responses go straight into your CX dashboard. No personal data is collected unless your survey asks for it. Need help? Email <a href="mailto:support@gonogo.co.uk">support@gonogo.co.uk</a>.</p>' +
+      '</div>' +
+    '</details>';
+
     box.innerHTML = '<div class="se-dist-card">' + banner +
       '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
       '<div class="se-dist-icon" style="margin:0"><i class="fa-solid fa-code"></i></div>' +
       '<div><h3 style="margin:0">Website embed</h3><p style="margin:2px 0 0;color:var(--text-muted);font-size:13px">Design a feedback button or popup, preview it live, then copy the code into your site.</p></div>' +
       '</div>' +
+      howGuide +
       '<div id="embed-studio-root"></div></div>';
     var studioRoot = document.getElementById('embed-studio-root');
     if (studioRoot) renderEmbedStudio(studioRoot, url, token, label, widgetSrc);
