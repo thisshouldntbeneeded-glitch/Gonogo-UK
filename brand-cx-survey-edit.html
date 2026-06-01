@@ -10,6 +10,18 @@
 <style>
 /* ── Top header bar ── */
 .se-header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-5)}
+.plan-strip{display:flex;align-items:center;gap:14px;padding:10px 14px;border:1px solid var(--border-primary);border-radius:8px;background:var(--surface-2);margin-bottom:var(--space-5);font-size:13px;color:var(--text-primary);flex-wrap:wrap}
+.plan-strip.is-warn{border-color:#d97706;background:rgba(217,119,6,0.08)}
+.plan-strip.is-over{border-color:#dc2626;background:rgba(220,38,38,0.10)}
+.plan-strip .plan-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.04em;background:var(--green);color:#fff}
+.plan-strip.is-warn .plan-pill{background:#d97706}
+.plan-strip.is-over .plan-pill{background:#dc2626}
+.plan-strip .plan-usage-text{font-weight:600}
+.plan-strip .plan-reset{font-size:11px;color:var(--text-muted)}
+.plan-strip .plan-bar{flex:1;min-width:120px;max-width:280px;height:6px;border-radius:999px;background:var(--surface-3);overflow:hidden}
+.plan-strip .plan-bar > span{display:block;height:100%;background:var(--green);transition:width 0.3s ease}
+.plan-strip.is-warn .plan-bar > span{background:#d97706}
+.plan-strip.is-over .plan-bar > span{background:#dc2626}
 .se-header h1{font-size:18px;font-weight:700;margin:0;flex:1;min-width:200px}
 .se-header .cx-badge{font-size:11px}
 .se-actions{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center}
@@ -334,6 +346,7 @@
 <div class="admin-layout">
   <div id="sidebar-container"></div>
   <main class="admin-main" id="brand-content" style="display:none;">
+    <div id="plan-usage-strip" class="plan-strip" style="display:none"></div>
     <div class="se-header">
       <h1 id="page-title"><i class="fa-solid fa-pen-to-square" style="color:var(--green);margin-right:var(--space-2)"></i> <span id="title-text">New Survey</span></h1>
       <span class="cx-badge" id="status-badge" style="display:none"></span>
@@ -430,13 +443,71 @@
 
 <script src="data/helpers.js"></script>
 <script src="components.js"></script>
-<script src="api.js?v=20260601l"></script>
+<script src="api.js?v=20260601m"></script>
 <script>
 Components.initTheme();
 document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-surveys');
 
 var _surveyId = new URLSearchParams(location.search).get('id');
 var _survey = null;
+
+var PLAN_CAPS = { starter:300, standard:2000, growth:10000, unlimited:null };
+var PLAN_LABELS = { starter:'Starter', standard:'Standard', growth:'Growth', unlimited:'Unlimited' };
+
+function fmtInt(n){ try { return Number(n||0).toLocaleString('en-GB'); } catch(e) { return String(n||0); } }
+function fmtResetDate(iso){
+  try {
+    var d = new Date(iso);
+    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+  } catch(e) { return ''; }
+}
+async function refreshPlanUsage(){
+  var strip = document.getElementById('plan-usage-strip');
+  if (!strip) return;
+  var slug = (_survey && (_survey.brand_slug || _survey.brandSlug)) || '';
+  if (!slug) {
+    try {
+      var bu = (typeof GoNoGoStorage !== 'undefined' && GoNoGoStorage.get) ? GoNoGoStorage.get('brandUser') : null;
+      if (bu && bu.brand_slug) slug = bu.brand_slug;
+    } catch(e) {}
+  }
+  if (!slug) return;
+  try {
+    var url = GoNoGoAPI._supabaseUrl + '/rest/v1/rpc/cx_get_brand_plan_usage';
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'apikey': GoNoGoAPI._supabaseKey,
+        'Authorization': 'Bearer ' + GoNoGoAPI._supabaseKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_brand_slug: slug })
+    });
+    if (!res.ok) return;
+    var data = await res.json();
+    if (!data) return;
+    var tier = (data.tier || 'starter').toLowerCase();
+    var used = Number(data.used || 0);
+    var cap = PLAN_CAPS[tier];
+    var label = PLAN_LABELS[tier] || tier;
+    var reset = data.period_end ? fmtResetDate(data.period_end) : '';
+    strip.classList.remove('is-warn','is-over');
+    if (cap === null || cap === undefined) {
+      strip.innerHTML = '<span class="plan-pill">' + label + '</span>' +
+        '<span class="plan-usage-text">' + fmtInt(used) + ' responses this month</span>' +
+        '<span class="plan-reset">No cap \u00b7 resets ' + reset + '</span>';
+    } else {
+      var pct = cap > 0 ? Math.min(100, Math.round((used / cap) * 100)) : 0;
+      if (pct >= 100) strip.classList.add('is-over');
+      else if (pct >= 80) strip.classList.add('is-warn');
+      strip.innerHTML = '<span class="plan-pill">' + label + '</span>' +
+        '<span class="plan-usage-text">' + fmtInt(used) + ' / ' + fmtInt(cap) + ' responses this month</span>' +
+        '<div class="plan-bar"><span style="width:' + pct + '%"></span></div>' +
+        '<span class="plan-reset">' + pct + '% \u00b7 resets ' + reset + '</span>';
+    }
+    strip.style.display = '';
+  } catch(e) { /* silent \u2014 non-critical UI */ }
+}
 var _questions = [];
 var _i18n = { ui: {}, questions: [] };
 var _links = [];
@@ -791,6 +862,7 @@ async function init() {
       ensureQuestionTabMeta();
       updateStatusUI();
       renderLinks();
+      refreshPlanUsage();
     } catch(e) {
       toast('Could not load survey: ' + (e.message || 'error'), 'error');
       return;
