@@ -248,7 +248,13 @@
           </div>
           <div class="form-group">
             <label class="form-label">Logo URL</label>
-            <input type="url" id="f-logo" placeholder="https://logo.clearbit.com/example.co.uk">
+            <div style="display:flex;gap:var(--space-2);align-items:stretch">
+              <input type="url" id="f-logo" placeholder="https://… or click Upload" style="flex:1">
+              <button type="button" class="btn btn-ghost btn-sm" id="f-logo-upload-btn" onclick="document.getElementById('f-logo-file').click()" style="white-space:nowrap"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+              <input type="file" id="f-logo-file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/gif" style="display:none" onchange="uploadLogoFile(this)">
+            </div>
+            <div id="f-logo-status" class="text-xs text-muted" style="margin-top:4px;min-height:16px"></div>
+            <img id="f-logo-preview" alt="" style="display:none;margin-top:8px;max-height:48px;border-radius:6px;background:var(--surface-3);padding:4px">
           </div>
         </div>
 
@@ -438,7 +444,7 @@
   <script src="data/data.js"></script>
   <script src="data/helpers.js"></script>
   <script src="components.js"></script>
-  <script src="api.js"></script>
+  <script src="api.js?v=20260601g"></script>
 
   <script>
     document.getElementById('sidebar-container').innerHTML = Components.renderAdminSidebar('brands');
@@ -498,6 +504,87 @@
         .trim()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
+    }
+
+    function setLogoStatus(msg, isError) {
+      var el = document.getElementById('f-logo-status');
+      if (!el) return;
+      el.textContent = msg || '';
+      el.style.color = isError ? 'var(--red-text)' : 'var(--text-muted)';
+    }
+
+    function setLogoPreview(url) {
+      var img = document.getElementById('f-logo-preview');
+      if (!img) return;
+      if (url) { img.src = url; img.style.display = ''; }
+      else { img.removeAttribute('src'); img.style.display = 'none'; }
+    }
+
+    // Resize image client-side to max 512px on long edge. Returns a Promise<File>.
+    // Skips SVG (vector) and GIF (would lose animation).
+    function resizeImageFile(file) {
+      if (file.type === 'image/svg+xml' || file.type === 'image/gif') return Promise.resolve(file);
+      return new Promise(function (resolve) {
+        var img = new Image();
+        var url = URL.createObjectURL(file);
+        img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+        img.onload = function () {
+          URL.revokeObjectURL(url);
+          var max = 512;
+          var w = img.naturalWidth, h = img.naturalHeight;
+          if (w <= max && h <= max) return resolve(file);
+          var ratio = Math.min(max / w, max / h);
+          var canvas = document.createElement('canvas');
+          canvas.width = Math.round(w * ratio);
+          canvas.height = Math.round(h * ratio);
+          var ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          var outType = file.type === 'image/png' ? 'image/png' : 'image/webp';
+          var quality = outType === 'image/webp' ? 0.9 : undefined;
+          canvas.toBlob(function (blob) {
+            if (!blob) return resolve(file);
+            var ext = outType === 'image/png' ? 'png' : 'webp';
+            resolve(new File([blob], 'logo.' + ext, { type: outType }));
+          }, outType, quality);
+        };
+        img.src = url;
+      });
+    }
+
+    async function uploadLogoFile(input) {
+      var file = input && input.files && input.files[0];
+      if (!file) return;
+      var nameEl = document.getElementById('f-name');
+      var brandName = nameEl ? nameEl.value.trim() : '';
+      if (!brandName) {
+        setLogoStatus('Enter the brand name first — it\'s used in the filename.', true);
+        input.value = '';
+        return;
+      }
+      var slug = slugify(brandName) || 'brand';
+      var btn = document.getElementById('f-logo-upload-btn');
+      var originalBtn = btn ? btn.innerHTML : '';
+      if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading…'; }
+      setLogoStatus('Preparing …', false);
+      try {
+        var resized = await resizeImageFile(file);
+        setLogoStatus('Uploading ' + Math.round(resized.size / 1024) + ' KB …', false);
+        var res = await GoNoGoAPI.adminUploadBrandLogo(slug, resized);
+        if (res && res.ok) {
+          document.getElementById('f-logo').value = res.public_url;
+          setLogoPreview(res.public_url);
+          setLogoStatus('Uploaded. Click Save to persist.', false);
+        } else {
+          setLogoStatus(res && res.error ? res.error : 'Upload failed', true);
+        }
+      } catch (err) {
+        setLogoStatus((err && err.message) || 'Upload failed', true);
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = originalBtn; }
+        input.value = '';
+      }
     }
 
     function isUKBrand(b) {
@@ -896,6 +983,8 @@
       document.getElementById('brand-form').reset();
       document.getElementById('new-cat-fields').classList.remove('visible');
       document.getElementById('f-industry').value = allCategoriesData.length > 0 ? getCategorySlug(allCategoriesData[0]) : '';
+      setLogoPreview('');
+      setLogoStatus('', false);
       document.getElementById('brand-modal').classList.add('open');
     }
 
@@ -927,6 +1016,8 @@
       document.getElementById('new-cat-fields').classList.remove('visible');
       document.getElementById('f-website').value = b.website || '';
       document.getElementById('f-logo').value = b.logo || '';
+      setLogoPreview(b.logo || '');
+      setLogoStatus('', false);
       document.getElementById('f-googleplay').value = (b.appRatings && (b.appRatings.googlePlayScore || b.appRatings.googlePlay || '')).toString().replace('/5', '');
       document.getElementById('f-ios').value = (b.appRatings && (b.appRatings.iosScore || b.appRatings.ios || '')).toString().replace('/5', '');
       document.getElementById('f-overview').value = b.overview || '';

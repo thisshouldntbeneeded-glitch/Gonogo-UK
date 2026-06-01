@@ -581,6 +581,61 @@ var GoNoGoAPI = (function () {
       return { p_caller_id: null, p_caller_hash: null };
     },
 
+    // Upload a brand logo via the gated Edge Function. Returns { ok, public_url } or { ok: false, error }
+    adminUploadBrandLogo: function (brandSlug, file) {
+      var auth = this._getCallerAuth();
+      if (!auth.p_caller_id || !auth.p_caller_hash) {
+        return Promise.resolve({ ok: false, error: 'Not signed in as admin' });
+      }
+      if (!file) return Promise.resolve({ ok: false, error: 'No file selected' });
+      var allowed = ['image/png','image/jpeg','image/jpg','image/webp','image/svg+xml','image/gif'];
+      if (allowed.indexOf(file.type) === -1) {
+        return Promise.resolve({ ok: false, error: 'Unsupported file type (' + (file.type || 'unknown') + ')' });
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        return Promise.resolve({ ok: false, error: 'File too large (max 2 MB)' });
+      }
+      // Read file as base64 (chunked to avoid call-stack blow-up on big buffers)
+      function fileToBase64(f) {
+        return new Promise(function (resolve, reject) {
+          var reader = new FileReader();
+          reader.onerror = function () { reject(new Error('Could not read file')); };
+          reader.onload = function () {
+            var result = reader.result || '';
+            var idx = String(result).indexOf(',');
+            resolve(idx >= 0 ? String(result).slice(idx + 1) : String(result));
+          };
+          reader.readAsDataURL(f);
+        });
+      }
+      return fileToBase64(file).then(function (b64) {
+        return fetch(SUPABASE_URL + '/functions/v1/upload-brand-logo', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': 'Bearer ' + SUPABASE_ANON_KEY
+          },
+          body: JSON.stringify({
+            caller_id: auth.p_caller_id,
+            caller_hash: auth.p_caller_hash,
+            brand_slug: brandSlug || 'brand',
+            content_type: file.type,
+            content_base64: b64
+          })
+        }).then(function (r) { return r.json().then(function (j) { return { status: r.status, body: j }; }); })
+          .then(function (res) {
+            if (res.body && res.body.ok && res.body.public_url) {
+              return { ok: true, public_url: res.body.public_url };
+            }
+            return { ok: false, error: (res.body && res.body.error) || ('Upload failed (HTTP ' + res.status + ')') };
+          })
+          .catch(function (err) {
+            return { ok: false, error: (err && err.message) || 'Network error' };
+          });
+      });
+    },
+
     adminGetUsers: function () {
       var auth = this._getCallerAuth();
       return supabaseRequest('rpc/admin_list_users', {
