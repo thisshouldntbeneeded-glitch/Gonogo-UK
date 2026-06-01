@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Welcome to GoNoGo — finalising your account</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="stylesheet" href="style.css?v=20260601o">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})()</script>
+<style>
+  .wc-wrap { max-width: 620px; margin: 0 auto; padding: clamp(40px, 8vh, 100px) var(--space-4); text-align: center; }
+  .wc-card { background: var(--surface-1); border: 1px solid var(--border-primary); border-radius: 18px; padding: clamp(28px, 5vw, 44px); }
+  .wc-spinner { width: 56px; height: 56px; border-radius: 50%; border: 4px solid var(--border-primary); border-top-color: var(--green); animation: wc-spin 0.9s linear infinite; margin: 0 auto 22px; }
+  @keyframes wc-spin { to { transform: rotate(360deg); } }
+  .wc-icon { width: 56px; height: 56px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin: 0 auto 22px; font-size: 24px; }
+  .wc-icon.ok { background: rgba(17,165,81,0.15); color: var(--green); }
+  .wc-icon.err { background: rgba(239,68,68,0.15); color: #ef4444; }
+  .wc-card h1 { font-size: 1.5rem; font-weight: 800; margin: 0 0 10px; letter-spacing: -0.01em; }
+  .wc-card p { color: var(--text-secondary); font-size: 0.96rem; line-height: 1.55; margin: 0 0 14px; }
+  .wc-status { font-size: 0.85rem; color: var(--text-muted); margin-top: 16px; }
+  .wc-help { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-primary); font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+  .wc-help a { color: var(--green); text-decoration: none; }
+  .wc-btn { display: inline-block; padding: 11px 22px; border-radius: 10px; background: var(--green); color: #fff; font-weight: 700; text-decoration: none; font-size: 0.95rem; margin-top: 14px; border: none; cursor: pointer; }
+  .wc-btn.secondary { background: transparent; color: var(--text-primary); border: 1px solid var(--border-primary); margin-left: 8px; }
+  .wc-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 18px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+</style>
+</head>
+<body>
+
+<div class="wc-wrap">
+  <div class="wc-card" id="wcCard">
+    <div class="wc-spinner" id="wcSpinner"></div>
+    <h1 id="wcTitle">Confirming your payment…</h1>
+    <p id="wcBody">Revolut is letting us know that your payment went through. This usually takes 10–30 seconds. Please don't close this tab.</p>
+    <p class="wc-status" id="wcStatus">Status: waiting for payment confirmation</p>
+
+    <div class="wc-help" id="wcHelp">
+      We match payments to your account by <strong>email address</strong>. If you used a different email on the Revolut payment page than the one you signed up with, this page will time out — just email <a href="mailto:jeremy@gonogo.co.uk">jeremy@gonogo.co.uk</a> and we'll sort it out within a few hours.
+    </div>
+    <div class="wc-meta" id="wcMeta"></div>
+  </div>
+</div>
+
+<script src="data/helpers.js?v=20260601o"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="components.js?v=20260601o"></script>
+<script src="api.js?v=20260601o"></script>
+<script>
+(function(){
+  var POLL_INTERVAL_MS = 3000;
+  var MAX_WAIT_MS = 5 * 60 * 1000; // 5 minutes
+  var startedAt = Date.now();
+
+  var $title  = document.getElementById('wcTitle');
+  var $body   = document.getElementById('wcBody');
+  var $status = document.getElementById('wcStatus');
+  var $spin   = document.getElementById('wcSpinner');
+  var $card   = document.getElementById('wcCard');
+  var $meta   = document.getElementById('wcMeta');
+
+  function showSuccess(){
+    if ($spin) $spin.remove();
+    var ic = document.createElement('div');
+    ic.className = 'wc-icon ok';
+    ic.innerHTML = '<i class="fa-solid fa-check"></i>';
+    $card.insertBefore(ic, $title);
+    $title.textContent = "You're in. Logging you in now…";
+    $body.textContent  = 'Your account is ready. Redirecting to your dashboard.';
+    $status.textContent = 'Status: provisioned';
+  }
+
+  function showFailure(msg, allowRetry){
+    if ($spin) $spin.remove();
+    var ic = document.createElement('div');
+    ic.className = 'wc-icon err';
+    ic.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+    $card.insertBefore(ic, $title);
+    $title.textContent = "We couldn't finish setting up your account";
+    $body.innerHTML = msg + "<br><br>Email <a href='mailto:jeremy@gonogo.co.uk' style='color:var(--green)'>jeremy@gonogo.co.uk</a> with the email address you used on Revolut and we'll get you in.";
+    $status.textContent = '';
+    var btns = document.createElement('div');
+    btns.style.marginTop = '18px';
+    btns.innerHTML = "<a href='index.html' class='wc-btn secondary'>Back to home</a>" +
+                     (allowRetry ? "<a href='signup.html' class='wc-btn'>Try again</a>" : "");
+    $card.appendChild(btns);
+  }
+
+  var pending = null;
+  try { pending = JSON.parse(sessionStorage.getItem('su_pending') || 'null'); } catch(e) {}
+
+  if (!pending || !pending.email || !pending.pw) {
+    showFailure("We can't find your signup session in this browser. This can happen if you opened the Revolut payment link in a different browser, or if your browser cleared its storage.", true);
+    return;
+  }
+
+  $meta.textContent = 'Signup email: ' + pending.email;
+
+  function loginAndRedirect(){
+    try {
+      GoNoGoAPI.brandLogin(pending.email, pending.pw)
+        .then(function(user){
+          if (!user) {
+            showFailure("Your payment was confirmed but we couldn't log you in automatically. Please go to the <a href='business.html' style='color:var(--green)'>login page</a> and sign in with the email and password you chose.", false);
+            return;
+          }
+          GoNoGoStorage.set('brandUser', user);
+          GoNoGoStorage.set('brandLoginTime', Date.now());
+          sessionStorage.removeItem('su_pending');
+          setTimeout(function(){ window.location.href = 'brand-dashboard.html'; }, 800);
+        })
+        .catch(function(err){
+          console.error('[welcome] auto-login failed', err);
+          showFailure("Your payment was confirmed, but we couldn't log you in automatically. Please go to the <a href='business.html' style='color:var(--green)'>login page</a> and sign in with the email and password you chose.", false);
+        });
+    } catch(err){
+      console.error('[welcome] login threw', err);
+      showFailure("Your payment was confirmed, but we couldn't log you in automatically. Please go to the <a href='business.html' style='color:var(--green)'>login page</a> and sign in with the email and password you chose.", false);
+    }
+  }
+
+  function checkStatus(){
+    var url = GoNoGoAPI._supabaseUrl + '/rest/v1/rpc/check_signup_status';
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'apikey': GoNoGoAPI._supabaseKey,
+        'Authorization': 'Bearer ' + GoNoGoAPI._supabaseKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ p_email: pending.email })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var row = Array.isArray(data) ? data[0] : data;
+      var status = row && row.status;
+      if (status === 'provisioned') {
+        showSuccess();
+        loginAndRedirect();
+        return;
+      }
+      if (status === 'failed') {
+        showFailure("Something went wrong on our side while creating your account.", false);
+        return;
+      }
+      // awaiting_payment or paid -> keep polling
+      var elapsed = Date.now() - startedAt;
+      if (elapsed > MAX_WAIT_MS) {
+        showFailure("We haven't heard back from Revolut yet. This usually means the email on your Revolut payment didn't match the email you signed up with (<strong>" + pending.email + "</strong>).", false);
+        return;
+      }
+      var secs = Math.round(elapsed/1000);
+      $status.textContent = 'Status: ' + (status || 'waiting') + ' · ' + secs + 's elapsed';
+      setTimeout(checkStatus, POLL_INTERVAL_MS);
+    })
+    .catch(function(err){
+      console.warn('[welcome] poll error', err);
+      // keep trying unless we've exceeded the window
+      var elapsed = Date.now() - startedAt;
+      if (elapsed > MAX_WAIT_MS) {
+        showFailure("We couldn't reach our servers to confirm your payment. Please refresh this page or contact us.", false);
+        return;
+      }
+      setTimeout(checkStatus, POLL_INTERVAL_MS);
+    });
+  }
+
+  // Kick off
+  checkStatus();
+})();
+</script>
+
+</body>
+</html>

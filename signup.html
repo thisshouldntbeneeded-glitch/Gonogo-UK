@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Create your GoNoGo account — UK</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script>(function(){var t=localStorage.getItem('gonogo_theme');if(t==='light'||(!t&&window.matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('light-mode');})()</script>
+<style>
+  .su-wrap { max-width: 1040px; margin: 0 auto; padding: var(--space-8) var(--space-4) var(--space-16); }
+  .su-grid { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: clamp(24px, 4vw, 48px); align-items: start; }
+  @media (max-width: 880px) { .su-grid { grid-template-columns: 1fr; } }
+  .su-card { background: var(--surface-1); border: 1px solid var(--border-primary); border-radius: 18px; padding: 28px; }
+  .su-card h1 { font-size: 1.6rem; font-weight: 800; margin: 0 0 6px; }
+  .su-card .sub { color: var(--text-secondary); font-size: 0.95rem; margin: 0 0 22px; }
+  .su-field { margin-bottom: 16px; }
+  .su-field label { display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; color: var(--text-primary); }
+  .su-field input, .su-field select {
+    width: 100%; padding: 11px 14px; border-radius: 10px;
+    border: 1px solid var(--border-primary); background: var(--surface-2);
+    color: var(--text-primary); font-size: 0.95rem; font-family: inherit;
+    box-sizing: border-box;
+  }
+  .su-field input:focus, .su-field select:focus { outline: none; border-color: var(--green); }
+  .su-hint { font-size: 0.78rem; color: var(--text-muted); margin-top: 4px; }
+  .su-submit { width: 100%; justify-content: center; margin-top: 8px; }
+  .su-error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.4); color: #ef4444; padding: 10px 14px; border-radius: 10px; font-size: 0.88rem; margin-bottom: 14px; display: none; }
+  .su-error.visible { display: block; }
+  .su-summary { background: var(--surface-1); border: 1px solid var(--border-primary); border-radius: 18px; padding: 24px; position: sticky; top: 24px; }
+  .su-summary h3 { margin: 0 0 12px; font-size: 1rem; font-weight: 700; }
+  .su-tier-pill { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(17,165,81,0.15); color: var(--green); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 12px; }
+  .su-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 8px; }
+  .su-price strong { font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; }
+  .su-price span { color: var(--text-muted); font-size: 0.95rem; }
+  .su-cap { color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 18px; }
+  .su-cap strong { color: var(--text-primary); }
+  .su-features { list-style: none; padding: 0; margin: 0 0 18px; display: grid; gap: 8px; }
+  .su-features li { display: flex; gap: 8px; align-items: flex-start; font-size: 0.88rem; color: var(--text-secondary); }
+  .su-features li i { color: var(--green); margin-top: 4px; font-size: 11px; }
+  .su-callout { font-size: 0.82rem; color: var(--text-muted); background: var(--surface-2); padding: 12px 14px; border-radius: 10px; border-left: 3px solid var(--green); line-height: 1.5; }
+  .su-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 520px) { .su-row { grid-template-columns: 1fr; } }
+  .su-foot { text-align: center; margin-top: 18px; font-size: 0.85rem; color: var(--text-muted); }
+  .su-foot a { color: var(--green); text-decoration: none; }
+</style>
+</head>
+<body>
+  <div id="nav"></div>
+
+  <main>
+    <div class="su-wrap">
+      <div class="su-grid">
+        <div class="su-card">
+          <h1>Create your account</h1>
+          <p class="sub">Set up your brand profile, then complete payment on Revolut to activate your subscription.</p>
+
+          <div class="su-error" id="su-error"></div>
+
+          <form id="su-form">
+            <div class="su-row">
+              <div class="su-field">
+                <label for="su-email">Email</label>
+                <input id="su-email" type="email" required autocomplete="email" placeholder="you@company.com">
+                <div class="su-hint">Use this same email on the Revolut payment page.</div>
+              </div>
+              <div class="su-field">
+                <label for="su-name">Your name</label>
+                <input id="su-name" type="text" required autocomplete="name" placeholder="Jane Smith">
+              </div>
+            </div>
+
+            <div class="su-field">
+              <label for="su-pw">Password</label>
+              <input id="su-pw" type="password" required minlength="8" autocomplete="new-password" placeholder="Minimum 8 characters">
+            </div>
+
+            <div class="su-row">
+              <div class="su-field">
+                <label for="su-brand">Brand / company name</label>
+                <input id="su-brand" type="text" required placeholder="Acme Coffee Co.">
+              </div>
+              <div class="su-field">
+                <label for="su-cat">Industry</label>
+                <select id="su-cat" required>
+                  <option value="">Select industry…</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="su-field">
+              <label for="su-tier">Plan</label>
+              <select id="su-tier" required>
+                <option value="starter">Starter — £19/mo (300 responses)</option>
+                <option value="standard" selected>Standard — £40/mo (2,000 responses)</option>
+                <option value="growth">Growth — £79/mo (10,000 responses)</option>
+                <option value="unlimited">Unlimited — £149/mo (no cap)</option>
+              </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg su-submit" id="su-submit">
+              <i class="fa-solid fa-arrow-right"></i> Continue to payment
+            </button>
+            <div class="su-foot">
+              Already have an account? <a href="#" onclick="event.preventDefault(); if(window.Components&&Components.openBrandLogin) Components.openBrandLogin();">Log in</a>
+            </div>
+          </form>
+        </div>
+
+        <aside class="su-summary" id="su-summary">
+          <span class="su-tier-pill" id="su-pill">Standard</span>
+          <div class="su-price"><strong id="su-price-amount">£40</strong><span>/ month</span></div>
+          <div class="su-cap"><strong id="su-cap-amount">2,000</strong> responses / month</div>
+          <ul class="su-features" id="su-features"></ul>
+          <div class="su-callout">
+            <strong>What happens next:</strong><br>
+            1. We save your details.<br>
+            2. Revolut takes payment securely.<br>
+            3. We log you in and drop you on your dashboard — usually within a few seconds of payment.
+          </div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <div id="footer"></div>
+
+  <script src="data/helpers.js?v=20260601o"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="components.js?v=20260601o"></script>
+  <script src="api.js?v=20260601o"></script>
+  <script>
+    document.getElementById('nav').innerHTML = Components.renderPublicNav('');
+    Components.initTheme();
+    Components.initPublicAuth();
+    document.getElementById('footer').innerHTML = Components.renderFooter();
+
+    // ── Region + tier config ─────────────────────────────────────
+    var REGION = 'uk';
+    var CURRENCY_SYMBOL = '£';
+
+    var TIERS = {
+      starter:   { name:'Starter',   price:'£19',  cap:'300',    url:'https://checkout.revolut.com/subscription/1294abf5-b6f8-4f5c-933d-203f3f29f164',
+        features:['Full survey builder','Branching and skip logic','Live dashboard','Link and QR distribution','Brand logo and colours'] },
+      standard:  { name:'Standard',  price:'£40',  cap:'2,000',  url:'https://checkout.revolut.com/subscription/b33dfb39-6dc3-4818-9ce0-16a357cf617f',
+        features:['Everything in Starter','Classic and party modes','Response inbox with full history','Unlimited surveys and questions','Priority email support'] },
+      growth:    { name:'Growth',    price:'£79',  cap:'10,000', url:'https://checkout.revolut.com/subscription/1e8f8d9a-7d76-46e0-88d6-e30bb506e0b4',
+        features:['Everything in Standard','High-volume distribution','CSV export of responses','Multi-survey rollups'] },
+      unlimited: { name:'Unlimited', price:'£149', cap:'No',     url:'https://checkout.revolut.com/subscription/75acdb78-437f-411a-a43c-936c895f45cc',
+        features:['Everything in Growth','Unlimited responses','Dedicated onboarding','SLA-backed support'] }
+    };
+
+    function renderSummary(tierKey) {
+      var t = TIERS[tierKey] || TIERS.standard;
+      document.getElementById('su-pill').textContent = t.name;
+      document.getElementById('su-price-amount').textContent = t.price;
+      document.getElementById('su-cap-amount').textContent = t.cap;
+      var ul = document.getElementById('su-features');
+      ul.innerHTML = t.features.map(function(f){ return '<li><i class="fa-solid fa-check"></i> '+ f +'</li>'; }).join('');
+    }
+
+    // ── Prefill from query string (?tier=growth) ────────────────
+    var params = new URLSearchParams(window.location.search);
+    var initialTier = (params.get('tier') || 'standard').toLowerCase();
+    if (!TIERS[initialTier]) initialTier = 'standard';
+    document.getElementById('su-tier').value = initialTier;
+    renderSummary(initialTier);
+    document.getElementById('su-tier').addEventListener('change', function(){ renderSummary(this.value); });
+
+    // ── Populate categories ──────────────────────────────────────
+    (function populateCategories(){
+      var sel = document.getElementById('su-cat');
+      var url = GoNoGoAPI._supabaseUrl + '/rest/v1/categories?region=eq.' + REGION + '&select=slug,name&order=name.asc';
+      fetch(url, { headers: { apikey: GoNoGoAPI._supabaseKey, Authorization: 'Bearer ' + GoNoGoAPI._supabaseKey } })
+        .then(function(r){ return r.ok ? r.json() : []; })
+        .then(function(rows){
+          // Fall back to all categories if region filter returns nothing
+          if (!rows || !rows.length) {
+            return fetch(GoNoGoAPI._supabaseUrl + '/rest/v1/categories?select=slug,name&order=name.asc', {
+              headers: { apikey: GoNoGoAPI._supabaseKey, Authorization: 'Bearer ' + GoNoGoAPI._supabaseKey }
+            }).then(function(r){ return r.ok ? r.json() : []; });
+          }
+          return rows;
+        })
+        .then(function(rows){
+          rows.forEach(function(c){
+            var o = document.createElement('option');
+            o.value = c.slug; o.textContent = c.name;
+            sel.appendChild(o);
+          });
+        })
+        .catch(function(e){ console.error('categories load failed', e); });
+    })();
+
+    // ── Form submit ──────────────────────────────────────────────
+    var errEl = document.getElementById('su-error');
+    function showError(msg){ errEl.textContent = msg; errEl.classList.add('visible'); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function clearError(){ errEl.classList.remove('visible'); errEl.textContent = ''; }
+
+    document.getElementById('su-form').addEventListener('submit', async function(e){
+      e.preventDefault();
+      clearError();
+      var btn = document.getElementById('su-submit');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
+
+      var email   = document.getElementById('su-email').value.trim().toLowerCase();
+      var name    = document.getElementById('su-name').value.trim();
+      var pw      = document.getElementById('su-pw').value;
+      var brand   = document.getElementById('su-brand').value.trim();
+      var cat     = document.getElementById('su-cat').value;
+      var tierKey = document.getElementById('su-tier').value;
+
+      if (pw.length < 8) { showError('Password must be at least 8 characters.'); btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-arrow-right"></i> Continue to payment'; return; }
+      if (!cat) { showError('Please pick an industry.'); btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-arrow-right"></i> Continue to payment'; return; }
+      if (!TIERS[tierKey]) { showError('Invalid plan.'); btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-arrow-right"></i> Continue to payment'; return; }
+
+      try {
+        var hash = await GoNoGoAPI._hashPassword(pw);
+        var body = {
+          p_email: email,
+          p_hash: hash,
+          p_display_name: name,
+          p_brand_name: brand,
+          p_category_slug: cat,
+          p_region: REGION,
+          p_plan_tier: tierKey
+        };
+        var res = await fetch(GoNoGoAPI._supabaseUrl + '/rest/v1/rpc/start_signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: GoNoGoAPI._supabaseKey,
+            Authorization: 'Bearer ' + GoNoGoAPI._supabaseKey
+          },
+          body: JSON.stringify(body)
+        });
+        var text = await res.text();
+        if (!res.ok) {
+          var detail = text;
+          try { var j = JSON.parse(text); detail = j.message || j.hint || j.error || text; } catch(_){}
+          if (/email_exists/i.test(detail)) showError('That email already has an account. Try logging in instead.');
+          else if (/signup_in_progress/i.test(detail)) showError('A signup is already in progress for this email. Check your inbox or try again in a few minutes.');
+          else if (/invalid_email/i.test(detail)) showError('Please enter a valid email address.');
+          else if (/invalid_brand_name/i.test(detail)) showError('Please enter a brand name.');
+          else if (/invalid_category/i.test(detail)) showError('Please pick a valid industry.');
+          else showError('Could not start signup: ' + detail);
+          btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-arrow-right"></i> Continue to payment';
+          return;
+        }
+
+        // Stash the credentials in sessionStorage so /welcome.html can auto-login.
+        // sessionStorage is per-tab and is cleared when the tab closes.
+        sessionStorage.setItem('su_pending', JSON.stringify({
+          email: email,
+          pw: pw, // needed for brandLogin which hashes client-side
+          tier: tierKey,
+          startedAt: Date.now()
+        }));
+
+        // Off to Revolut.
+        window.location.href = TIERS[tierKey].url;
+      } catch (e2) {
+        console.error(e2);
+        showError('Something went wrong. Please try again.');
+        btn.disabled=false; btn.innerHTML='<i class="fa-solid fa-arrow-right"></i> Continue to payment';
+      }
+    });
+  </script>
+</body>
+</html>
