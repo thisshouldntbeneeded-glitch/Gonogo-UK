@@ -154,6 +154,10 @@
             <select id="bu-brand" required>
               <option value="">Loading brands...</option>
             </select>
+            <div id="bu-brand-custom-wrap" style="display:none;margin-top:var(--space-2)">
+              <input type="text" id="bu-brand-custom" placeholder="brand-slug (lowercase, dashes)" pattern="[a-z0-9-]+" title="Lowercase letters, numbers and dashes only">
+              <small class="text-xs text-muted">Used as the brand identifier. Not shown publicly.</small>
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label" for="bu-tier">Tier</label>
@@ -394,6 +398,11 @@
       brands.forEach(function(b) {
         select.innerHTML += '<option value="' + safeAttr(b.slug) + '">' + safeText(b.name) + ' (' + safeText(b.gonogo_score) + '/100)</option>';
       });
+      select.innerHTML += '<option value="__custom__">\u2795 Other \u2014 enter brand manually (not on site)</option>';
+      var customWrap = document.getElementById('bu-brand-custom-wrap');
+      select.addEventListener('change', function() {
+        customWrap.style.display = (select.value === '__custom__') ? 'block' : 'none';
+      });
     } catch (e) {
       document.getElementById('bu-brand').innerHTML = '<option value="">Could not load brands</option>';
     }
@@ -450,6 +459,13 @@
       var name = document.getElementById('bu-name').value.trim();
       var brandSlug = document.getElementById('bu-brand').value;
       var tier = document.getElementById('bu-tier').value;
+
+      if (brandSlug === '__custom__') {
+        brandSlug = (document.getElementById('bu-brand-custom').value || '').trim().toLowerCase();
+        if (!brandSlug || !/^[a-z0-9-]+$/.test(brandSlug)) {
+          throw new Error('Enter a valid brand slug (lowercase letters, numbers, dashes)');
+        }
+      }
 
       if (!brandSlug) {
         throw new Error('Please select a brand');
