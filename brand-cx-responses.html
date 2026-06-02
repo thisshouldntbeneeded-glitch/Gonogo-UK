@@ -128,15 +128,17 @@
 
 <script src="data/helpers.js"></script>
 <script src="components.js"></script>
-<script src="api.js?v=20260601n"></script>
+<script src="api.js?v=20260602a"></script>
 <script>
 Components.initTheme();
 document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-responses');
 var esc = Components.escapeHTML.bind(Components);
 var allRows = [];
 var currentRows = [];
-var defaultColumns = ['submitted_at','survey_name','response_id','response_status','sentiment','nps_score','rating_avg','contact_name','contact_email','preview_text','case_priority','case_status'];
-var columns = [
+var surveyQuestions = []; // [{id, sort_order, qtype, prompt}] for the currently-selected single survey
+var baseDefaultColumns = ['submitted_at','survey_name','response_id','response_status','sentiment','nps_score','rating_avg','contact_name','contact_email','preview_text','case_priority','case_status'];
+var defaultColumns = baseDefaultColumns.slice();
+var baseColumns = [
   {key:'submitted_at',label:'Submitted',required:true,render:function(r){return '<span class="cx-num">'+esc(fmtDateFull(r.submitted_at))+'</span>';},csv:function(r){return fmtDateFull(r.submitted_at);}},
   {key:'survey_name',label:'Survey',required:true,render:function(r){return '<strong>'+esc(r.survey_name || 'Survey')+'</strong><small class="cx-muted">'+esc(r.survey_id || '')+'</small>';},csv:function(r){return r.survey_name || ''; }},
   {key:'response_id',label:'Response ID',render:function(r){return '<span class="cx-num">'+esc(r.response_id || '')+'</span>';},csv:function(r){return r.response_id || ''; }},
@@ -152,6 +154,7 @@ var columns = [
   {key:'case_status',label:'Case',render:function(r){var v=r.case_status||'';return v?'<span class="cx-chip cx-status-'+esc(v.replace('_','-'))+'">'+esc(v)+'</span>':'<span class="cx-muted">—</span>';},csv:function(r){return r.case_status || ''; }},
   {key:'survey_id',label:'Survey ID',render:function(r){return '<span class="cx-num">'+esc(r.survey_id || '')+'</span>';},csv:function(r){return r.survey_id || ''; }}
 ];
+var columns = baseColumns.slice();
 var visible = new Set(defaultColumns);
 
 if (Components.checkBrandAuth()) init();
@@ -168,6 +171,12 @@ async function init(){
     var sel = document.getElementById('f-survey');
     (surveys || []).forEach(function(s){ var o = document.createElement('option'); o.value = s.id; o.textContent = s.name; sel.appendChild(o); });
   } catch (e) {}
+  // Optional ?survey= preselect (deep-link from dashboards/overview)
+  try {
+    var qp = new URLSearchParams(window.location.search);
+    var pre = qp.get('survey');
+    if (pre) { var fs = document.getElementById('f-survey'); if (fs) fs.value = pre; }
+  } catch(_) {}
   await load();
 }
 
@@ -198,25 +207,117 @@ function syncColumnInputs(){
 async function load(){
   var tbody = document.getElementById('resp-tbody');
   tbody.innerHTML = '<tr><td colspan="20"><div class="cx-empty"><i class="fa-solid fa-spinner fa-spin"></i>Loading response data…</div></td></tr>';
+  var surveyId = document.getElementById('f-survey').value;
   var filters = {
-    survey_id: document.getElementById('f-survey').value,
+    survey_id: surveyId,
     status: document.getElementById('f-status').value,
     sentiment: document.getElementById('f-sentiment').value,
     since: document.getElementById('f-since').value
   };
   try {
-    allRows = await GoNoGoAPI.cx.listResponses(filters) || [];
+    if (surveyId) {
+      // Single-survey mode: pull flat answer rows and pivot to one column per question
+      var flat = await GoNoGoAPI.cx.exportSurveyResponses(surveyId, {
+        status: filters.status, sentiment: filters.sentiment, since: filters.since
+      }) || [];
+      allRows = pivotResponses(flat, filters);
+      rebuildColumnsForSurvey();
+    } else {
+      // Portfolio mode: metadata-only across all surveys
+      surveyQuestions = [];
+      columns = baseColumns.slice();
+      visible = new Set(baseDefaultColumns);
+      buildColumnMenu();
+      allRows = await GoNoGoAPI.cx.listResponses(filters) || [];
+    }
     applyFilters();
   } catch (e) {
     tbody.innerHTML = '<tr><td colspan="20"><div class="cx-empty"><i class="fa-solid fa-triangle-exclamation"></i>Could not load responses: '+esc(e.message || 'error')+'</div></td></tr>';
   }
 }
 
+// Pivot flat answer rows into one row per response, with answers keyed by question_id
+function pivotResponses(flat, filters) {
+  var byResp = {};
+  var qmap = {}; // question_id -> {id, sort_order, qtype, prompt}
+  for (var i = 0; i < flat.length; i++) {
+    var r = flat[i];
+    var rid = r.response_id;
+    if (!byResp[rid]) {
+      byResp[rid] = {
+        response_id: rid,
+        submitted_at: r.submitted_at,
+        response_status: r.response_status,
+        sentiment: r.sentiment,
+        nps_score: r.nps_score,
+        rating_avg: r.rating_avg,
+        contact: r.contact || {},
+        preview_text: r.preview_text,
+        survey_id: filters.survey_id,
+        survey_name: '', // filled below
+        answers: {}
+      };
+    }
+    if (r.question_id) {
+      if (!qmap[r.question_id]) {
+        qmap[r.question_id] = { id: r.question_id, sort_order: r.sort_order || 0, qtype: r.qtype, prompt: r.prompt };
+      }
+      byResp[rid].answers[r.question_id] = answerToText(r);
+    }
+  }
+  // Fetch survey name from picker option
+  var picker = document.getElementById('f-survey');
+  var sname = picker && picker.options[picker.selectedIndex] ? picker.options[picker.selectedIndex].textContent : '';
+  surveyQuestions = Object.keys(qmap).map(function(k){ return qmap[k]; })
+    .sort(function(a,b){ return (a.sort_order||0) - (b.sort_order||0); });
+  var rows = Object.keys(byResp).map(function(k){ var row = byResp[k]; row.survey_name = sname; return row; });
+  // Newest first
+  rows.sort(function(a,b){ return (b.submitted_at || '').localeCompare(a.submitted_at || ''); });
+  return rows;
+}
+
+function answerToText(r) {
+  if (r.value_text != null && r.value_text !== '') return String(r.value_text);
+  if (r.value_number != null) return String(r.value_number);
+  if (r.value_json != null) {
+    try {
+      if (Array.isArray(r.value_json)) return r.value_json.join(', ');
+      if (typeof r.value_json === 'object') return JSON.stringify(r.value_json);
+      return String(r.value_json);
+    } catch(_){ return ''; }
+  }
+  return '';
+}
+
+function rebuildColumnsForSurvey() {
+  // Start from base, then append one column per question (cap label length)
+  columns = baseColumns.slice();
+  var questionCols = surveyQuestions.map(function(q){
+    var key = 'q_' + q.id;
+    var label = (q.prompt || '(Question)');
+    if (label.length > 48) label = label.slice(0, 45) + '…';
+    return {
+      key: key,
+      label: label,
+      qid: q.id,
+      qtype: q.qtype,
+      render: function(r){ var v = r.answers && r.answers[q.id]; return v != null && v !== '' ? esc(String(v)) : '<span class="cx-muted">—</span>'; },
+      csv: function(r){ return (r.answers && r.answers[q.id] != null) ? r.answers[q.id] : ''; }
+    };
+  });
+  columns = columns.concat(questionCols);
+  // Default visible columns: keep metadata defaults + all question columns
+  visible = new Set(baseDefaultColumns.concat(questionCols.map(function(c){ return c.key; })));
+  buildColumnMenu();
+}
+
 function applyFilters(){
   var q = (document.getElementById('f-search').value || '').trim().toLowerCase();
   currentRows = allRows.filter(function(r){
     if (!q) return true;
-    var hay = [r.survey_name, r.response_id, r.preview_text, r.survey_id, r.response_status, r.case_status, r.case_priority, r.contact&&r.contact.name, r.contact&&r.contact.email, r.contact&&r.contact.phone].filter(Boolean).join(' ').toLowerCase();
+    var parts = [r.survey_name, r.response_id, r.preview_text, r.survey_id, r.response_status, r.case_status, r.case_priority, r.contact&&r.contact.name, r.contact&&r.contact.email, r.contact&&r.contact.phone];
+    if (r.answers) { for (var k in r.answers) { if (r.answers.hasOwnProperty(k)) parts.push(r.answers[k]); } }
+    var hay = parts.filter(Boolean).join(' ').toLowerCase();
     return hay.indexOf(q) !== -1;
   });
   document.getElementById('count-label').textContent = currentRows.length + ' response' + (currentRows.length === 1 ? '' : 's');

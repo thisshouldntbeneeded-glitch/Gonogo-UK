@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>GoNoGo — Survey Dashboards</title>
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+/* Survey picker bar */
+.cx-pickbar{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:center;padding:var(--space-4);background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);margin-bottom:var(--space-5)}
+.cx-pickbar label{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)}
+.cx-pickbar select{background:var(--surface-1);color:var(--text-primary);border:1px solid var(--border-primary);border-radius:var(--radius-sm);padding:8px 12px;font-size:14px;min-width:240px}
+.cx-range{display:inline-flex;gap:4px;background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-sm);padding:3px}
+.cx-range button{background:transparent;color:var(--text-secondary);border:none;padding:6px 12px;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer}
+.cx-range button.active{background:var(--green);color:#fff}
+
+/* KPI strip */
+.cx-dash-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)}
+.cx-dash-kpi{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
+.cx-dash-kpi.hero{background:linear-gradient(180deg,rgba(17,165,81,.10),var(--surface-2))}
+.cx-dash-kpi .kpi-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--text-secondary)}
+.cx-dash-kpi .kpi-value{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--text-primary);line-height:1}
+.cx-dash-kpi .kpi-value small{font-size:13px;font-weight:600;color:var(--text-muted);margin-left:4px}
+.cx-dash-kpi .kpi-sub{font-size:11px;color:var(--text-muted);font-weight:600;display:flex;align-items:center;gap:4px}
+.cx-delta-up{color:#4ade80}
+.cx-delta-down{color:#fb7185}
+.cx-delta-flat{color:var(--text-muted)}
+
+/* Density toggle */
+.cx-density{display:inline-flex;gap:4px;background:var(--surface-1);border:1px solid var(--border-primary);border-radius:var(--radius-sm);padding:3px;margin-left:var(--space-2)}
+.cx-density button{background:transparent;color:var(--text-secondary);border:none;padding:6px 10px;font-size:11px;font-weight:700;border-radius:4px;cursor:pointer;letter-spacing:.04em;text-transform:uppercase}
+.cx-density button.active{background:var(--green);color:#fff}
+
+/* Tile grid */
+.cx-dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--space-4);align-items:start}
+.cx-dash-grid.compact{gap:var(--space-3);grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.cx-dash-grid.compact .cx-tile{padding:var(--space-3);gap:var(--space-2)}
+.cx-dash-grid.compact .cx-tile-big{font-size:24px}
+.cx-dash-grid.compact .cx-hist{height:64px}
+.cx-tile{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);min-height:0}
+.cx-tile.is-empty{opacity:.55;border-style:dashed}
+.cx-tile-head{display:flex;justify-content:space-between;gap:var(--space-3);align-items:flex-start}
+.cx-tile-prompt{font-size:13px;font-weight:600;color:var(--text-primary);line-height:1.3}
+.cx-tile-meta{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);white-space:nowrap}
+.cx-tile-big{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--text-primary);line-height:1}
+.cx-tile-big small{font-size:14px;font-weight:600;color:var(--text-muted);margin-left:6px}
+.cx-tile-empty{color:var(--text-muted);font-size:12px;font-style:italic;padding:var(--space-3) 0}
+.cx-bar-row{display:flex;align-items:center;gap:var(--space-2);font-size:12px}
+.cx-bar-row .lbl{flex:0 0 90px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cx-bar-row .bar{flex:1;height:8px;background:var(--surface-3);border-radius:4px;overflow:hidden}
+.cx-bar-row .bar>span{display:block;height:100%;background:var(--green);transition:width .25s}
+.cx-bar-row .cnt{flex:0 0 56px;text-align:right;color:var(--text-muted);font-weight:700}
+.cx-hist{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;align-items:end;height:90px}
+.cx-hist-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.cx-hist-col .b{width:100%;min-height:2px;background:var(--green);border-radius:3px 3px 0 0;transition:height .2s}
+.cx-hist-col .b.red{background:#ef4444}
+.cx-hist-col .b.amber{background:#eab308}
+.cx-hist-col .lbl{font-size:10px;color:var(--text-muted);font-weight:600}
+.cx-text-list{display:flex;flex-direction:column;gap:8px;max-height:230px;overflow-y:auto}
+.cx-text-list p{margin:0;padding:8px 10px;background:var(--surface-1);border-radius:var(--radius-sm);font-size:12px;color:var(--text-primary);border-left:2px solid var(--green)}
+.cx-yesno{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);text-align:center}
+.cx-yesno div{padding:var(--space-3);border-radius:var(--radius-sm);background:var(--surface-1)}
+.cx-yesno b{display:block;font-size:22px;font-weight:800}
+.cx-yesno span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
+.cx-nps-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2)}
+.cx-nps-chip{padding:var(--space-2);border-radius:var(--radius-sm);text-align:center}
+.cx-nps-chip b{display:block;font-size:16px;font-weight:800}
+.cx-nps-chip span{font-size:10px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.cx-prom{background:rgba(34,197,94,.14);color:#4ade80}
+.cx-pass{background:rgba(234,179,8,.14);color:#fbbf24}
+.cx-detr{background:rgba(239,68,68,.14);color:#fb7185}
+
+/* Donut */
+.cx-donut-wrap{display:flex;align-items:center;gap:var(--space-3)}
+.cx-donut{width:96px;height:96px;flex:0 0 96px}
+.cx-donut-legend{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-secondary);flex:1;min-width:0}
+.cx-donut-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* Sparkline */
+.cx-spark{width:100%;height:60px;display:block}
+.cx-spark-wrap{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);margin-bottom:var(--space-5)}
+.cx-spark-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:var(--space-2)}
+.cx-spark-head h3{font-size:14px;font-weight:700;margin:0}
+.cx-spark-head span{font-size:11px;color:var(--text-muted);font-weight:600}
+
+.cx-empty-screen{padding:var(--space-8);text-align:center;color:var(--text-muted);background:var(--surface-2);border:1px dashed var(--border-primary);border-radius:var(--radius-md)}
+.cx-empty-screen i{font-size:30px;display:block;margin-bottom:var(--space-3);color:var(--green)}
+</style>
+</head>
+<body>
+<div class="admin-layout">
+  <div id="sidebar-container"></div>
+  <main class="admin-main" id="brand-content" style="display:none;">
+    <div class="admin-header">
+      <div>
+        <h1 class="admin-title"><i class="fa-solid fa-chart-pie" style="color:var(--green);margin-right:var(--space-2);"></i> Survey dashboards</h1>
+        <p class="text-sm text-secondary">Pick a survey, choose a window, and read every question at a glance.</p>
+      </div>
+      <div style="display:flex;gap:var(--space-2)">
+        <a href="brand-cx-responses.html" class="btn btn-sm" style="background:var(--surface-3)"><i class="fa-solid fa-inbox"></i> Responses</a>
+        <a href="brand-cx-survey-edit.html" class="btn btn-sm" style="background:var(--green);color:#fff;border:none"><i class="fa-solid fa-plus"></i> New survey</a>
+      </div>
+    </div>
+
+    <div class="cx-pickbar">
+      <label for="cx-survey-pick">Survey</label>
+      <select id="cx-survey-pick"><option value="">Loading…</option></select>
+      <div class="cx-range" role="tablist" aria-label="Time range">
+        <button type="button" data-range="7">7d</button>
+        <button type="button" data-range="30" class="active">30d</button>
+        <button type="button" data-range="90">90d</button>
+        <button type="button" data-range="0">All</button>
+      </div>
+      <span id="cx-dash-meta" style="margin-left:auto;font-size:12px;color:var(--text-muted);font-weight:600"></span>
+      <div class="cx-density" id="cx-density" role="tablist" aria-label="Tile density">
+        <button type="button" data-density="comfortable" class="active">Comfort</button>
+        <button type="button" data-density="compact">Compact</button>
+      </div>
+    </div>
+
+    <div class="cx-spark-wrap" id="cx-spark-wrap" style="display:none">
+      <div class="cx-spark-head"><h3>Responses over time</h3><span id="cx-spark-range"></span></div>
+      <svg class="cx-spark" id="cx-spark" viewBox="0 0 600 60" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="cx-dash-kpis" id="cx-dash-kpis" style="display:none"></div>
+
+    <div class="cx-dash-grid" id="cx-dash"></div>
+    <div id="cx-dash-empty" class="cx-empty-screen" style="display:none"><i class="fa-solid fa-clipboard-question"></i>No questions on this survey yet.</div>
+    <div id="cx-dash-nosurvey" class="cx-empty-screen" style="display:none"><i class="fa-solid fa-clipboard-list"></i>Create a survey to see its dashboard here.<br><a href="brand-cx-survey-edit.html" class="btn btn-sm" style="margin-top:var(--space-3);background:var(--green);color:#fff;border:none"><i class="fa-solid fa-plus"></i> New survey</a></div>
+
+    <div style="padding:var(--space-6) 0;text-align:center;">
+      <p class="text-xs text-muted">&copy; 2026 GoNoGo &mdash; Brand Portal &middot; CX Suite (internal only)</p>
+    </div>
+  </main>
+</div>
+
+<script src="data/helpers.js"></script>
+<script src="components.js"></script>
+<script src="api.js?v=20260602a"></script>
+<script>
+Components.initTheme();
+document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-dashboards');
+
+var state = { surveys: [], currentSurveyId: null, rangeDays: 30 };
+
+if (Components.checkBrandAuth()) init();
+
+async function init() {
+  var user = Components.getBrandUser();
+  if (!user) return;
+  document.getElementById('brand-content').style.display = '';
+  document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-dashboards');
+
+  wireRangeButtons();
+  wireDensityButtons();
+  document.getElementById('cx-survey-pick').addEventListener('change', function(e){
+    state.currentSurveyId = e.target.value || null;
+    if (state.currentSurveyId) loadSurveyDashboard();
+    else clearDashboard();
+  });
+
+  // Pre-select via ?survey=<id> query param (deep-link from overview)
+  var qp = new URLSearchParams(window.location.search);
+  var preselect = qp.get('survey');
+
+  try {
+    var surveys = await GoNoGoAPI.cx.listSurveys();
+    surveys = Array.isArray(surveys) ? surveys : (surveys && surveys.surveys) || [];
+    state.surveys = surveys;
+    populatePicker(surveys);
+    if (surveys.length > 0) {
+      var initial = preselect && surveys.some(function(s){ return s.id === preselect; }) ? preselect : surveys[0].id;
+      state.currentSurveyId = initial;
+      document.getElementById('cx-survey-pick').value = initial;
+      loadSurveyDashboard();
+    } else {
+      document.getElementById('cx-dash-nosurvey').style.display = '';
+    }
+  } catch (e) {
+    document.getElementById('cx-dash').innerHTML = '<div class="cx-tile-empty" style="color:var(--red)">Could not load surveys: ' + esc(e.message || 'Unauthorized') + '</div>';
+  }
+}
+
+function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function pct(n, total){ if (!total) return 0; return Math.round((n/total)*100); }
+
+function populatePicker(surveys) {
+  var sel = document.getElementById('cx-survey-pick');
+  if (!surveys.length) {
+    sel.innerHTML = '<option value="">No surveys yet — create one</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.innerHTML = surveys.map(function(s){
+    var label = esc(s.name || 'Untitled') + (s.status ? ' · ' + s.status : '');
+    return '<option value="' + esc(s.id) + '">' + label + '</option>';
+  }).join('');
+}
+
+function wireRangeButtons() {
+  document.querySelectorAll('.cx-range button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.cx-range button').forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      state.rangeDays = parseInt(btn.getAttribute('data-range'), 10);
+      if (state.currentSurveyId) loadSurveyDashboard();
+    });
+  });
+}
+
+function applyDensity(d) {
+  var grid = document.getElementById('cx-dash');
+  if (!grid) return;
+  if (d === 'compact') grid.classList.add('compact');
+  else grid.classList.remove('compact');
+  document.querySelectorAll('.cx-density button').forEach(function(b){
+    b.classList.toggle('active', b.getAttribute('data-density') === d);
+  });
+}
+
+function wireDensityButtons() {
+  var saved = 'comfortable';
+  try { saved = localStorage.getItem('cx_dash_density') || 'comfortable'; } catch (_) {}
+  applyDensity(saved);
+  document.querySelectorAll('.cx-density button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var d = btn.getAttribute('data-density') || 'comfortable';
+      applyDensity(d);
+      try { localStorage.setItem('cx_dash_density', d); } catch (_) {}
+    });
+  });
+}
+
+function clearDashboard() {
+  document.getElementById('cx-dash').innerHTML = '';
+  document.getElementById('cx-dash-empty').style.display = 'none';
+  document.getElementById('cx-spark-wrap').style.display = 'none';
+  document.getElementById('cx-dash-meta').textContent = '';
+  var kpis = document.getElementById('cx-dash-kpis');
+  if (kpis) { kpis.style.display = 'none'; kpis.innerHTML = ''; }
+}
+
+async function loadSurveyDashboard() {
+  var dash = document.getElementById('cx-dash');
+  var empty = document.getElementById('cx-dash-empty');
+  var nosurvey = document.getElementById('cx-dash-nosurvey');
+  nosurvey.style.display = 'none';
+  dash.innerHTML = '<div class="cx-tile-empty">Loading dashboard…</div>';
+  empty.style.display = 'none';
+  document.getElementById('cx-dash-meta').textContent = '';
+  try {
+    var d = await GoNoGoAPI.cx.getSurveyDashboard(state.currentSurveyId, state.rangeDays);
+    renderDashboard(d || {});
+  } catch (e) {
+    dash.innerHTML = '<div class="cx-tile-empty" style="color:var(--red)">Could not load dashboard: ' + esc(e.message || 'error') + '</div>';
+  }
+}
+
+function rangeLabel(days) {
+  if (!days) return 'All time';
+  if (days === 7) return 'Last 7 days';
+  if (days === 30) return 'Last 30 days';
+  if (days === 90) return 'Last 90 days';
+  return 'Last ' + days + ' days';
+}
+
+function renderDashboard(d) {
+  var meta = document.getElementById('cx-dash-meta');
+  var total = d.total_responses || 0;
+  meta.textContent = total + ' response' + (total === 1 ? '' : 's') + ' · ' + rangeLabel(d.range_days);
+
+  renderSparkline(d.timeline || []);
+  renderKpiStrip(d);
+
+  var dash = document.getElementById('cx-dash');
+  var empty = document.getElementById('cx-dash-empty');
+  var qs = Array.isArray(d.questions) ? d.questions : [];
+  if (!qs.length) { dash.innerHTML = ''; empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  dash.innerHTML = qs.map(function(q){ return renderTile(q, total); }).join('');
+}
+
+function renderKpiStrip(d) {
+  var wrap = document.getElementById('cx-dash-kpis');
+  if (!wrap) return;
+  var qs = Array.isArray(d.questions) ? d.questions : [];
+  var total = d.total_responses || 0;
+  var prev = d.prev_total_responses || 0;
+  var hasWindow = d.range_days && d.range_days > 0;
+
+  var npsSum = 0, npsW = 0;
+  var rateSum = 0, rateW = 0;
+  var yesN = 0, yesD = 0;
+  qs.forEach(function(q){
+    var a = q.aggregate || {}; var ans = q.answered || 0;
+    if (a.kind === 'nps' && a.score !== null && a.score !== undefined && ans > 0) {
+      npsSum += Number(a.score) * ans; npsW += ans;
+    } else if (a.kind === 'scale_5' && a.avg !== null && a.avg !== undefined && ans > 0) {
+      rateSum += Number(a.avg) * ans; rateW += ans;
+    } else if (a.kind === 'yes_no') {
+      yesN += (a.yes || 0); yesD += (a.yes || 0) + (a.no || 0);
+    }
+  });
+
+  var npsAvg = npsW ? Math.round(npsSum / npsW) : null;
+  var rateAvg = rateW ? Math.round((rateSum / rateW) * 10) / 10 : null;
+  var yesPct = yesD ? Math.round((yesN / yesD) * 100) : null;
+
+  var cards = [];
+  var deltaHtml = '';
+  if (hasWindow) {
+    if (prev > 0) {
+      var diff = total - prev;
+      var pctChange = Math.round((diff / prev) * 100);
+      var arrow = diff > 0 ? '▲' : (diff < 0 ? '▼' : '–');
+      var cls = diff > 0 ? 'cx-delta-up' : (diff < 0 ? 'cx-delta-down' : 'cx-delta-flat');
+      deltaHtml = '<div class="kpi-sub ' + cls + '">' + arrow + ' ' + Math.abs(pctChange) + '% vs prev ' + d.range_days + 'd</div>';
+    } else if (total > 0) {
+      deltaHtml = '<div class="kpi-sub cx-delta-up">▲ New · no prior data</div>';
+    } else {
+      deltaHtml = '<div class="kpi-sub cx-delta-flat">No responses yet</div>';
+    }
+  } else {
+    deltaHtml = '<div class="kpi-sub">All time</div>';
+  }
+  cards.push('<div class="cx-dash-kpi hero"><div class="kpi-label">Responses</div><div class="kpi-value">' + total + '</div>' + deltaHtml + '</div>');
+
+  if (npsAvg !== null) {
+    cards.push('<div class="cx-dash-kpi"><div class="kpi-label">Avg NPS</div><div class="kpi-value">' + npsAvg + '</div><div class="kpi-sub">' + npsW + ' answer' + (npsW===1?'':'s') + '</div></div>');
+  }
+  if (rateAvg !== null) {
+    cards.push('<div class="cx-dash-kpi"><div class="kpi-label">Avg Rating</div><div class="kpi-value">' + rateAvg + '<small>/ 5</small></div><div class="kpi-sub">' + rateW + ' answer' + (rateW===1?'':'s') + '</div></div>');
+  }
+  if (yesPct !== null) {
+    cards.push('<div class="cx-dash-kpi"><div class="kpi-label">Positive %</div><div class="kpi-value">' + yesPct + '<small>%</small></div><div class="kpi-sub">' + yesD + ' yes/no answer' + (yesD===1?'':'s') + '</div></div>');
+  }
+
+  if (cards.length <= 1 && total === 0) { wrap.style.display = 'none'; wrap.innerHTML = ''; return; }
+  wrap.style.display = '';
+  wrap.innerHTML = cards.join('');
+}
+
+function renderSparkline(points) {
+  var wrap = document.getElementById('cx-spark-wrap');
+  if (!points.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  document.getElementById('cx-spark-range').textContent = points[0].d + ' → ' + points[points.length-1].d;
+  var svg = document.getElementById('cx-spark');
+  var W = 600, H = 60, pad = 2;
+  var max = Math.max.apply(null, points.map(function(p){ return p.n; }));
+  if (max < 1) max = 1;
+  var step = points.length > 1 ? (W - pad*2) / (points.length - 1) : 0;
+  var pts = points.map(function(p, i){
+    var x = pad + i * step;
+    var y = H - pad - ((p.n / max) * (H - pad*2));
+    return x.toFixed(1) + ',' + y.toFixed(1);
+  }).join(' ');
+  var area = 'M' + pad + ',' + (H-pad) + ' L' + pts.replace(/ /g, ' L') + ' L' + (W-pad) + ',' + (H-pad) + ' Z';
+  svg.innerHTML =
+    '<path d="' + area + '" fill="rgba(17,165,81,0.18)"/>' +
+    '<polyline points="' + pts + '" fill="none" stroke="#11a551" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+}
+
+function renderTile(q, total) {
+  var a = q.aggregate || {};
+  var answered = q.answered || 0;
+  var head = '<div class="cx-tile-head"><div class="cx-tile-prompt">' + esc(q.prompt || '(Untitled question)') + '</div>'
+    + '<div class="cx-tile-meta">' + qtypeLabel(q.qtype) + ' · ' + answered + '</div></div>';
+
+  if (!answered) {
+    return '<div class="cx-tile is-empty">' + head + '<div class="cx-tile-empty">No answers yet in this range</div></div>';
+  }
+
+  var body = '';
+  switch (a.kind) {
+    case 'nps': body = renderNps(a); break;
+    case 'scale_5': body = renderScale5(a, q.qtype); break;
+    case 'yes_no': body = renderYesNo(a); break;
+    case 'single_select': body = renderDonut(a.options || [], answered); break;
+    case 'multi_select': body = renderBars(a.options || [], answered, true); break;
+    case 'number': body = renderNumber(a); break;
+    case 'date': body = renderDate(a); break;
+    case 'text': body = renderText(a); break;
+    default: body = '<div class="cx-tile-empty">' + answered + ' answer' + (answered===1?'':'s') + ' collected.</div>';
+  }
+  return '<div class="cx-tile">' + head + body + '</div>';
+}
+
+function qtypeLabel(t) {
+  var map = {
+    nps_0_10:'NPS', rating_1_5:'Rating', star_rating:'Stars', csat_smiley:'CSAT',
+    yes_no:'Yes / No', single_select:'Single select', multi_select:'Multi select',
+    dropdown:'Dropdown', consent:'Consent', number:'Number', date:'Date',
+    short_text:'Short text', long_text:'Long text', email:'Email', phone:'Phone', name:'Name'
+  };
+  return map[t] || t;
+}
+
+function renderNps(a) {
+  var score = (a.score === null || a.score === undefined) ? '—' : a.score;
+  var prom = a.promoters || 0, pass = a.passives || 0, det = a.detractors || 0;
+  var total = prom + pass + det;
+  var buckets = a.buckets || [];
+  var byVal = {}; buckets.forEach(function(b){ byVal[b.v] = b.n; });
+  var max = 0; for (var i=0;i<=10;i++) if ((byVal[i]||0) > max) max = byVal[i]||0;
+  if (max < 1) max = 1;
+  var cols = '';
+  for (var i=0;i<=10;i++) {
+    var n = byVal[i] || 0;
+    var cls = i <= 6 ? 'red' : (i <= 8 ? 'amber' : '');
+    var h = (n / max) * 80;
+    cols += '<div class="cx-hist-col" title="' + i + ': ' + n + '"><div class="b ' + cls + '" style="height:' + h + 'px"></div><div class="lbl">' + i + '</div></div>';
+  }
+  var chip = function(cls, n, lbl){ return '<div class="cx-nps-chip ' + cls + '"><b>' + n + '</b><span>' + lbl + '</span></div>'; };
+  return '<div class="cx-tile-big">' + score + '<small>NPS · avg ' + (a.avg == null ? '—' : a.avg) + '</small></div>'
+    + '<div class="cx-hist">' + cols + '</div>'
+    + '<div class="cx-nps-row">' + chip('cx-prom', prom, 'Prom ' + pct(prom,total) + '%') + chip('cx-pass', pass, 'Pass ' + pct(pass,total) + '%') + chip('cx-detr', det, 'Det ' + pct(det,total) + '%') + '</div>';
+}
+
+function renderScale5(a, qtype) {
+  var buckets = a.buckets || [];
+  var byVal = {}; buckets.forEach(function(b){ byVal[b.v] = b.n; });
+  var max = 0; for (var i=1;i<=5;i++) if ((byVal[i]||0) > max) max = byVal[i]||0;
+  if (max < 1) max = 1;
+  var faces = ['😠','😕','😐','🙂','😍'];
+  var cols = '';
+  for (var i=1;i<=5;i++) {
+    var n = byVal[i] || 0;
+    var h = (n / max) * 80;
+    var lbl = qtype === 'csat_smiley' ? faces[i-1] : (qtype === 'star_rating' ? '★'.repeat(i) : i);
+    cols += '<div class="cx-hist-col" title="' + i + ': ' + n + '"><div class="b" style="height:' + h + 'px"></div><div class="lbl">' + lbl + '</div></div>';
+  }
+  var unit = qtype === 'csat_smiley' ? '' : ' / 5';
+  return '<div class="cx-tile-big">' + (a.avg == null ? '—' : a.avg) + '<small>avg' + unit + '</small></div>'
+    + '<div class="cx-hist">' + cols + '</div>';
+}
+
+function renderYesNo(a) {
+  var y = a.yes || 0, n = a.no || 0, total = y + n;
+  var yLbl = a.yes_label || 'Yes', nLbl = a.no_label || 'No';
+  return '<div class="cx-yesno"><div><b style="color:#4ade80">' + y + '</b><span>' + esc(yLbl) + ' · ' + pct(y,total) + '%</span></div><div><b style="color:#fb7185">' + n + '</b><span>' + esc(nLbl) + ' · ' + pct(n,total) + '%</span></div></div>';
+}
+
+function renderBars(options, total, isMulti) {
+  if (!options.length) return '<div class="cx-tile-empty">No selections yet.</div>';
+  var maxN = Math.max.apply(null, options.map(function(o){ return o.n; }));
+  if (maxN < 1) maxN = 1;
+  return '<div style="display:flex;flex-direction:column;gap:6px">' + options.map(function(o){
+    var w = Math.round((o.n / maxN) * 100);
+    var share = isMulti ? '' : ' (' + pct(o.n, total) + '%)';
+    return '<div class="cx-bar-row"><div class="lbl" title="' + esc(o.v) + '">' + esc(o.v) + '</div><div class="bar"><span style="width:' + w + '%"></span></div><div class="cnt">' + o.n + share + '</div></div>';
+  }).join('') + '</div>';
+}
+
+// Donut chart for single-select (Qualtrics-light upgrade)
+function renderDonut(options, total) {
+  if (!options.length) return '<div class="cx-tile-empty">No selections yet.</div>';
+  var palette = ['#11a551','#3b82f6','#f59e0b','#ef4444','#a855f7','#06b6d4','#ec4899','#84cc16','#f97316','#64748b'];
+  var sum = options.reduce(function(s,o){ return s + (o.n || 0); }, 0) || 1;
+  var cx = 50, cy = 50, r = 38, c = 2 * Math.PI * r;
+  var off = 0;
+  var segs = options.map(function(o, idx){
+    var color = palette[idx % palette.length];
+    var len = (o.n / sum) * c;
+    var seg = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="16" stroke-dasharray="' + len.toFixed(2) + ' ' + (c - len).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"><title>' + esc(o.v) + ': ' + o.n + '</title></circle>';
+    off += len;
+    return seg;
+  }).join('');
+  var legend = options.map(function(o, idx){
+    var color = palette[idx % palette.length];
+    return '<div><i style="background:' + color + '"></i>' + esc(o.v) + ' <strong style="color:var(--text-primary)">' + o.n + '</strong> <span style="color:var(--text-muted)">· ' + pct(o.n, total) + '%</span></div>';
+  }).join('');
+  return '<div class="cx-donut-wrap">'
+    + '<svg class="cx-donut" viewBox="0 0 100 100">'
+    + '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--surface-3)" stroke-width="16"/>'
+    + segs
+    + '<text x="50" y="54" text-anchor="middle" font-size="18" font-weight="800" fill="currentColor">' + sum + '</text>'
+    + '</svg>'
+    + '<div class="cx-donut-legend">' + legend + '</div>'
+    + '</div>';
+}
+
+function renderNumber(a) {
+  return '<div class="cx-tile-big">' + (a.avg == null ? '—' : a.avg) + '<small>avg</small></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2);font-size:12px">'
+    + '<div><div class="cx-tile-meta">Min</div><b>' + (a.min == null ? '—' : a.min) + '</b></div>'
+    + '<div><div class="cx-tile-meta">Median</div><b>' + (a.median == null ? '—' : Math.round(a.median*100)/100) + '</b></div>'
+    + '<div><div class="cx-tile-meta">Max</div><b>' + (a.max == null ? '—' : a.max) + '</b></div>'
+    + '</div>';
+}
+
+function renderDate(a) {
+  var top = a.top || [];
+  var range = (a.earliest || '—') + ' → ' + (a.latest || '—');
+  var list = top.length
+    ? '<div style="display:flex;flex-direction:column;gap:4px">' + top.map(function(t){ return '<div class="cx-bar-row"><div class="lbl">' + esc(t.v) + '</div><div class="cnt">' + t.n + '</div></div>'; }).join('') + '</div>'
+    : '';
+  return '<div class="cx-tile-meta" style="text-transform:none;letter-spacing:0;font-size:12px">' + esc(range) + '</div>' + list;
+}
+
+function renderText(a) {
+  var samples = a.samples || [];
+  if (!samples.length) return '<div class="cx-tile-empty">No written answers yet.</div>';
+  return '<div class="cx-text-list">' + samples.map(function(s){ return '<p>' + esc(s.t) + '</p>'; }).join('') + '</div>';
+}
+</script>
+</body>
+</html>

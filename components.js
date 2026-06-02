@@ -1601,7 +1601,7 @@ const Components = {
 
     // cx_only gate: if a cx_only user lands on a non-CX page, bounce them to CX Overview
     if (isCxOnly) {
-      const cxAllowedPages = ['cx','cx-surveys','cx-responses'];
+      const cxAllowedPages = ['cx','cx-surveys','cx-dashboards','cx-responses'];
       if (cxAllowedPages.indexOf(activePage) === -1) {
         try { window.location.replace('brand-cx.html'); } catch(e) {}
         return '';
@@ -1612,6 +1612,7 @@ const Components = {
       { href: 'brand-reviews.html', label: 'Reviews', icon: 'fa-comments', id: 'reviews', fullOnly: false },
       { href: 'brand-cx.html', label: 'CX Overview', icon: 'fa-heart-pulse', id: 'cx', fullOnly: true, section: 'cx', cx: true },
       { href: 'brand-cx-surveys.html', label: 'Surveys', icon: 'fa-clipboard-list', id: 'cx-surveys', fullOnly: true, section: 'cx', cx: true },
+      { href: 'brand-cx-dashboards.html', label: 'Dashboards', icon: 'fa-chart-pie', id: 'cx-dashboards', fullOnly: true, section: 'cx', cx: true },
       { href: 'brand-cx-responses.html', label: 'Responses', icon: 'fa-inbox', id: 'cx-responses', fullOnly: true, section: 'cx', cx: true },
       { href: 'brand-badge.html', label: 'Score Badge', icon: 'fa-code', id: 'badge', fullOnly: true },
       { href: 'brand-qr.html', label: 'Review QR', icon: 'fa-qrcode', id: 'qr', fullOnly: true }

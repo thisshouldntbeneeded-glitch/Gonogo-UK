@@ -1483,6 +1483,10 @@ var GoNoGoAPI = (function () {
         var c = this._brandCtx();
         return this._call('cx_list_responses', { p_brand_slug: c.brand_slug, p_market_code: c.market_code, p_filters: filters || {} });
       },
+      exportSurveyResponses: function (surveyId, filters) {
+        var c = this._brandCtx();
+        return this._call('cx_export_survey_responses', { p_brand_slug: c.brand_slug, p_market_code: c.market_code, p_survey_id: surveyId, p_filters: filters || {} });
+      },
       getResponse: function (id) { return this._call('cx_get_response', { p_response_id: id }); },
       updateCase: function (responseId, payload) { return this._call('cx_update_case', { p_response_id: responseId, p_payload: payload }); },
       addCaseNote: function (caseId, body) { return this._call('cx_add_case_note', { p_case_id: caseId, p_body: body }); },
