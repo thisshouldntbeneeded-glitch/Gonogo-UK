@@ -17,6 +17,15 @@
 .cx-range button{background:transparent;color:var(--text-secondary);border:none;padding:6px 12px;font-size:12px;font-weight:700;border-radius:4px;cursor:pointer}
 .cx-range button.active{background:var(--green);color:#fff}
 
+/* Filter chips bar */
+.cx-filterbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 14px;background:rgba(17,165,81,.08);border:1px solid rgba(17,165,81,.35);border-radius:var(--radius-md);margin-bottom:var(--space-4)}
+.cx-filterbar-label{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--green)}
+.cx-filterchip{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--surface-1);border:1px solid var(--border-primary);font-size:12px;color:var(--text-primary);font-weight:600}
+.cx-filterchip button{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0 0 0 4px;line-height:1}
+.cx-filterchip button:hover{color:#fb7185}
+.cx-clearall{background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;text-decoration:underline;padding:4px 6px}
+.cx-clearall:hover{color:var(--text-primary)}
+
 /* KPI strip */
 .cx-dash-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:var(--space-3);margin-bottom:var(--space-4)}
 .cx-dash-kpi{background:var(--surface-2);border:1px solid var(--border-primary);border-radius:var(--radius-md);padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-2);min-width:0}
@@ -48,13 +57,17 @@
 .cx-tile-big{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--text-primary);line-height:1}
 .cx-tile-big small{font-size:14px;font-weight:600;color:var(--text-muted);margin-left:6px}
 .cx-tile-empty{color:var(--text-muted);font-size:12px;font-style:italic;padding:var(--space-3) 0}
-.cx-bar-row{display:flex;align-items:center;gap:var(--space-2);font-size:12px}
+.cx-bar-row{display:flex;align-items:center;gap:var(--space-2);font-size:12px;cursor:pointer;border-radius:6px;padding:2px 4px;transition:background .15s}
+.cx-bar-row:hover{background:var(--surface-3)}
+.cx-bar-row.is-active{background:rgba(17,165,81,.16)}
 .cx-bar-row .lbl{flex:0 0 90px;color:var(--text-secondary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cx-bar-row .bar{flex:1;height:8px;background:var(--surface-3);border-radius:4px;overflow:hidden}
 .cx-bar-row .bar>span{display:block;height:100%;background:var(--green);transition:width .25s}
 .cx-bar-row .cnt{flex:0 0 56px;text-align:right;color:var(--text-muted);font-weight:700}
 .cx-hist{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;align-items:end;height:90px}
-.cx-hist-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.cx-hist-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;cursor:pointer;padding:2px 0;border-radius:4px;transition:background .15s}
+.cx-hist-col:hover{background:var(--surface-3)}
+.cx-hist-col.is-active{background:rgba(17,165,81,.22)}
 .cx-hist-col .b{width:100%;min-height:2px;background:var(--green);border-radius:3px 3px 0 0;transition:height .2s}
 .cx-hist-col .b.red{background:#ef4444}
 .cx-hist-col .b.amber{background:#eab308}
@@ -62,11 +75,14 @@
 .cx-text-list{display:flex;flex-direction:column;gap:8px;max-height:230px;overflow-y:auto}
 .cx-text-list p{margin:0;padding:8px 10px;background:var(--surface-1);border-radius:var(--radius-sm);font-size:12px;color:var(--text-primary);border-left:2px solid var(--green)}
 .cx-yesno{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);text-align:center}
-.cx-yesno div{padding:var(--space-3);border-radius:var(--radius-sm);background:var(--surface-1)}
+.cx-yesno > div{padding:var(--space-3);border-radius:var(--radius-sm);background:var(--surface-1);cursor:pointer;transition:background .15s;border:1px solid transparent}
+.cx-yesno > div:hover{background:var(--surface-3)}
+.cx-yesno > div.is-active{border-color:var(--green);background:rgba(17,165,81,.12)}
 .cx-yesno b{display:block;font-size:22px;font-weight:800}
 .cx-yesno span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)}
 .cx-nps-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--space-2)}
-.cx-nps-chip{padding:var(--space-2);border-radius:var(--radius-sm);text-align:center}
+.cx-nps-chip{padding:var(--space-2);border-radius:var(--radius-sm);text-align:center;cursor:pointer;border:1px solid transparent;transition:background .15s}
+.cx-nps-chip.is-active{outline:2px solid var(--green);outline-offset:-2px}
 .cx-nps-chip b{display:block;font-size:16px;font-weight:800}
 .cx-nps-chip span{font-size:10px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
 .cx-prom{background:rgba(34,197,94,.14);color:#4ade80}
@@ -76,7 +92,12 @@
 /* Donut */
 .cx-donut-wrap{display:flex;align-items:center;gap:var(--space-3)}
 .cx-donut{width:96px;height:96px;flex:0 0 96px}
+.cx-donut svg circle.seg{cursor:pointer;transition:stroke-width .15s}
+.cx-donut svg circle.seg:hover{stroke-width:20}
 .cx-donut-legend{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--text-secondary);flex:1;min-width:0}
+.cx-donut-legend > div{cursor:pointer;padding:2px 4px;border-radius:4px;transition:background .15s}
+.cx-donut-legend > div:hover{background:var(--surface-3)}
+.cx-donut-legend > div.is-active{background:rgba(17,165,81,.16);color:var(--text-primary)}
 .cx-donut-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:middle}
 
 /* Sparkline */
@@ -88,6 +109,34 @@
 
 .cx-empty-screen{padding:var(--space-8);text-align:center;color:var(--text-muted);background:var(--surface-2);border:1px dashed var(--border-primary);border-radius:var(--radius-md)}
 .cx-empty-screen i{font-size:30px;display:block;margin-bottom:var(--space-3);color:var(--green)}
+
+/* Print styles for PDF export */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body { background: #fff !important; color: #111 !important; }
+  .admin-sidebar, #sidebar-container, .admin-header > div:last-child,
+  .cx-pickbar, .cx-density, .cx-range { display: none !important; }
+  .admin-main { margin-left: 0 !important; padding: 0 !important; max-width: 100% !important; }
+  .admin-header { border: none !important; padding: 0 0 8mm !important; }
+  .admin-title { color: #111 !important; font-size: 18pt !important; }
+  .text-sm.text-secondary { color: #555 !important; }
+  .cx-tile, .cx-dash-kpi, .cx-spark-wrap, .cx-filterbar {
+    background: #fff !important; border: 1px solid #ccc !important;
+    color: #111 !important; box-shadow: none !important;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .cx-dash-grid { gap: 8mm !important; grid-template-columns: 1fr 1fr !important; }
+  .cx-tile-prompt, .cx-tile-big, .cx-dash-kpi .kpi-value, .cx-bar-row .lbl, .cx-bar-row .cnt,
+  .cx-yesno b, .cx-nps-chip b, .cx-donut-legend, .cx-text-list p { color: #111 !important; }
+  .cx-tile-meta, .cx-tile-empty, .kpi-label, .kpi-sub, .cx-bar-row .lbl { color: #555 !important; }
+  .cx-bar-row .bar { background: #eee !important; }
+  .cx-text-list p { background: #f6f6f6 !important; border-left-color: #11a551 !important; }
+  .cx-filterbar { background: #f3faf6 !important; border-color: #11a551 !important; }
+  .cx-filterchip { background: #fff !important; border-color: #ccc !important; color: #111 !important; }
+  .cx-filterchip button { display: none !important; }
+  .cx-clearall { display: none !important; }
+  .cx-hist-col, .cx-bar-row, .cx-yesno > div, .cx-nps-chip, .cx-donut-legend > div { cursor: default !important; }
+}
 </style>
 </head>
 <body>
@@ -97,9 +146,10 @@
     <div class="admin-header">
       <div>
         <h1 class="admin-title"><i class="fa-solid fa-chart-pie" style="color:var(--green);margin-right:var(--space-2);"></i> Survey dashboards</h1>
-        <p class="text-sm text-secondary">Pick a survey, choose a window, and read every question at a glance.</p>
+        <p class="text-sm text-secondary" id="cx-page-subtitle">Pick a survey, choose a window, click any chart element to filter the rest of the dashboard.</p>
       </div>
       <div style="display:flex;gap:var(--space-2)">
+        <button type="button" id="btn-print-pdf" class="btn btn-sm" style="background:var(--surface-3)"><i class="fa-solid fa-file-pdf"></i> Share as PDF</button>
         <a href="brand-cx-responses.html" class="btn btn-sm" style="background:var(--surface-3)"><i class="fa-solid fa-inbox"></i> Responses</a>
         <a href="brand-cx-survey-edit.html" class="btn btn-sm" style="background:var(--green);color:#fff;border:none"><i class="fa-solid fa-plus"></i> New survey</a>
       </div>
@@ -121,6 +171,12 @@
       </div>
     </div>
 
+    <div class="cx-filterbar" id="cx-filterbar" style="display:none">
+      <span class="cx-filterbar-label"><i class="fa-solid fa-filter"></i> Filtered by</span>
+      <span id="cx-filterchips" style="display:contents"></span>
+      <button type="button" class="cx-clearall" id="cx-clear-all">Clear all</button>
+    </div>
+
     <div class="cx-spark-wrap" id="cx-spark-wrap" style="display:none">
       <div class="cx-spark-head"><h3>Responses over time</h3><span id="cx-spark-range"></span></div>
       <svg class="cx-spark" id="cx-spark" viewBox="0 0 600 60" preserveAspectRatio="none"></svg>
@@ -140,12 +196,24 @@
 
 <script src="data/helpers.js"></script>
 <script src="components.js"></script>
-<script src="api.js?v=20260602a"></script>
+<script src="api.js?v=20260602b"></script>
 <script>
 Components.initTheme();
 document.getElementById('sidebar-container').innerHTML = Components.renderBrandSidebar('cx-dashboards');
 
-var state = { surveys: [], currentSurveyId: null, rangeDays: 30 };
+// state.rawAnswers: flat answer rows from RPC (current window + prev window combined when delta needed)
+// state.questions: question definitions (so empty tiles still show)
+// state.filters: array of {qid, qtype, predicate(answerText), label} predicates AND-ed together
+var state = {
+  surveys: [],
+  currentSurveyId: null,
+  currentSurveyName: '',
+  rangeDays: 30,
+  rawAnswers: [],     // current-window answers
+  prevTotal: 0,       // previous-period total response count
+  questions: [],
+  filters: []
+};
 
 if (Components.checkBrandAuth()) init();
 
@@ -157,13 +225,16 @@ async function init() {
 
   wireRangeButtons();
   wireDensityButtons();
+  document.getElementById('btn-print-pdf').addEventListener('click', function(){ window.print(); });
+  document.getElementById('cx-clear-all').addEventListener('click', function(){ state.filters = []; renderAll(); });
   document.getElementById('cx-survey-pick').addEventListener('change', function(e){
     state.currentSurveyId = e.target.value || null;
-    if (state.currentSurveyId) loadSurveyDashboard();
+    state.currentSurveyName = e.target.options[e.target.selectedIndex] ? e.target.options[e.target.selectedIndex].textContent : '';
+    state.filters = [];
+    if (state.currentSurveyId) loadSurveyData();
     else clearDashboard();
   });
 
-  // Pre-select via ?survey=<id> query param (deep-link from overview)
   var qp = new URLSearchParams(window.location.search);
   var preselect = qp.get('survey');
 
@@ -175,8 +246,10 @@ async function init() {
     if (surveys.length > 0) {
       var initial = preselect && surveys.some(function(s){ return s.id === preselect; }) ? preselect : surveys[0].id;
       state.currentSurveyId = initial;
-      document.getElementById('cx-survey-pick').value = initial;
-      loadSurveyDashboard();
+      var picker = document.getElementById('cx-survey-pick');
+      picker.value = initial;
+      state.currentSurveyName = picker.options[picker.selectedIndex] ? picker.options[picker.selectedIndex].textContent : '';
+      loadSurveyData();
     } else {
       document.getElementById('cx-dash-nosurvey').style.display = '';
     }
@@ -187,6 +260,8 @@ async function init() {
 
 function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function pct(n, total){ if (!total) return 0; return Math.round((n/total)*100); }
+function round1(n){ return Math.round(Number(n) * 10) / 10; }
+function round2(n){ return Math.round(Number(n) * 100) / 100; }
 
 function populatePicker(surveys) {
   var sel = document.getElementById('cx-survey-pick');
@@ -207,7 +282,8 @@ function wireRangeButtons() {
       document.querySelectorAll('.cx-range button').forEach(function(b){ b.classList.remove('active'); });
       btn.classList.add('active');
       state.rangeDays = parseInt(btn.getAttribute('data-range'), 10);
-      if (state.currentSurveyId) loadSurveyDashboard();
+      state.filters = []; // range change invalidates filters
+      if (state.currentSurveyId) loadSurveyData();
     });
   });
 }
@@ -240,11 +316,13 @@ function clearDashboard() {
   document.getElementById('cx-dash-empty').style.display = 'none';
   document.getElementById('cx-spark-wrap').style.display = 'none';
   document.getElementById('cx-dash-meta').textContent = '';
+  document.getElementById('cx-filterbar').style.display = 'none';
   var kpis = document.getElementById('cx-dash-kpis');
   if (kpis) { kpis.style.display = 'none'; kpis.innerHTML = ''; }
 }
 
-async function loadSurveyDashboard() {
+// Fetch the full window of answers (current period + previous period for delta) and questions list
+async function loadSurveyData() {
   var dash = document.getElementById('cx-dash');
   var empty = document.getElementById('cx-dash-empty');
   var nosurvey = document.getElementById('cx-dash-nosurvey');
@@ -252,14 +330,315 @@ async function loadSurveyDashboard() {
   dash.innerHTML = '<div class="cx-tile-empty">Loading dashboard…</div>';
   empty.style.display = 'none';
   document.getElementById('cx-dash-meta').textContent = '';
+
+  // Compute since (covers current + previous period so we can compute delta in one fetch)
+  var sinceIso = '';
+  if (state.rangeDays && state.rangeDays > 0) {
+    var d = new Date(); d.setUTCDate(d.getUTCDate() - (state.rangeDays * 2));
+    sinceIso = d.toISOString();
+  }
+
   try {
-    var d = await GoNoGoAPI.cx.getSurveyDashboard(state.currentSurveyId, state.rangeDays);
-    renderDashboard(d || {});
+    var calls = [
+      GoNoGoAPI.cx.exportSurveyResponses(state.currentSurveyId, sinceIso ? { since: sinceIso } : {}),
+      GoNoGoAPI.cx.getSurvey(state.currentSurveyId)
+    ];
+    var res = await Promise.all(calls);
+    var flat = Array.isArray(res[0]) ? res[0] : [];
+    var survey = res[1] || {};
+    var questions = (survey.questions || []).slice().sort(function(a,b){ return (a.sort_order||0) - (b.sort_order||0); });
+    state.questions = questions;
+
+    // Split rows into current window and previous window. Each row is (response_id, submitted_at, question_id, qtype, prompt, value_text, value_number, value_json, ...)
+    var nowMs = Date.now();
+    var rangeMs = (state.rangeDays && state.rangeDays > 0) ? state.rangeDays * 86400000 : null;
+    var curRows = [];
+    var prevRespIds = {};
+    if (rangeMs === null) {
+      curRows = flat;
+    } else {
+      var curCutoff = nowMs - rangeMs;
+      var prevCutoff = nowMs - 2 * rangeMs;
+      flat.forEach(function(row){
+        var t = row.submitted_at ? Date.parse(row.submitted_at) : 0;
+        if (t >= curCutoff) curRows.push(row);
+        else if (t >= prevCutoff) prevRespIds[row.response_id] = true;
+      });
+    }
+    state.rawAnswers = curRows;
+    state.prevTotal = Object.keys(prevRespIds).length;
+    renderAll();
   } catch (e) {
     dash.innerHTML = '<div class="cx-tile-empty" style="color:var(--red)">Could not load dashboard: ' + esc(e.message || 'error') + '</div>';
   }
 }
 
+// ============================================================
+// FILTERS — applied to rawAnswers to derive the active subset
+// ============================================================
+function activeResponseIds() {
+  // Group answers by response_id, then keep only response_ids that satisfy every filter
+  var byResp = {};
+  for (var i = 0; i < state.rawAnswers.length; i++) {
+    var r = state.rawAnswers[i];
+    var rid = r.response_id;
+    if (!byResp[rid]) byResp[rid] = [];
+    byResp[rid].push(r);
+  }
+  if (!state.filters.length) return Object.keys(byResp);
+  var out = [];
+  for (var rid in byResp) {
+    if (!byResp.hasOwnProperty(rid)) continue;
+    var rows = byResp[rid];
+    var pass = true;
+    for (var f = 0; f < state.filters.length; f++) {
+      var filt = state.filters[f];
+      var anyMatch = false;
+      for (var j = 0; j < rows.length; j++) {
+        var ans = rows[j];
+        if (ans.question_id === filt.qid && filt.predicate(ans)) { anyMatch = true; break; }
+      }
+      if (!anyMatch) { pass = false; break; }
+    }
+    if (pass) out.push(rid);
+  }
+  return out;
+}
+
+function toggleFilter(filt) {
+  // Same qid + key removes; otherwise adds (and replaces same-key if present)
+  var idx = -1;
+  for (var i = 0; i < state.filters.length; i++) {
+    if (state.filters[i].key === filt.key) { idx = i; break; }
+  }
+  if (idx >= 0) state.filters.splice(idx, 1);
+  else state.filters.push(filt);
+  renderAll();
+}
+
+function isFilterActive(key) {
+  return state.filters.some(function(f){ return f.key === key; });
+}
+
+function renderFilterBar() {
+  var bar = document.getElementById('cx-filterbar');
+  var chips = document.getElementById('cx-filterchips');
+  if (!state.filters.length) { bar.style.display = 'none'; chips.innerHTML = ''; return; }
+  bar.style.display = '';
+  chips.innerHTML = state.filters.map(function(f, idx){
+    return '<span class="cx-filterchip"><strong>' + esc(f.qPrompt) + ':</strong>&nbsp;' + esc(f.label) + '<button type="button" data-idx="' + idx + '" aria-label="Remove filter">×</button></span>';
+  }).join('');
+  chips.querySelectorAll('button[data-idx]').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.stopPropagation();
+      var i = parseInt(btn.getAttribute('data-idx'), 10);
+      state.filters.splice(i, 1);
+      renderAll();
+    });
+  });
+}
+
+// ============================================================
+// AGGREGATION — mirrors cx_get_survey_dashboard logic in JS
+// ============================================================
+function aggregateForActiveSet(activeRids) {
+  var ridSet = {};
+  for (var i = 0; i < activeRids.length; i++) ridSet[activeRids[i]] = true;
+
+  // Filter rawAnswers down to active responses
+  var rows = [];
+  var respIds = {};
+  for (var k = 0; k < state.rawAnswers.length; k++) {
+    var r = state.rawAnswers[k];
+    if (ridSet[r.response_id]) { rows.push(r); respIds[r.response_id] = true; }
+  }
+  var total = Object.keys(respIds).length;
+
+  // Group answers by question_id
+  var byQ = {};
+  for (var n = 0; n < rows.length; n++) {
+    var row = rows[n];
+    if (!row.question_id) continue;
+    if (!byQ[row.question_id]) byQ[row.question_id] = [];
+    byQ[row.question_id].push(row);
+  }
+
+  // Timeline (current window only, by day)
+  var timelineMap = {};
+  for (var t = 0; t < rows.length; t++) {
+    var d = rows[t].submitted_at ? rows[t].submitted_at.slice(0, 10) : null;
+    if (!d) continue;
+    // count distinct responses per day
+    if (!timelineMap[d]) timelineMap[d] = {};
+    timelineMap[d][rows[t].response_id] = true;
+  }
+  // Walk a continuous date range
+  var timeline = [];
+  var dates = Object.keys(timelineMap).sort();
+  if (dates.length) {
+    var startD = state.rangeDays && state.rangeDays > 0
+      ? new Date(Date.now() - state.rangeDays * 86400000)
+      : new Date(dates[0]);
+    var endD = new Date();
+    for (var dd = new Date(startD); dd <= endD; dd.setUTCDate(dd.getUTCDate() + 1)) {
+      var key = dd.toISOString().slice(0, 10);
+      timeline.push({ d: key, n: timelineMap[key] ? Object.keys(timelineMap[key]).length : 0 });
+    }
+  }
+
+  // Build per-question aggregates
+  var questions = state.questions.map(function(q) {
+    var ans = byQ[q.id] || [];
+    return {
+      id: q.id,
+      qtype: q.qtype,
+      prompt: q.prompt,
+      options: q.options,
+      answered: countDistinctResponses(ans),
+      aggregate: aggregateByType(q, ans)
+    };
+  });
+
+  return {
+    total_responses: total,
+    prev_total_responses: state.prevTotal,
+    range_days: state.rangeDays,
+    timeline: timeline,
+    questions: questions
+  };
+}
+
+function countDistinctResponses(ans) {
+  var s = {};
+  for (var i = 0; i < ans.length; i++) s[ans[i].response_id] = true;
+  return Object.keys(s).length;
+}
+
+function aggregateByType(q, ans) {
+  var qt = q.qtype;
+  if (qt === 'nps_0_10') return aggNps(ans);
+  if (qt === 'rating_1_5' || qt === 'star_rating' || qt === 'csat_smiley') return aggScale5(ans);
+  if (qt === 'yes_no') return aggYesNo(q, ans);
+  if (qt === 'single_select' || qt === 'dropdown' || qt === 'consent') return aggSingleSelect(ans);
+  if (qt === 'multi_select') return aggMultiSelect(ans);
+  if (qt === 'number') return aggNumber(ans);
+  if (qt === 'date') return aggDate(ans);
+  if (qt === 'short_text' || qt === 'long_text' || qt === 'email' || qt === 'phone' || qt === 'name') return aggText(ans);
+  return { kind: 'unknown' };
+}
+
+function aggNps(ans) {
+  var nums = ans.map(function(a){ return Number(a.value_number); }).filter(function(n){ return !isNaN(n); });
+  var promoters = 0, passives = 0, detractors = 0;
+  var bucketsMap = {};
+  for (var i = 0; i < nums.length; i++) {
+    var v = nums[i];
+    if (v >= 9) promoters++;
+    else if (v >= 7) passives++;
+    else if (v <= 6) detractors++;
+    var k = Math.floor(v);
+    if (k >= 0 && k <= 10) bucketsMap[k] = (bucketsMap[k] || 0) + 1;
+  }
+  var buckets = [];
+  for (var b = 0; b <= 10; b++) if (bucketsMap[b]) buckets.push({ v: b, n: bucketsMap[b] });
+  var avg = nums.length ? round1(nums.reduce(function(s,v){return s+v;}, 0) / nums.length) : null;
+  var score = nums.length ? Math.round(((promoters - detractors) * 100) / nums.length) : null;
+  return { kind: 'nps', avg: avg, promoters: promoters, passives: passives, detractors: detractors, score: score, buckets: buckets };
+}
+
+function aggScale5(ans) {
+  var nums = ans.map(function(a){ return Number(a.value_number); }).filter(function(n){ return !isNaN(n); });
+  var bucketsMap = {};
+  for (var i = 0; i < nums.length; i++) {
+    var k = Math.floor(nums[i]);
+    if (k >= 1 && k <= 5) bucketsMap[k] = (bucketsMap[k] || 0) + 1;
+  }
+  var buckets = [];
+  for (var b = 1; b <= 5; b++) if (bucketsMap[b]) buckets.push({ v: b, n: bucketsMap[b] });
+  var avg = nums.length ? round2(nums.reduce(function(s,v){return s+v;}, 0) / nums.length) : null;
+  return { kind: 'scale_5', avg: avg, buckets: buckets };
+}
+
+function aggYesNo(q, ans) {
+  var yesLabel = 'Yes', noLabel = 'No';
+  if (Array.isArray(q.options)) {
+    if (q.options[0]) yesLabel = String(q.options[0]);
+    if (q.options[1]) noLabel = String(q.options[1]);
+  }
+  var y = 0, n = 0, other = 0;
+  for (var i = 0; i < ans.length; i++) {
+    var v = ans[i].value_text;
+    if (v == null) continue;
+    var lv = String(v).toLowerCase();
+    if (lv === yesLabel.toLowerCase()) y++;
+    else if (lv === noLabel.toLowerCase()) n++;
+    else other++;
+  }
+  return { kind: 'yes_no', yes_label: yesLabel, no_label: noLabel, yes: y, no: n, other: other };
+}
+
+function aggSingleSelect(ans) {
+  var map = {};
+  for (var i = 0; i < ans.length; i++) {
+    var v = ans[i].value_text;
+    if (v == null || v === '') continue;
+    map[v] = (map[v] || 0) + 1;
+  }
+  var options = Object.keys(map).map(function(k){ return { v: k, n: map[k] }; }).sort(function(a,b){ return b.n - a.n; }).slice(0, 20);
+  return { kind: 'single_select', options: options };
+}
+
+function aggMultiSelect(ans) {
+  var map = {};
+  for (var i = 0; i < ans.length; i++) {
+    var vj = ans[i].value_json;
+    if (!Array.isArray(vj)) continue;
+    for (var j = 0; j < vj.length; j++) {
+      var v = String(vj[j]);
+      map[v] = (map[v] || 0) + 1;
+    }
+  }
+  var options = Object.keys(map).map(function(k){ return { v: k, n: map[k] }; }).sort(function(a,b){ return b.n - a.n; }).slice(0, 20);
+  return { kind: 'multi_select', options: options };
+}
+
+function aggNumber(ans) {
+  var nums = ans.map(function(a){ return Number(a.value_number); }).filter(function(n){ return !isNaN(n); });
+  if (!nums.length) return { kind: 'number', avg: null, min: null, max: null, median: null };
+  var sorted = nums.slice().sort(function(a,b){ return a-b; });
+  var mid = Math.floor(sorted.length / 2);
+  var median = sorted.length % 2 ? sorted[mid] : (sorted[mid-1] + sorted[mid]) / 2;
+  return {
+    kind: 'number',
+    avg: round2(nums.reduce(function(s,v){return s+v;}, 0) / nums.length),
+    min: sorted[0],
+    max: sorted[sorted.length - 1],
+    median: median
+  };
+}
+
+function aggDate(ans) {
+  var texts = ans.map(function(a){ return a.value_text; }).filter(function(t){ return t != null && t !== ''; });
+  if (!texts.length) return { kind: 'date', earliest: null, latest: null, top: [] };
+  var sorted = texts.slice().sort();
+  var map = {};
+  texts.forEach(function(t){ map[t] = (map[t] || 0) + 1; });
+  var top = Object.keys(map).map(function(k){ return { v: k, n: map[k] }; }).sort(function(a,b){ return b.n - a.n; }).slice(0, 10);
+  return { kind: 'date', earliest: sorted[0], latest: sorted[sorted.length-1], top: top };
+}
+
+function aggText(ans) {
+  var samples = ans
+    .filter(function(a){ return a.value_text != null && a.value_text !== ''; })
+    .sort(function(a,b){ return (b.submitted_at || '').localeCompare(a.submitted_at || ''); })
+    .slice(0, 10)
+    .map(function(a){ return { t: String(a.value_text).slice(0, 140) }; });
+  return { kind: 'text', samples: samples };
+}
+
+// ============================================================
+// RENDER
+// ============================================================
 function rangeLabel(days) {
   if (!days) return 'All time';
   if (days === 7) return 'Last 7 days';
@@ -268,11 +647,13 @@ function rangeLabel(days) {
   return 'Last ' + days + ' days';
 }
 
-function renderDashboard(d) {
+function renderAll() {
+  var d = aggregateForActiveSet(activeResponseIds());
   var meta = document.getElementById('cx-dash-meta');
   var total = d.total_responses || 0;
-  meta.textContent = total + ' response' + (total === 1 ? '' : 's') + ' · ' + rangeLabel(d.range_days);
+  meta.textContent = total + ' response' + (total === 1 ? '' : 's') + ' · ' + rangeLabel(d.range_days) + (state.filters.length ? ' · filtered' : '');
 
+  renderFilterBar();
   renderSparkline(d.timeline || []);
   renderKpiStrip(d);
 
@@ -282,6 +663,7 @@ function renderDashboard(d) {
   if (!qs.length) { dash.innerHTML = ''; empty.style.display = ''; return; }
   empty.style.display = 'none';
   dash.innerHTML = qs.map(function(q){ return renderTile(q, total); }).join('');
+  wireTileClicks();
 }
 
 function renderKpiStrip(d) {
@@ -312,7 +694,9 @@ function renderKpiStrip(d) {
 
   var cards = [];
   var deltaHtml = '';
-  if (hasWindow) {
+  if (state.filters.length) {
+    deltaHtml = '<div class="kpi-sub cx-delta-flat">Filtered subset · ' + rangeLabel(d.range_days) + '</div>';
+  } else if (hasWindow) {
     if (prev > 0) {
       var diff = total - prev;
       var pctChange = Math.round((diff / prev) * 100);
@@ -372,22 +756,22 @@ function renderTile(q, total) {
     + '<div class="cx-tile-meta">' + qtypeLabel(q.qtype) + ' · ' + answered + '</div></div>';
 
   if (!answered) {
-    return '<div class="cx-tile is-empty">' + head + '<div class="cx-tile-empty">No answers yet in this range</div></div>';
+    return '<div class="cx-tile is-empty" data-qid="' + esc(q.id) + '" data-qtype="' + esc(q.qtype) + '">' + head + '<div class="cx-tile-empty">No answers yet in this range</div></div>';
   }
 
   var body = '';
   switch (a.kind) {
-    case 'nps': body = renderNps(a); break;
-    case 'scale_5': body = renderScale5(a, q.qtype); break;
-    case 'yes_no': body = renderYesNo(a); break;
-    case 'single_select': body = renderDonut(a.options || [], answered); break;
-    case 'multi_select': body = renderBars(a.options || [], answered, true); break;
+    case 'nps': body = renderNps(a, q); break;
+    case 'scale_5': body = renderScale5(a, q); break;
+    case 'yes_no': body = renderYesNo(a, q); break;
+    case 'single_select': body = renderDonut(a.options || [], answered, q); break;
+    case 'multi_select': body = renderBars(a.options || [], answered, true, q); break;
     case 'number': body = renderNumber(a); break;
-    case 'date': body = renderDate(a); break;
+    case 'date': body = renderDate(a, q); break;
     case 'text': body = renderText(a); break;
     default: body = '<div class="cx-tile-empty">' + answered + ' answer' + (answered===1?'':'s') + ' collected.</div>';
   }
-  return '<div class="cx-tile">' + head + body + '</div>';
+  return '<div class="cx-tile" data-qid="' + esc(q.id) + '" data-qtype="' + esc(q.qtype) + '">' + head + body + '</div>';
 }
 
 function qtypeLabel(t) {
@@ -400,7 +784,7 @@ function qtypeLabel(t) {
   return map[t] || t;
 }
 
-function renderNps(a) {
+function renderNps(a, q) {
   var score = (a.score === null || a.score === undefined) ? '—' : a.score;
   var prom = a.promoters || 0, pass = a.passives || 0, det = a.detractors || 0;
   var total = prom + pass + det;
@@ -413,51 +797,65 @@ function renderNps(a) {
     var n = byVal[i] || 0;
     var cls = i <= 6 ? 'red' : (i <= 8 ? 'amber' : '');
     var h = (n / max) * 80;
-    cols += '<div class="cx-hist-col" title="' + i + ': ' + n + '"><div class="b ' + cls + '" style="height:' + h + 'px"></div><div class="lbl">' + i + '</div></div>';
+    var keyV = 'nps:' + q.id + ':v=' + i;
+    var act = isFilterActive(keyV) ? ' is-active' : '';
+    cols += '<div class="cx-hist-col' + act + '" data-fkey="' + keyV + '" data-qid="' + esc(q.id) + '" data-action="nps-bucket" data-v="' + i + '" title="' + i + ': ' + n + '"><div class="b ' + cls + '" style="height:' + h + 'px"></div><div class="lbl">' + i + '</div></div>';
   }
-  var chip = function(cls, n, lbl){ return '<div class="cx-nps-chip ' + cls + '"><b>' + n + '</b><span>' + lbl + '</span></div>'; };
+  var chipCls = function(seg){ return isFilterActive('nps:' + q.id + ':seg=' + seg) ? ' is-active' : ''; };
+  var chip = function(cls, n, lbl, seg){ return '<div class="cx-nps-chip ' + cls + chipCls(seg) + '" data-fkey="nps:' + q.id + ':seg=' + seg + '" data-qid="' + esc(q.id) + '" data-action="nps-seg" data-seg="' + seg + '"><b>' + n + '</b><span>' + lbl + '</span></div>'; };
   return '<div class="cx-tile-big">' + score + '<small>NPS · avg ' + (a.avg == null ? '—' : a.avg) + '</small></div>'
     + '<div class="cx-hist">' + cols + '</div>'
-    + '<div class="cx-nps-row">' + chip('cx-prom', prom, 'Prom ' + pct(prom,total) + '%') + chip('cx-pass', pass, 'Pass ' + pct(pass,total) + '%') + chip('cx-detr', det, 'Det ' + pct(det,total) + '%') + '</div>';
+    + '<div class="cx-nps-row">' + chip('cx-prom', prom, 'Prom ' + pct(prom,total) + '%', 'promoter') + chip('cx-pass', pass, 'Pass ' + pct(pass,total) + '%', 'passive') + chip('cx-detr', det, 'Det ' + pct(det,total) + '%', 'detractor') + '</div>';
 }
 
-function renderScale5(a, qtype) {
+function renderScale5(a, q) {
   var buckets = a.buckets || [];
   var byVal = {}; buckets.forEach(function(b){ byVal[b.v] = b.n; });
   var max = 0; for (var i=1;i<=5;i++) if ((byVal[i]||0) > max) max = byVal[i]||0;
   if (max < 1) max = 1;
   var faces = ['😠','😕','😐','🙂','😍'];
+  var qtype = q.qtype;
   var cols = '';
   for (var i=1;i<=5;i++) {
     var n = byVal[i] || 0;
     var h = (n / max) * 80;
     var lbl = qtype === 'csat_smiley' ? faces[i-1] : (qtype === 'star_rating' ? '★'.repeat(i) : i);
-    cols += '<div class="cx-hist-col" title="' + i + ': ' + n + '"><div class="b" style="height:' + h + 'px"></div><div class="lbl">' + lbl + '</div></div>';
+    var keyV = 'scale5:' + q.id + ':v=' + i;
+    var act = isFilterActive(keyV) ? ' is-active' : '';
+    cols += '<div class="cx-hist-col' + act + '" data-fkey="' + keyV + '" data-qid="' + esc(q.id) + '" data-action="scale5-bucket" data-v="' + i + '" title="' + i + ': ' + n + '"><div class="b" style="height:' + h + 'px"></div><div class="lbl">' + lbl + '</div></div>';
   }
   var unit = qtype === 'csat_smiley' ? '' : ' / 5';
   return '<div class="cx-tile-big">' + (a.avg == null ? '—' : a.avg) + '<small>avg' + unit + '</small></div>'
     + '<div class="cx-hist">' + cols + '</div>';
 }
 
-function renderYesNo(a) {
+function renderYesNo(a, q) {
   var y = a.yes || 0, n = a.no || 0, total = y + n;
   var yLbl = a.yes_label || 'Yes', nLbl = a.no_label || 'No';
-  return '<div class="cx-yesno"><div><b style="color:#4ade80">' + y + '</b><span>' + esc(yLbl) + ' · ' + pct(y,total) + '%</span></div><div><b style="color:#fb7185">' + n + '</b><span>' + esc(nLbl) + ' · ' + pct(n,total) + '%</span></div></div>';
+  var keyY = 'yesno:' + q.id + ':v=yes', keyN = 'yesno:' + q.id + ':v=no';
+  var actY = isFilterActive(keyY) ? ' is-active' : '';
+  var actN = isFilterActive(keyN) ? ' is-active' : '';
+  return '<div class="cx-yesno">'
+    + '<div class="' + actY.trim() + '" data-fkey="' + keyY + '" data-qid="' + esc(q.id) + '" data-action="yesno" data-val="' + esc(yLbl) + '"><b style="color:#4ade80">' + y + '</b><span>' + esc(yLbl) + ' · ' + pct(y,total) + '%</span></div>'
+    + '<div class="' + actN.trim() + '" data-fkey="' + keyN + '" data-qid="' + esc(q.id) + '" data-action="yesno" data-val="' + esc(nLbl) + '"><b style="color:#fb7185">' + n + '</b><span>' + esc(nLbl) + ' · ' + pct(n,total) + '%</span></div>'
+    + '</div>';
 }
 
-function renderBars(options, total, isMulti) {
+function renderBars(options, total, isMulti, q) {
   if (!options.length) return '<div class="cx-tile-empty">No selections yet.</div>';
   var maxN = Math.max.apply(null, options.map(function(o){ return o.n; }));
   if (maxN < 1) maxN = 1;
-  return '<div style="display:flex;flex-direction:column;gap:6px">' + options.map(function(o){
+  var actionType = isMulti ? 'multiselect' : 'single';
+  return '<div style="display:flex;flex-direction:column;gap:4px">' + options.map(function(o){
     var w = Math.round((o.n / maxN) * 100);
     var share = isMulti ? '' : ' (' + pct(o.n, total) + '%)';
-    return '<div class="cx-bar-row"><div class="lbl" title="' + esc(o.v) + '">' + esc(o.v) + '</div><div class="bar"><span style="width:' + w + '%"></span></div><div class="cnt">' + o.n + share + '</div></div>';
+    var keyV = actionType + ':' + q.id + ':v=' + o.v;
+    var act = isFilterActive(keyV) ? ' is-active' : '';
+    return '<div class="cx-bar-row' + act + '" data-fkey="' + keyV + '" data-qid="' + esc(q.id) + '" data-action="' + actionType + '" data-val="' + esc(o.v) + '"><div class="lbl" title="' + esc(o.v) + '">' + esc(o.v) + '</div><div class="bar"><span style="width:' + w + '%"></span></div><div class="cnt">' + o.n + share + '</div></div>';
   }).join('') + '</div>';
 }
 
-// Donut chart for single-select (Qualtrics-light upgrade)
-function renderDonut(options, total) {
+function renderDonut(options, total, q) {
   if (!options.length) return '<div class="cx-tile-empty">No selections yet.</div>';
   var palette = ['#11a551','#3b82f6','#f59e0b','#ef4444','#a855f7','#06b6d4','#ec4899','#84cc16','#f97316','#64748b'];
   var sum = options.reduce(function(s,o){ return s + (o.n || 0); }, 0) || 1;
@@ -466,13 +864,16 @@ function renderDonut(options, total) {
   var segs = options.map(function(o, idx){
     var color = palette[idx % palette.length];
     var len = (o.n / sum) * c;
-    var seg = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="16" stroke-dasharray="' + len.toFixed(2) + ' ' + (c - len).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"><title>' + esc(o.v) + ': ' + o.n + '</title></circle>';
+    var keyV = 'single:' + q.id + ':v=' + o.v;
+    var seg = '<circle class="seg" data-fkey="' + keyV + '" data-qid="' + esc(q.id) + '" data-action="single" data-val="' + esc(o.v) + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="16" stroke-dasharray="' + len.toFixed(2) + ' ' + (c - len).toFixed(2) + '" stroke-dashoffset="' + (-off).toFixed(2) + '" transform="rotate(-90 ' + cx + ' ' + cy + ')"><title>' + esc(o.v) + ': ' + o.n + '</title></circle>';
     off += len;
     return seg;
   }).join('');
   var legend = options.map(function(o, idx){
     var color = palette[idx % palette.length];
-    return '<div><i style="background:' + color + '"></i>' + esc(o.v) + ' <strong style="color:var(--text-primary)">' + o.n + '</strong> <span style="color:var(--text-muted)">· ' + pct(o.n, total) + '%</span></div>';
+    var keyV = 'single:' + q.id + ':v=' + o.v;
+    var act = isFilterActive(keyV) ? ' is-active' : '';
+    return '<div class="' + act.trim() + '" data-fkey="' + keyV + '" data-qid="' + esc(q.id) + '" data-action="single" data-val="' + esc(o.v) + '"><i style="background:' + color + '"></i>' + esc(o.v) + ' <strong style="color:var(--text-primary)">' + o.n + '</strong> <span style="color:var(--text-muted)">· ' + pct(o.n, total) + '%</span></div>';
   }).join('');
   return '<div class="cx-donut-wrap">'
     + '<svg class="cx-donut" viewBox="0 0 100 100">'
@@ -493,11 +894,15 @@ function renderNumber(a) {
     + '</div>';
 }
 
-function renderDate(a) {
+function renderDate(a, q) {
   var top = a.top || [];
   var range = (a.earliest || '—') + ' → ' + (a.latest || '—');
   var list = top.length
-    ? '<div style="display:flex;flex-direction:column;gap:4px">' + top.map(function(t){ return '<div class="cx-bar-row"><div class="lbl">' + esc(t.v) + '</div><div class="cnt">' + t.n + '</div></div>'; }).join('') + '</div>'
+    ? '<div style="display:flex;flex-direction:column;gap:4px">' + top.map(function(t){
+        var keyV = 'date:' + q.id + ':v=' + t.v;
+        var act = isFilterActive(keyV) ? ' is-active' : '';
+        return '<div class="cx-bar-row' + act + '" data-fkey="' + keyV + '" data-qid="' + esc(q.id) + '" data-action="date" data-val="' + esc(t.v) + '"><div class="lbl">' + esc(t.v) + '</div><div class="cnt">' + t.n + '</div></div>';
+      }).join('') + '</div>'
     : '';
   return '<div class="cx-tile-meta" style="text-transform:none;letter-spacing:0;font-size:12px">' + esc(range) + '</div>' + list;
 }
@@ -506,6 +911,61 @@ function renderText(a) {
   var samples = a.samples || [];
   if (!samples.length) return '<div class="cx-tile-empty">No written answers yet.</div>';
   return '<div class="cx-text-list">' + samples.map(function(s){ return '<p>' + esc(s.t) + '</p>'; }).join('') + '</div>';
+}
+
+// ============================================================
+// CLICK HANDLERS — wire up cross-filtering on tile elements
+// ============================================================
+function wireTileClicks() {
+  document.querySelectorAll('#cx-dash [data-action]').forEach(function(el){
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      var qid = el.getAttribute('data-qid');
+      var action = el.getAttribute('data-action');
+      var qPrompt = '';
+      var qm = state.questions.find(function(qq){ return qq.id === qid; });
+      qPrompt = qm ? (qm.prompt || 'Question') : 'Question';
+      if (qPrompt.length > 30) qPrompt = qPrompt.slice(0, 27) + '…';
+
+      if (action === 'nps-bucket') {
+        var v = parseInt(el.getAttribute('data-v'), 10);
+        toggleFilter({
+          key: el.getAttribute('data-fkey'),
+          qid: qid, qPrompt: qPrompt, label: 'score = ' + v,
+          predicate: function(a){ return Number(a.value_number) === v; }
+        });
+      } else if (action === 'nps-seg') {
+        var seg = el.getAttribute('data-seg');
+        var lbl, fn;
+        if (seg === 'promoter')   { lbl = 'Promoters (9–10)';   fn = function(a){ return Number(a.value_number) >= 9; }; }
+        else if (seg === 'passive')   { lbl = 'Passives (7–8)';    fn = function(a){ var v = Number(a.value_number); return v >= 7 && v <= 8; }; }
+        else                          { lbl = 'Detractors (0–6)'; fn = function(a){ var v = Number(a.value_number); return !isNaN(v) && v <= 6; }; }
+        toggleFilter({ key: el.getAttribute('data-fkey'), qid: qid, qPrompt: qPrompt, label: lbl, predicate: fn });
+      } else if (action === 'scale5-bucket') {
+        var sv = parseInt(el.getAttribute('data-v'), 10);
+        toggleFilter({
+          key: el.getAttribute('data-fkey'),
+          qid: qid, qPrompt: qPrompt, label: sv + ' / 5',
+          predicate: function(a){ return Number(a.value_number) === sv; }
+        });
+      } else if (action === 'yesno' || action === 'single' || action === 'date') {
+        var val = el.getAttribute('data-val');
+        toggleFilter({
+          key: el.getAttribute('data-fkey'),
+          qid: qid, qPrompt: qPrompt, label: val,
+          predicate: function(a){ return a.value_text === val; }
+        });
+      } else if (action === 'multiselect') {
+        var mv = el.getAttribute('data-val');
+        toggleFilter({
+          key: el.getAttribute('data-fkey'),
+          qid: qid, qPrompt: qPrompt, label: mv,
+          predicate: function(a){ return Array.isArray(a.value_json) && a.value_json.indexOf(mv) !== -1; }
+        });
+      }
+    });
+  });
 }
 </script>
 </body>
