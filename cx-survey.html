@@ -667,21 +667,38 @@ function nextIndexAfter(q){
   }
   function any(fn){ for (var k=0;k<candidates.length;k++){ if (fn(candidates[k])) return true; } return false; }
   function all(fn){ for (var k=0;k<candidates.length;k++){ if (!fn(candidates[k])) return false; } return candidates.length > 0; }
-  for (var i = 0; i < rules.length; i++) {
-    var r = rules[i] || {}; var op = r.operator; var rv = r.value == null ? '' : r.value;
-    var match = false;
-    if (op === 'answered') match = isAnswered;
-    else if (op === 'not_answered') match = !isAnswered;
-    else if (op === 'equals') match = any(function(c){ return c === String(rv); });
-    else if (op === 'not_equals') match = isAnswered && all(function(c){ return c !== String(rv); });
-    else if (op === 'contains') match = any(function(c){ return c.toLowerCase().indexOf(String(rv).toLowerCase()) !== -1; });
-    else if (op === 'gt') match = any(function(c){ var n = parseFloat(c); return !isNaN(n) && n > parseFloat(rv); });
-    else if (op === 'lt') match = any(function(c){ var n = parseFloat(c); return !isNaN(n) && n < parseFloat(rv); });
-    if (match) {
-      if (String(r.action_target) === 'end') return -2;
-      var n = parseInt(r.action_target, 10);
+  function matchRule(r){
+    var op = r.operator; var rv = r.value == null ? '' : r.value;
+    if (op === 'answered') return isAnswered;
+    if (op === 'not_answered') return !isAnswered;
+    if (op === 'equals') return any(function(c){ return c === String(rv); });
+    if (op === 'not_equals') return isAnswered && all(function(c){ return c !== String(rv); });
+    if (op === 'contains') return any(function(c){ return c.toLowerCase().indexOf(String(rv).toLowerCase()) !== -1; });
+    if (op === 'gt') return any(function(c){ var n = parseFloat(c); return !isNaN(n) && n > parseFloat(rv); });
+    if (op === 'lt') return any(function(c){ var n = parseFloat(c); return !isNaN(n) && n < parseFloat(rv); });
+    return false;
+  }
+  // Group rules into OR-groups: each group is a run of rules starting at index 0 or at a rule whose
+  // combine !== 'and'. All rules in a group are AND-ed together. First fully-matching group wins;
+  // the action of the LAST rule in that group is applied.
+  var i = 0;
+  while (i < rules.length) {
+    var groupStart = i;
+    var groupEnd = i;
+    for (var j = i + 1; j < rules.length; j++) {
+      if ((rules[j] || {}).combine === 'and') groupEnd = j; else break;
+    }
+    var groupMatches = true;
+    for (var k = groupStart; k <= groupEnd; k++) {
+      if (!matchRule(rules[k] || {})) { groupMatches = false; break; }
+    }
+    if (groupMatches) {
+      var actionRule = rules[groupEnd] || {};
+      if (String(actionRule.action_target) === 'end') return -2;
+      var n = parseInt(actionRule.action_target, 10);
       if (!isNaN(n)) return n;
     }
+    i = groupEnd + 1;
   }
   return state.currentIdx + 1;
 }

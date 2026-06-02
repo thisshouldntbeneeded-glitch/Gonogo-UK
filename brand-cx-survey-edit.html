@@ -318,6 +318,15 @@
 .se-preview-kicker{display:inline-flex;padding:4px 8px;border-radius:999px;background:#eef2f7;font-size:10px;font-weight:700;color:#475569;margin-bottom:10px}
 .se-preview-step{padding:10px 0;border-bottom:1px solid #e5e7eb}
 .se-preview-step:last-child{border-bottom:none}
+.se-preview-swipe-card{touch-action:pan-y;cursor:grab;user-select:none;background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:14px;border-bottom:1px solid #e5e7eb;transition:transform .14s ease, opacity .14s ease;will-change:transform}
+.se-preview-swipe-card:active{cursor:grabbing}
+.se-preview-nav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+.se-preview-navbtn{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border:1px solid #e5e7eb;border-radius:999px;background:#fff;color:#111827;font-size:11px;font-weight:700;cursor:pointer}
+.se-preview-navbtn:disabled{opacity:.4;cursor:not-allowed}
+.se-preview-dots{display:flex;gap:5px;align-items:center}
+.se-preview-dots i{width:6px;height:6px;border-radius:999px;background:#cbd5e1;cursor:pointer;display:inline-block}
+.se-preview-dots i.is-active{background:#0f766e;transform:scale(1.35)}
+.se-preview-hint{font-size:10px;color:#94a3b8;margin-top:8px;text-align:center}
 @media(max-width:1280px){.se-question-shell{grid-template-columns:1fr}.se-flow-row{grid-template-columns:1fr}}
 
 
@@ -327,6 +336,8 @@
 .se-logic-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .se-inline-note{font-size:11px;color:var(--text-muted);line-height:1.45;margin-top:6px}
 @media(max-width:1000px){.se-logic-row{grid-template-columns:1fr}}
+.se-logic-combine{margin:6px 0 -2px;display:flex;justify-content:flex-start}
+.se-logic-combine .se-logic-combine-sel{max-width:280px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);background:transparent;border:1px dashed var(--border-primary);padding:6px 8px;border-radius:8px}
 
 
 .se-tip{position:relative;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:999px;border:1px solid var(--border-primary);background:var(--surface-2);color:var(--text-muted);font-size:11px;font-weight:800;cursor:help;vertical-align:middle;margin-left:6px}
@@ -592,7 +603,65 @@ function questionPreviewHTML(){
     var m = SA_LANGUAGES.find(function(x){ return x.code === l.code; });
     return m ? m.name : l.code;
   }).join(', ');
-  return '<div class="se-preview-phone"><div class="se-preview-screen"><span class="se-preview-kicker">Step by step preview</span><div style="font-size:18px;font-weight:800;margin-bottom:6px">'+esc(title)+'</div><div style="font-size:12px;color:#64748b;line-height:1.5;margin-bottom:10px">'+esc(copy)+'</div><div style="font-size:11px;color:#0f766e;font-weight:700;margin-bottom:10px">Languages: '+esc(langs || 'None selected')+'</div>'+(_questions.length?_questions.slice(0,5).map(function(q,idx){return '<div class="se-preview-step"><div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:6px">Step '+(idx+1)+'</div><div style="font-size:13px;font-weight:700;margin-bottom:4px">'+esc(q.prompt || qtypeLabel(q.qtype))+'</div><div style="font-size:12px;color:#6b7280">'+esc(q.help_text || qtypeLabel(q.qtype))+'</div></div>';}).join(''):'<div style="font-size:12px;color:#64748b">Add a question block to start the survey flow.</div>')+'</div></div>';
+  var total = _questions.length;
+  if (typeof window._previewStep !== 'number') window._previewStep = 0;
+  if (window._previewStep < 0) window._previewStep = 0;
+  if (window._previewStep > Math.max(0, total - 1)) window._previewStep = Math.max(0, total - 1);
+  var step = window._previewStep;
+  var header = '<div style="font-size:18px;font-weight:800;margin-bottom:6px">'+esc(title)+'</div>'
+    + '<div style="font-size:12px;color:#64748b;line-height:1.5;margin-bottom:10px">'+esc(copy)+'</div>'
+    + '<div style="font-size:11px;color:#0f766e;font-weight:700;margin-bottom:10px">Languages: '+esc(langs || 'None selected')+'</div>';
+  if (!total) {
+    return '<div class="se-preview-phone"><div class="se-preview-screen"><span class="se-preview-kicker">Step by step preview</span>'+header+'<div style="font-size:12px;color:#64748b">Add a question block to start the survey flow.</div></div></div>';
+  }
+  var q = _questions[step] || {};
+  var pct = Math.round(((step + 1) / total) * 100);
+  var card = '<div class="se-preview-step se-preview-swipe-card" data-preview-card>'
+    + '<div style="font-size:11px;color:#64748b;font-weight:700;margin-bottom:6px">Step '+(step+1)+' of '+total+'</div>'
+    + '<div style="font-size:13px;font-weight:700;margin-bottom:4px">'+esc(q.prompt || qtypeLabel(q.qtype))+'</div>'
+    + '<div style="font-size:12px;color:#6b7280">'+esc(q.help_text || qtypeLabel(q.qtype))+'</div>'
+    + '</div>';
+  var progress = '<div class="se-preview-progress" style="margin:0 0 10px"><span style="width:'+pct+'%"></span></div>';
+  var nav = '<div class="se-preview-nav">'
+    + '<button type="button" class="se-preview-navbtn" data-preview-prev'+(step===0?' disabled':'')+'><i class="fa-solid fa-chevron-left"></i> Back</button>'
+    + '<div class="se-preview-dots">'+_questions.map(function(_,i){ return '<i class="'+(i===step?'is-active':'')+'" data-preview-dot="'+i+'"></i>'; }).join('')+'</div>'
+    + '<button type="button" class="se-preview-navbtn" data-preview-next'+(step>=total-1?' disabled':'')+'>'+(step>=total-1?'Done':'Next')+' <i class="fa-solid fa-chevron-right"></i></button>'
+    + '</div>';
+  var hint = '<div class="se-preview-hint">Swipe or use the arrows to step through — this matches what respondents see.</div>';
+  return '<div class="se-preview-phone"><div class="se-preview-screen"><span class="se-preview-kicker">Step by step preview</span>'+header+progress+card+nav+hint+'</div></div>';
+}
+function wirePreviewSwipe(){
+  var card = document.querySelector('[data-preview-card]');
+  var phone = document.querySelector('.se-preview-phone');
+  if (!phone) return;
+  var total = _questions.length;
+  function go(delta){
+    if (typeof window._previewStep !== 'number') window._previewStep = 0;
+    var next = window._previewStep + delta;
+    if (next < 0 || next > total - 1) return;
+    window._previewStep = next;
+    var wrap = document.querySelector('.se-question-column .se-preview-phone');
+    if (wrap) { wrap.outerHTML = questionPreviewHTML(); wirePreviewSwipe(); }
+  }
+  function goTo(i){
+    if (i < 0 || i > total - 1) return;
+    window._previewStep = i;
+    var wrap = document.querySelector('.se-question-column .se-preview-phone');
+    if (wrap) { wrap.outerHTML = questionPreviewHTML(); wirePreviewSwipe(); }
+  }
+  var prev = phone.querySelector('[data-preview-prev]');
+  var next = phone.querySelector('[data-preview-next]');
+  if (prev) prev.addEventListener('click', function(){ go(-1); });
+  if (next) next.addEventListener('click', function(){ go(1); });
+  phone.querySelectorAll('[data-preview-dot]').forEach(function(d){
+    d.addEventListener('click', function(){ goTo(Number(d.getAttribute('data-preview-dot'))); });
+  });
+  if (!card) return;
+  var startX = 0, startY = 0, dx = 0, dy = 0, dragging = false;
+  card.addEventListener('pointerdown', function(e){ dragging = true; startX = e.clientX; startY = e.clientY; dx = 0; dy = 0; card.setPointerCapture && card.setPointerCapture(e.pointerId); });
+  card.addEventListener('pointermove', function(e){ if (!dragging) return; dx = e.clientX - startX; dy = e.clientY - startY; if (Math.abs(dx) > Math.abs(dy)) { card.style.transform = 'translateX('+dx+'px) rotate('+(dx/30)+'deg)'; card.style.opacity = String(Math.max(.5, 1 - Math.abs(dx)/240)); } });
+  card.addEventListener('pointerup', function(){ if (!dragging) return; dragging = false; var threshold = 70; var moved = false; if (dx > threshold) { moved = true; go(-1); } else if (dx < -threshold) { moved = true; go(1); } if (!moved) { card.style.transition = 'transform .18s ease, opacity .18s ease'; card.style.transform = ''; card.style.opacity = ''; setTimeout(function(){ if (card) card.style.transition = ''; }, 200); } });
+  card.addEventListener('pointercancel', function(){ dragging = false; card.style.transform = ''; card.style.opacity = ''; });
 }
 
 
@@ -615,7 +684,10 @@ function wireDragSort(){ /* rail drag sort wired separately via wireRailDragDrop
 function buildLogicRowHTML(q, idx, rule, ridx){
   ensureLogicArray(q);
   var targetOptions = '<option value="end"'+((rule.action_target||'')==='end'?' selected':'')+'>End survey</option>' + _questions.map(function(item, qIdx){ return '<option value="'+qIdx+'"'+(String(rule.action_target)===String(qIdx)?' selected':'')+'>Go to question '+(qIdx+1)+'</option>'; }).join('');
-  return '<div class="se-logic-row">'
+  var combine = (rule.combine === 'and' ? 'and' : 'or');
+  var combineRow = ridx === 0 ? '' :
+    '<div class="se-logic-combine"><select class="se-select se-logic-combine-sel" data-logic-field="combine" data-idx="'+idx+'" data-rule-idx="'+ridx+'"><option value="or"'+(combine==='or'?' selected':'')+'>OR — match any rule above</option><option value="and"'+(combine==='and'?' selected':'')+'>AND — also match the rule above</option></select></div>';
+  return combineRow + '<div class="se-logic-row">'
     + '<div><label class="se-label">Operator</label><select class="se-select" data-logic-field="operator" data-idx="'+idx+'" data-rule-idx="'+ridx+'"><option value="equals"'+(rule.operator==='equals'?' selected':'')+'>Equals</option><option value="not_equals"'+(rule.operator==='not_equals'?' selected':'')+'>Does not equal</option><option value="contains"'+(rule.operator==='contains'?' selected':'')+'>Contains</option><option value="gt"'+(rule.operator==='gt'?' selected':'')+'>Greater than</option><option value="lt"'+(rule.operator==='lt'?' selected':'')+'>Less than</option><option value="answered"'+(rule.operator==='answered'?' selected':'')+'>Answered</option><option value="not_answered"'+(rule.operator==='not_answered'?' selected':'')+'>Not answered</option></select></div>'
     + '<div><label class="se-label">Value</label><input class="se-input" data-logic-field="value" data-idx="'+idx+'" data-rule-idx="'+ridx+'" value="'+esc(rule.value || '')+'" placeholder="Condition value"></div>'
     + '<div><label class="se-label">Action</label><select class="se-select" data-logic-field="action_target" data-idx="'+idx+'" data-rule-idx="'+ridx+'">'+targetOptions+'</select></div>'
@@ -641,7 +713,7 @@ function updateQuestionFieldLive(idx, field, value){
   var copyEl = document.querySelector('.se-flow-card[data-idx="'+idx+'"] .se-flow-copy');
   if(copyEl) copyEl.textContent = q.help_text || qtypeLabel(q.qtype);
   var previewWrap = document.querySelector('.se-question-column .se-preview-phone');
-  if(previewWrap) previewWrap.outerHTML = questionPreviewHTML();
+  if(previewWrap) { previewWrap.outerHTML = questionPreviewHTML(); wirePreviewSwipe(); }
 }
 
 var TEMPLATES = {
@@ -1249,6 +1321,7 @@ function renderQuestionPanel() {
 
   html += '</div>';
   panel.innerHTML = html;
+  wirePreviewSwipe();
 
   panel.querySelectorAll('[data-add-qtype]').forEach(function(el){
     el.addEventListener('click', function(){ addQuestionBlock(el.dataset.addQtype); });
