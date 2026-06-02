@@ -642,22 +642,41 @@ function renderLangPickerHTML(){
 /* Evaluate this question's logic; returns next index, or -2 to end-survey. */
 function nextIndexAfter(q){
   var rules = Array.isArray(q && q.logic) ? q.logic : [];
+  if (!rules.length) return state.currentIdx + 1;
   var val = state.values[q.id];
-  var raw;
-  if (val == null) raw = '';
-  else if (Array.isArray(val)) raw = val.join(',');
-  else if (typeof val === 'object') raw = (val.value_text != null ? val.value_text : (val.value_number != null ? val.value_number : ''));
-  else raw = val;
+  // Build a list of candidate scalar values that represent this answer.
+  // Multi-select stores a bare array; treat each element as a candidate so 'equals' / 'contains' work per choice.
+  var candidates = [];
+  var isAnswered = false;
+  if (val == null) {
+    candidates = [''];
+  } else if (Array.isArray(val)) {
+    isAnswered = val.length > 0;
+    candidates = val.length ? val.map(function(x){ return x == null ? '' : String(x); }) : [''];
+  } else if (typeof val === 'object') {
+    if (val.value_text != null && val.value_text !== '') { candidates.push(String(val.value_text)); isAnswered = true; }
+    if (val.value_number != null && val.value_number !== '') { candidates.push(String(val.value_number)); isAnswered = true; }
+    if (Array.isArray(val.value_json)) {
+      isAnswered = isAnswered || val.value_json.length > 0;
+      val.value_json.forEach(function(x){ candidates.push(x == null ? '' : String(x)); });
+    }
+    if (!candidates.length) candidates = [''];
+  } else {
+    candidates = [String(val)];
+    isAnswered = String(val) !== '';
+  }
+  function any(fn){ for (var k=0;k<candidates.length;k++){ if (fn(candidates[k])) return true; } return false; }
+  function all(fn){ for (var k=0;k<candidates.length;k++){ if (!fn(candidates[k])) return false; } return candidates.length > 0; }
   for (var i = 0; i < rules.length; i++) {
-    var r = rules[i] || {}; var op = r.operator; var rv = r.value;
+    var r = rules[i] || {}; var op = r.operator; var rv = r.value == null ? '' : r.value;
     var match = false;
-    if (op === 'answered') match = (raw !== '' && raw != null);
-    else if (op === 'not_answered') match = (raw === '' || raw == null);
-    else if (op === 'equals') match = (String(raw) === String(rv));
-    else if (op === 'not_equals') match = (String(raw) !== String(rv));
-    else if (op === 'contains') match = (String(raw).toLowerCase().indexOf(String(rv).toLowerCase()) !== -1);
-    else if (op === 'gt') match = (parseFloat(raw) > parseFloat(rv));
-    else if (op === 'lt') match = (parseFloat(raw) < parseFloat(rv));
+    if (op === 'answered') match = isAnswered;
+    else if (op === 'not_answered') match = !isAnswered;
+    else if (op === 'equals') match = any(function(c){ return c === String(rv); });
+    else if (op === 'not_equals') match = isAnswered && all(function(c){ return c !== String(rv); });
+    else if (op === 'contains') match = any(function(c){ return c.toLowerCase().indexOf(String(rv).toLowerCase()) !== -1; });
+    else if (op === 'gt') match = any(function(c){ var n = parseFloat(c); return !isNaN(n) && n > parseFloat(rv); });
+    else if (op === 'lt') match = any(function(c){ var n = parseFloat(c); return !isNaN(n) && n < parseFloat(rv); });
     if (match) {
       if (String(r.action_target) === 'end') return -2;
       var n = parseInt(r.action_target, 10);
@@ -854,7 +873,7 @@ function renderPartyQuestion() {
   setPartySwipePreview('');
   if (shouldShowPartyMascot()) setTimeout(showPartyMascot, 180);
   document.getElementById('btn-prev').onclick = function(){ if (state.currentIdx > 0) { state.currentIdx--; render(); } };
-  document.getElementById('btn-next').onclick = async function(){ if (!validateCurrent(q)) return; if (state.currentIdx === total - 1) return await submit(); celebrateStep(); state.currentIdx++; render(); };
+  document.getElementById('btn-next').onclick = async function(){ if (!validateCurrent(q)) return; var nxt = nextIndexAfter(q); if (nxt === -2 || nxt >= total) return await submit(); if (state.currentIdx === total - 1) return await submit(); celebrateStep(); state.currentIdx = nxt; render(); };
 }
 
 function renderPartyInput(q, idx){
@@ -894,13 +913,15 @@ function wirePartyQuestion(q, idx){
     setPartySwipePreview(direction);
   }
   function advance(){
-    if (state.currentIdx === state.questions.length - 1) submit();
-    else { state.currentIdx++; render(); }
+    var nxt = nextIndexAfter(q);
+    if (nxt === -2 || nxt >= state.questions.length) { submit(); return; }
+    if (state.currentIdx === state.questions.length - 1) { submit(); return; }
+    state.currentIdx = nxt; render();
   }
   function commitQuick(value, positive){
     if (value == null) return;
-    if (typeof value === 'number') state.values[q.id] = { valuenumber: Number(value) };
-    else state.values[q.id] = { valuetext: String(value) };
+    if (typeof value === 'number') state.values[q.id] = { value_number: Number(value) };
+    else state.values[q.id] = { value_text: String(value) };
     haptic(positive ? 22 : 14);
     celebrateStep(!!positive);
     if (card) {
@@ -947,8 +968,8 @@ function wirePartyQuestion(q, idx){
     btn.addEventListener('click', function(){
       var raw = btn.getAttribute('data-party-val');
       var n = parseInt(raw, 10);
-      if (!isNaN(n) && String(n) === raw) state.values[q.id] = { valuenumber: n };
-      else state.values[q.id] = { valuetext: raw };
+      if (!isNaN(n) && String(n) === raw) state.values[q.id] = { value_number: n };
+      else state.values[q.id] = { value_text: raw };
       haptic(16);
       celebrateStep(true);
       advance();
@@ -957,7 +978,7 @@ function wirePartyQuestion(q, idx){
   document.querySelectorAll('#q-answer .s-choice').forEach(function(btn){
     btn.addEventListener('click', function(){
       var raw = btn.getAttribute('data-val');
-      if (q.qtype === 'multiselect') {
+      if (q.qtype === 'multi_select' || q.qtype === 'multiselect') {
         var curr = Array.isArray(state.values[q.id]) ? state.values[q.id].slice() : [];
         var i = curr.indexOf(raw);
         if (i === -1) curr.push(raw); else curr.splice(i, 1);
@@ -1128,7 +1149,7 @@ function syncTextInput(q, idx) {
   if (!v) { delete state.values[q.id]; return; }
   if (q.qtype === 'number') {
     var n = parseFloat(v);
-    if (!isNaN(n)) state.values[q.id] = { valuenumber: n }; else delete state.values[q.id];
+    if (!isNaN(n)) state.values[q.id] = { value_number: n }; else delete state.values[q.id];
   } else {
     state.values[q.id] = { value_text: v };
   }
