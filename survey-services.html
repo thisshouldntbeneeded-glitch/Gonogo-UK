@@ -27,104 +27,42 @@
   }
   </script>
   <style>
-    :root{
-      --green:#11a551;
-      --green-soft:rgba(17,165,81,.10);
-      --bg:#0b0f14;
-      --bg-card:#121821;
-      --bg-primary:#0f1620;
-      --text-primary:#f4f7fb;
-      --text-secondary:#aab4c0;
-      --text-muted:#7d8895;
-      --border-primary:rgba(255,255,255,.08);
-      --border-subtle:rgba(255,255,255,.04);
-      --radius-md:14px;
-      --radius-lg:20px;
-      --radius-xl:26px;
-      --shadow-lg:0 24px 60px rgba(0,0,0,.35);
-      --space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:48px;
-      --text-xs:.82rem;--text-sm:.98rem;--text-base:1.06rem;--text-lg:1.35rem;--text-xl:clamp(2rem,4vw,3rem);
-      --max:1180px;
-    }
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{margin:0;font-family:'Inter',sans-serif;background:linear-gradient(180deg,#0b0f14 0%,#101821 100%);color:var(--text-primary);line-height:1.65}
-    a{text-decoration:none;color:inherit}
-    .container{width:min(var(--max),calc(100% - 32px));margin:0 auto}
-    .bz-section{padding:var(--space-10) 0}
-    .bz-section-last{padding-bottom:var(--space-8)}
-    .bz-section-header{text-align:center;margin-bottom:var(--space-8)}
-    .bz-section-title{font-size:var(--text-xl);font-weight:800;color:var(--text-primary);letter-spacing:-0.02em;margin:0 0 var(--space-3)}
-    .bz-section-lead{font-size:var(--text-sm);color:var(--text-secondary);line-height:1.7;margin:0 auto;max-width:56ch}
-    .btn{display:inline-flex;align-items:center;gap:10px;border-radius:999px;padding:14px 26px;font-weight:700;transition:.2s ease;border:1px solid transparent}
-    .btn-primary{background:var(--green);color:#fff;box-shadow:0 12px 28px rgba(17,165,81,.18)}
-    .btn-secondary{background:transparent;color:var(--text-primary);border:1px solid var(--border-primary)}
-    .btn-lg{padding:14px 28px;font-size:var(--text-base)}
-    .bz-eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--green-soft);color:var(--green);padding:8px 14px;border-radius:999px;font-size:var(--text-xs);font-weight:700;margin-bottom:var(--space-4)}
-    .bz-hero-section{padding:var(--space-10) 0 var(--space-8)}
-    .bz-hero{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-8);align-items:center}
-    .bz-title{font-size:clamp(2.2rem,4vw,3.6rem);font-weight:900;line-height:1.05;letter-spacing:-0.03em;color:var(--text-primary);margin:0 0 var(--space-4)}
-    .bz-lead{font-size:var(--text-base);line-height:1.8;color:var(--text-secondary);max-width:58ch;margin-bottom:var(--space-6)}
-    .bz-hero-actions{display:flex;gap:var(--space-3);flex-wrap:wrap}
-    .bz-hero-card,.bz-plan-mockup,.bz-step,.bz-feat-card,.bz-price-card,.bz-trust-strip,.bz-contact-box,.bz-indep-block,.bz-indep-callout{background:var(--bg-card);border:1px solid var(--border-primary);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg)}
-    .bz-hero-card{overflow:hidden;transform:rotateY(-2deg) rotateX(1deg)}
-    .bz-hc-header,.bz-pm-header{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-primary);font-weight:700;font-size:var(--text-sm)}
-    .bz-hc-live,.bz-pm-tag{margin-left:auto;font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--green-soft);color:var(--green);text-transform:uppercase;letter-spacing:.5px}
-    .bz-hc-score{padding:var(--space-5);display:flex;align-items:baseline;gap:var(--space-2)}
-    .bz-hc-num{font-size:3.3rem;font-weight:900;letter-spacing:-.04em;color:var(--green);line-height:1}
-    .bz-hc-label{font-size:var(--text-xs);color:var(--text-muted)}
-    .bz-hc-cats{padding:0 var(--space-5) var(--space-4);display:grid;gap:8px}
-    .bz-hc-cat{display:grid;grid-template-columns:155px 1fr 28px;align-items:center;gap:var(--space-2);font-size:12px;color:var(--text-secondary)}
-    .bz-hc-bar{height:6px;background:var(--bg-primary);border-radius:999px;overflow:hidden}.bz-hc-bar div{height:100%;background:var(--green);border-radius:999px}
-    .bz-hc-footer,.bz-pm-footer{padding:var(--space-3) var(--space-5);border-top:1px solid var(--border-primary);display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-xs);color:var(--text-secondary)}
-    .bz-steps{display:flex;align-items:flex-start;gap:var(--space-4)}
-    .bz-step{flex:1;padding:var(--space-6)}
-    .bz-step-num{width:36px;height:36px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:var(--text-sm);font-weight:800;margin-bottom:var(--space-3)}
-    .bz-step h3{font-size:var(--text-sm);margin:0 0 var(--space-2)}
-    .bz-step p{font-size:var(--text-xs);color:var(--text-secondary);margin:0}
-    .bz-step-arrow{display:flex;align-items:center;color:var(--border-primary);font-size:18px;padding-top:var(--space-8)}
-    .bz-feature-hero{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-8);align-items:start}
-    .bz-ai-features{display:grid;gap:var(--space-4);margin-top:var(--space-6)}
-    .bz-ai-feat{display:grid;grid-template-columns:40px 1fr;gap:var(--space-3)}
-    .bz-ai-icon,.bz-feat-icon{width:40px;height:40px;border-radius:var(--radius-md);background:var(--green-soft);display:flex;align-items:center;justify-content:center;color:var(--green)}
-    .bz-ai-feat strong{display:block;font-size:var(--text-sm);margin-bottom:2px}.bz-ai-feat span{font-size:var(--text-xs);color:var(--text-secondary)}
-    .bz-plan-mockup{overflow:hidden}.bz-pm-item{display:flex;gap:var(--space-3);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border-subtle)}.bz-pm-dot{width:10px;height:10px;border-radius:50%;margin-top:5px;flex-shrink:0}.urgent .bz-pm-dot{background:#e74c3c}.moderate .bz-pm-dot{background:#ff9800}.low .bz-pm-dot{background:var(--green)}.bz-pm-body strong{display:block;font-size:var(--text-sm);margin-bottom:4px}.bz-pm-body span{display:block;font-size:var(--text-xs);color:var(--text-secondary)}.bz-pm-meta{display:flex;gap:var(--space-2);margin-top:var(--space-2)}.bz-pm-lift,.bz-pm-cat{font-size:11px;padding:2px 8px;border-radius:999px}.bz-pm-lift{background:var(--green-soft);color:var(--green);font-weight:700}.bz-pm-cat{background:var(--bg-primary);color:var(--text-muted)}
-    .bz-features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4)}
-    .bz-feat-card{padding:var(--space-5)}.bz-feat-card h3{font-size:var(--text-sm);margin:0 0 var(--space-2)}.bz-feat-card p{font-size:var(--text-xs);color:var(--text-secondary);margin:0}
-    .bz-pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-5);max-width:1040px;margin:0 auto}
-    .bz-price-card{padding:var(--space-6);display:flex;flex-direction:column}.bz-price-card.featured{border-color:rgba(17,165,81,.35);border-top:3px solid var(--green);box-shadow:0 20px 40px rgba(17,165,81,.1)}.bz-price-tag{display:inline-flex;padding:6px 10px;border-radius:999px;background:var(--bg-primary);color:var(--text-secondary);font-size:var(--text-xs);font-weight:700;margin-bottom:var(--space-3);width:fit-content}.bz-price-tag.highlight{background:var(--green-soft);color:var(--green)}.bz-price-card h3{font-size:var(--text-lg);margin:0 0 var(--space-2)}.bz-price{font-size:2.2rem;font-weight:800;letter-spacing:-0.03em;margin-bottom:var(--space-3)}.bz-price small{font-size:var(--text-sm);font-weight:500;color:var(--text-secondary)}.bz-price-lead{font-size:var(--text-sm);color:var(--text-secondary);margin:0 0 var(--space-4)}.bz-price-list{list-style:none;padding:0;margin:0 0 var(--space-4);border-top:1px solid var(--border-primary);padding-top:var(--space-4);flex-grow:1}.bz-price-list li{display:flex;gap:9px;margin-bottom:8px;font-size:var(--text-sm);color:var(--text-secondary)}.bz-price-list li:before{content:'✓';color:var(--green);font-weight:700}.bz-price-note{margin-top:var(--space-3);font-size:var(--text-xs);color:var(--text-muted)}
-    .bz-trust-strip{display:flex;align-items:center;justify-content:center;gap:var(--space-3);margin-top:var(--space-6);padding:var(--space-4) var(--space-5);background:rgba(17,165,81,.04);border:1px solid rgba(17,165,81,.15);font-size:var(--text-sm);color:var(--text-secondary);line-height:1.6}
-    .bz-contact{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-8);max-width:980px;margin:0 auto;align-items:start}.bz-contact-box{padding:var(--space-6)}
-    .bz-independence-container{max-width:920px}.bz-independence-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5);margin-top:var(--space-5)}.bz-indep-block{padding:var(--space-5)}.bz-indep-block p{font-size:var(--text-sm);color:var(--text-secondary);margin:0}.bz-indep-callout{padding:var(--space-4);margin-top:var(--space-5);border-left:3px solid var(--green)}.bz-indep-callout strong{display:block;margin-bottom:var(--space-2)}.bz-indep-callout span{font-size:var(--text-sm);color:var(--text-secondary)}.bz-indep-fine{font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--space-4)}
-    .footer-note{max-width:920px;margin:0 auto;color:var(--text-muted);font-size:var(--text-xs);text-align:center}
-    @media (max-width:1024px){.bz-hero,.bz-feature-hero,.bz-pricing-grid,.bz-contact,.bz-independence-grid{grid-template-columns:1fr}.bz-features-grid{grid-template-columns:repeat(2,1fr)}.bz-steps{flex-direction:column}.bz-step-arrow{transform:rotate(90deg);padding:0;justify-content:center;width:100%}.bz-trust-strip{text-align:center;flex-direction:column}}
-    @media (max-width:640px){.bz-features-grid{grid-template-columns:1fr}.bz-hero-actions .btn{width:100%;justify-content:center}}
-  
-    .bz-type-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:var(--space-8);align-items:start}
-    .bz-type-list{display:grid;gap:14px}
-    .bz-type-btn{width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--border-primary);border-radius:22px;padding:20px 22px;color:var(--text-primary);display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;cursor:pointer;transition:.25s ease;box-shadow:var(--shadow-lg)}
-    .bz-type-btn:hover,.bz-type-btn.active{border-color:rgba(17,165,81,.35);transform:translateY(-2px);background:linear-gradient(180deg,rgba(17,165,81,.10),rgba(255,255,255,.02))}
-    .bz-type-btn i{width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:var(--green-soft);color:var(--green)}
-    .bz-type-btn strong{display:block;font-size:1rem;margin-bottom:4px}
-    .bz-type-btn span{display:block;font-size:.9rem;color:var(--text-secondary);line-height:1.5}
-    .bz-type-arrow{color:var(--text-muted);font-size:1rem}
-    .bz-type-panel{position:sticky;top:24px;background:linear-gradient(180deg,rgba(17,165,81,.10),rgba(255,255,255,.02));border:1px solid rgba(17,165,81,.2);border-radius:28px;padding:26px;box-shadow:var(--shadow-lg);min-height:480px}
-    .bz-type-kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--green-soft);color:var(--green);font-size:.82rem;font-weight:700;margin-bottom:16px}
-    .bz-type-panel h3{font-size:2rem;line-height:1.02;letter-spacing:-.03em;margin:0 0 10px}
-    .bz-type-panel p{color:var(--text-secondary);margin:0 0 16px}
-    .bz-type-meta{display:grid;gap:12px;margin-top:18px}
-    .bz-type-meta div{padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid var(--border-subtle)}
-    .bz-type-meta strong{display:block;font-size:.88rem;margin-bottom:4px}
-    .bz-type-proof{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-    .bz-type-proof span{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--border-primary);font-size:.82rem;color:var(--text-secondary)}
-    .bz-metric-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    .bz-metric-card{padding:22px;border-radius:22px;background:var(--bg-card);border:1px solid var(--border-primary);box-shadow:var(--shadow-lg)}
-    .bz-metric-card h3{margin:0 0 8px;font-size:1.05rem}
-    .bz-metric-card p{margin:0;color:var(--text-secondary);font-size:.92rem}
-    @media (max-width:1024px){.bz-type-grid,.bz-metric-strip{grid-template-columns:1fr}.bz-type-panel{position:relative;top:auto;min-height:auto}}
+:root{
+  --green:#11a551;
+  --green-soft:rgba(17,165,81,.08);
+  --page:#ffffff;
+  --surface:#ffffff;
+  --surface-alt:#f6f8fb;
+  --surface-tint:#f3fbf6;
+  --text-primary:#0f1720;
+  --text-secondary:#51606f;
+  --text-muted:#738190;
+  --border-primary:#dfe6ee;
+  --border-strong:#cfd8e3;
+  --radius-md:14px;
+  --radius-lg:20px;
+  --radius-xl:26px;
+  --shadow-lg:0 18px 40px rgba(16,24,40,.08);
+  --space-2:8px;--space-3:12px;--space-4:16px;--space-5:20px;--space-6:24px;--space-8:32px;--space-10:56px;--space-12:72px;
+  --text-xs:.84rem;--text-sm:1rem;--text-base:1.08rem;--text-lg:1.4rem;--text-xl:clamp(2.2rem,4vw,3.4rem);
+  --max:1180px;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;font-family:'Inter',sans-serif;background:var(--page);color:var(--text-primary);line-height:1.65}
+a{text-decoration:none;color:inherit}.container{width:min(var(--max),calc(100% - 40px));margin:0 auto}.site-hook{min-height:1px}.bz-section{padding:var(--space-12) 0}.bz-section-header{text-align:center;margin-bottom:var(--space-8)}.bz-section-title{font-size:var(--text-xl);font-weight:800;letter-spacing:-0.03em;margin:0 0 var(--space-3)}.bz-section-lead{font-size:var(--text-sm);color:var(--text-secondary);line-height:1.75;margin:0 auto;max-width:60ch}.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;border-radius:999px;padding:15px 26px;font-weight:800;transition:.2s ease;border:1px solid transparent}.btn-primary{background:var(--green);color:#fff;box-shadow:0 10px 24px rgba(17,165,81,.16)}.btn-secondary{background:#fff;color:var(--text-primary);border-color:var(--border-strong)}.btn-lg{padding:15px 30px;font-size:var(--text-base)}.bz-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--green-soft);color:var(--green);padding:9px 14px;border-radius:999px;font-size:var(--text-xs);font-weight:800;margin-bottom:var(--space-4)}
+.bz-hero-section{padding:var(--space-10) 0 var(--space-12);background:linear-gradient(180deg,#ffffff 0%,#f7fbf8 100%)}.bz-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:var(--space-10);align-items:center}.bz-title{font-size:clamp(2.6rem,5vw,4.6rem);font-weight:900;line-height:1.01;letter-spacing:-0.05em;margin:0 0 var(--space-4)}.bz-lead{font-size:var(--text-base);line-height:1.8;color:var(--text-secondary);max-width:61ch;margin-bottom:var(--space-6)}.bz-hero-actions{display:flex;gap:var(--space-3);flex-wrap:wrap}.bz-hero-card,.bz-plan-mockup,.bz-step,.bz-feat-card,.bz-price-card,.bz-contact-box,.bz-type-btn,.bz-type-panel,.bz-metric-card{background:var(--surface);border:1px solid var(--border-primary);border-radius:var(--radius-xl);box-shadow:var(--shadow-lg)}.bz-hero-card{overflow:hidden;transform:none}.bz-hc-header,.bz-pm-header{display:flex;align-items:center;gap:var(--space-2);padding:18px 22px;border-bottom:1px solid var(--border-primary);font-weight:700;font-size:var(--text-sm)}.bz-hc-live,.bz-pm-tag{margin-left:auto;font-size:10px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--green-soft);color:var(--green);text-transform:uppercase;letter-spacing:.5px}.bz-hc-score{padding:22px;display:flex;align-items:baseline;gap:10px}.bz-hc-num{font-size:3.6rem;font-weight:900;letter-spacing:-.05em;color:var(--green);line-height:1}.bz-hc-label{font-size:var(--text-xs);color:var(--text-muted)}.bz-hc-cats{padding:0 22px 18px;display:grid;gap:10px}.bz-hc-cat{display:grid;grid-template-columns:170px 1fr 34px;align-items:center;gap:10px;font-size:13px;color:var(--text-secondary)}.bz-hc-bar{height:8px;background:#e8eef4;border-radius:999px;overflow:hidden}.bz-hc-bar div{height:100%;background:var(--green);border-radius:999px}.bz-hc-footer,.bz-pm-footer{padding:14px 22px;border-top:1px solid var(--border-primary);display:flex;align-items:center;gap:10px;font-size:var(--text-xs);color:var(--text-secondary)}
+.bz-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;align-items:stretch}.bz-step{padding:28px;min-height:220px;display:flex;flex-direction:column}.bz-step-num{width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:var(--text-sm);font-weight:800;margin-bottom:16px}.bz-step h3{font-size:1.22rem;line-height:1.25;margin:0 0 12px}.bz-step p{font-size:.98rem;color:var(--text-secondary);margin:0;max-width:30ch}.bz-step-arrow{display:none}
+.bz-feature-hero{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-10);align-items:start}.bz-ai-features{display:grid;gap:16px;margin-top:var(--space-6)}.bz-ai-feat{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start}.bz-ai-icon,.bz-feat-icon{width:44px;height:44px;border-radius:15px;background:var(--green-soft);display:flex;align-items:center;justify-content:center;color:var(--green)}.bz-ai-feat strong{display:block;font-size:1rem;margin-bottom:4px}.bz-ai-feat span{font-size:.95rem;color:var(--text-secondary);line-height:1.65}.bz-plan-mockup{overflow:hidden}.bz-pm-item{display:flex;gap:14px;padding:18px 22px;border-bottom:1px solid #edf1f5}.bz-pm-dot{width:10px;height:10px;border-radius:50%;margin-top:7px;flex-shrink:0}.urgent .bz-pm-dot{background:#e74c3c}.moderate .bz-pm-dot{background:#ff9800}.low .bz-pm-dot{background:var(--green)}.bz-pm-body strong{display:block;font-size:1rem;margin-bottom:4px}.bz-pm-body span{display:block;font-size:.95rem;color:var(--text-secondary);line-height:1.6}.bz-pm-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.bz-pm-lift,.bz-pm-cat{font-size:11px;padding:4px 9px;border-radius:999px}.bz-pm-lift{background:var(--green-soft);color:var(--green);font-weight:800}.bz-pm-cat{background:#f1f4f8;color:var(--text-muted)}
+.bz-type-grid{display:grid;grid-template-columns:1.02fr .98fr;gap:32px;align-items:start}.bz-type-list{display:grid;gap:14px}.bz-type-btn{width:100%;text-align:left;padding:20px 22px;display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;cursor:pointer;transition:.22s ease}.bz-type-btn:hover,.bz-type-btn.active{border-color:rgba(17,165,81,.35);background:var(--surface-tint);transform:translateY(-1px)}.bz-type-btn i{width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:var(--green-soft);color:var(--green)}.bz-type-btn strong{display:block;font-size:1rem;margin-bottom:4px}.bz-type-btn span{display:block;font-size:.92rem;color:var(--text-secondary);line-height:1.55}.bz-type-arrow{color:var(--text-muted);font-size:1rem}.bz-type-panel{position:sticky;top:24px;padding:28px;min-height:520px;background:linear-gradient(180deg,#ffffff 0%,#f8fcf9 100%);border-color:#dbe8df}.bz-type-kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--green-soft);color:var(--green);font-size:.82rem;font-weight:800;margin-bottom:16px}.bz-type-panel h3{font-size:2.1rem;line-height:1.02;letter-spacing:-.04em;margin:0 0 12px}.bz-type-panel p{color:var(--text-secondary);margin:0 0 16px}.bz-type-meta{display:grid;gap:12px;margin-top:18px}.bz-type-meta div{padding:15px 16px;border-radius:18px;background:#fff;border:1px solid #e5edf3}.bz-type-meta strong{display:block;font-size:.9rem;margin-bottom:4px}.bz-type-proof{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.bz-type-proof span{padding:8px 12px;border-radius:999px;background:#fff;border:1px solid var(--border-primary);font-size:.82rem;color:var(--text-secondary)}
+.bz-metric-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.bz-metric-card{padding:24px;background:var(--surface-alt)}.bz-metric-card h3{margin:0 0 8px;font-size:1.06rem}.bz-metric-card p{margin:0;color:var(--text-secondary);font-size:.94rem;line-height:1.65}
+.bz-features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.bz-feat-card{padding:24px;background:var(--surface-alt)}.bz-feat-card h3{font-size:1.04rem;line-height:1.3;margin:0 0 10px}.bz-feat-card p{font-size:.95rem;color:var(--text-secondary);line-height:1.7;margin:0}
+.bz-pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:1120px;margin:0 auto;align-items:stretch}.bz-price-card{padding:26px;display:flex;flex-direction:column;min-height:100%}.bz-price-card.featured{border-color:rgba(17,165,81,.35);box-shadow:0 20px 50px rgba(17,165,81,.10)}.bz-price-tag{display:inline-flex;padding:7px 11px;border-radius:999px;background:#eef4f9;color:var(--text-secondary);font-size:var(--text-xs);font-weight:800;margin-bottom:16px;width:fit-content}.bz-price-tag.highlight{background:var(--green-soft);color:var(--green)}.bz-price-card h3{font-size:1.1rem;line-height:1.3;margin:0 0 12px}.bz-price{font-size:2.4rem;font-weight:900;letter-spacing:-0.04em;margin-bottom:14px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}.bz-price small{font-size:.95rem;font-weight:600;color:var(--text-secondary)}.bz-price-lead{font-size:.97rem;color:var(--text-secondary);margin:0 0 18px;min-height:86px}.bz-price-list{list-style:none;padding:18px 0 0;margin:0 0 22px;border-top:1px solid var(--border-primary);flex-grow:1}.bz-price-list li{display:flex;gap:10px;margin-bottom:10px;font-size:.98rem;color:var(--text-secondary);line-height:1.6}.bz-price-note{margin-top:14px;font-size:.9rem;color:var(--text-muted);line-height:1.65}.bz-trust-strip{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:26px;padding:18px 20px;background:var(--surface-tint);border:1px solid #d8eadf;border-radius:22px;font-size:.98rem;color:var(--text-secondary);line-height:1.7}
+.bz-contact{display:grid;grid-template-columns:1.06fr .94fr;gap:24px;max-width:1040px;margin:0 auto;align-items:stretch}.bz-contact-box{padding:28px;background:linear-gradient(180deg,#ffffff 0%,#f8fcf9 100%)}.footer-note{max-width:920px;margin:0 auto;color:var(--text-muted);font-size:var(--text-xs);text-align:center;padding:0 0 34px}
+@media (max-width:1024px){.bz-hero,.bz-feature-hero,.bz-pricing-grid,.bz-contact,.bz-type-grid,.bz-metric-strip,.bz-steps{grid-template-columns:1fr}.bz-features-grid{grid-template-columns:repeat(2,1fr)}.bz-type-panel{position:relative;top:auto;min-height:auto}.bz-price-lead{min-height:0}}
+@media (max-width:680px){.container{width:min(var(--max),calc(100% - 24px))}.bz-features-grid{grid-template-columns:1fr}.bz-hero-actions .btn{width:100%}.bz-title{font-size:clamp(2.2rem,10vw,3.3rem)}.bz-section{padding:54px 0}.bz-step{min-height:auto}.bz-hc-cat{grid-template-columns:120px 1fr 30px}}
 </style>
 </head>
 <body>
+  <div id="nav"></div>
   <section class="bz-hero-section">
     <div class="container">
       <div class="bz-hero">
@@ -336,12 +274,108 @@
 
   
 
-  <footer>
+  <section class="bz-section" style="padding-top:0; padding-bottom:24px;">
     <div class="container">
-      <p class="footer-note">GoNoGo Survey Services helps UK businesses run customer feedback programmes across CSAT, NPS, CES, onboarding, website feedback, churn and in-location QR surveys with branded setup, distribution assets, dashboard access and managed reporting. Use of the service is subject to the <a href="https://www.gonogo.co.uk/terms-subscription" target="_blank" rel="noopener noreferrer">GoNoGo Surveys Subscription Terms</a>.</p>
+      <p class="footer-note">Use of the service is subject to the <a href="https://www.gonogo.co.uk/terms-subscription" target="_blank" rel="noopener noreferrer">GoNoGo Surveys Subscription Terms</a>.</p>
     </div>
-  </footer>
+  </section>
+  <div id="footer"></div>
 <script>
+  const surveyTypeData = {
+    csat: {
+      title: 'CSAT surveys',
+      desc: 'Short, sharp and high-signal. CSAT works best when you need a clear read on one specific moment in the customer journey.',
+      when: 'You want feedback straight after a delivery, support case, booking, appointment or transaction.',
+      tells: 'Whether that touchpoint met expectations, and which moments are quietly damaging trust or repeat business.',
+      channels: 'Email-ready links, SMS-ready links, website thank-you pages, confirmation flows and QR follow-up points.',
+      value: 'It helps you improve individual customer interactions fast, which makes it one of the easiest survey types to turn into visible operational wins.',
+      proof: ['Delivery feedback','Support resolution','Appointment follow-up','Transaction quality']
+    },
+    nps: {
+      title: 'NPS surveys',
+      desc: 'This is the boardroom metric. NPS is less about one event and more about how strongly customers back the brand overall.',
+      when: 'You want a wider pulse on loyalty, advocacy and long-term sentiment across a customer base.',
+      tells: 'Whether customers would recommend you, how promoter strength is moving and where detractor sentiment is building.',
+      channels: 'Email campaigns, account review journeys, periodic customer check-ins and dashboard-led reporting cycles.',
+      value: 'It gives leadership a benchmarkable loyalty signal and a strong headline metric for wider CX programmes.',
+      proof: ['Quarterly pulse','Relationship tracking','Leadership reporting','Advocacy signal']
+    },
+    ces: {
+      title: 'CES surveys',
+      desc: 'CES gets to the friction. It is ideal when the business problem is not satisfaction alone, but how hard customers had to work.',
+      when: 'You need to measure the effort involved in getting support, solving an issue, changing details or completing a task.',
+      tells: 'Where your processes feel slow, confusing or unnecessarily painful, even if overall satisfaction still looks decent.',
+      channels: 'Support follow-ups, help centre journeys, complaint handling flows and post-resolution links.',
+      value: 'It is especially useful for operational teams because it highlights process friction that can often be fixed faster than brand sentiment.',
+      proof: ['Support effort','Complaint handling','Onboarding friction','Task completion']
+    },
+    postpurchase: {
+      title: 'Post-purchase surveys',
+      desc: 'These surveys catch issues while they are still fresh. They are ideal for protecting repeat purchase and reducing silent dissatisfaction.',
+      when: 'You want to know what happened after checkout, fulfilment, delivery, installation or first product use.',
+      tells: 'Where expectations break down after the sale, from packaging and handover to product fit and early experience.',
+      channels: 'Order confirmation flows, follow-up links, post-delivery email and QR cards inside packaging.',
+      value: 'They help businesses fix fulfilment and experience problems before they become refunds, poor reviews or churn.',
+      proof: ['After delivery','After installation','First-use feedback','Fulfilment quality']
+    },
+    website: {
+      title: 'Website feedback surveys',
+      desc: 'Website surveys reveal hesitation in real time. They help you understand why visitors did not convert, enquire or complete a journey.',
+      when: 'You need insight into abandoned journeys, pricing hesitation, content gaps or poor conversion paths.',
+      tells: 'What visitors were looking for, what made them doubt, and where the user journey is leaking intent.',
+      channels: 'Embeds, side tabs, exit-intent prompts, on-page widgets and thank-you page follow-ups.',
+      value: 'This is one of the fastest ways to turn feedback into measurable commercial changes on your website.',
+      proof: ['Drop-off reasons','Pricing hesitation','Form friction','Content gaps']
+    },
+    churn: {
+      title: 'Churn & cancellation surveys',
+      desc: 'These surveys go after the truth. Used well, they expose the reasons customers leave instead of leaving teams to guess.',
+      when: 'A customer cancels, goes inactive, downgrades or reaches a key renewal point.',
+      tells: 'Whether churn is driven by price, value perception, service quality, missing features, timing or internal customer issues.',
+      channels: 'Cancellation flows, exit links, offboarding screens and account closure journeys.',
+      value: 'Strong churn insight can shape retention work, sales messaging, onboarding changes and win-back strategy.',
+      proof: ['Cancellation insight','Downgrade reasons','Win-back input','Retention strategy']
+    },
+    qr: {
+      title: 'In-location QR surveys',
+      desc: 'Perfect for physical environments where timing matters. QR surveys make it easy to collect feedback while the experience is still fresh.',
+      when: 'You want immediate feedback from people in a venue, store, clinic, restaurant, branch or service point.',
+      tells: 'How the live experience felt on the ground, from service quality and wait times to environment and staff interaction.',
+      channels: 'Counter cards, table talkers, posters, packaging, receipts and branch signage.',
+      value: 'They are practical, easy to deploy and highly effective for location-by-location service insight.',
+      proof: ['Stores','Clinics','Restaurants','Branches']
+    }
+  };
+  const buttons = document.querySelectorAll('.bz-type-btn');
+  const title = document.getElementById('type-title');
+  const desc = document.getElementById('type-desc');
+  const whenEl = document.getElementById('type-when');
+  const tells = document.getElementById('type-tells');
+  const channels = document.getElementById('type-channels');
+  const value = document.getElementById('type-value');
+  const proof = document.getElementById('type-proof');
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const d = surveyTypeData[btn.dataset.type];
+    title.textContent = d.title;
+    desc.textContent = d.desc;
+    whenEl.textContent = d.when;
+    tells.textContent = d.tells;
+    channels.textContent = d.channels;
+    value.textContent = d.value;
+    proof.innerHTML = d.proof.map(item => `<span>${item}</span>`).join('');
+  }));
+</script><script src="components.js"></script>
+<script>
+  if (window.Components && document.getElementById('nav')) {
+    document.getElementById('nav').innerHTML = Components.renderPublicNav('surveys');
+    if (typeof Components.initTheme === 'function') Components.initTheme();
+    if (typeof Components.initPublicAuth === 'function') Components.initPublicAuth();
+  }
+  if (window.Components && document.getElementById('footer')) {
+    document.getElementById('footer').innerHTML = Components.renderFooter();
+  }
   const surveyTypeData = {
     csat: {
       title: 'CSAT surveys',
