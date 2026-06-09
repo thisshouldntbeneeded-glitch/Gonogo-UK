@@ -99,7 +99,30 @@
     .footer-note{max-width:920px;margin:0 auto;color:var(--text-muted);font-size:var(--text-xs);text-align:center}
     @media (max-width:1024px){.bz-hero,.bz-feature-hero,.bz-pricing-grid,.bz-contact,.bz-independence-grid{grid-template-columns:1fr}.bz-features-grid{grid-template-columns:repeat(2,1fr)}.bz-steps{flex-direction:column}.bz-step-arrow{transform:rotate(90deg);padding:0;justify-content:center;width:100%}.bz-trust-strip{text-align:center;flex-direction:column}}
     @media (max-width:640px){.bz-features-grid{grid-template-columns:1fr}.bz-hero-actions .btn{width:100%;justify-content:center}}
-  </style>
+  
+    .bz-type-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:var(--space-8);align-items:start}
+    .bz-type-list{display:grid;gap:14px}
+    .bz-type-btn{width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--border-primary);border-radius:22px;padding:20px 22px;color:var(--text-primary);display:grid;grid-template-columns:auto 1fr auto;gap:16px;align-items:center;cursor:pointer;transition:.25s ease;box-shadow:var(--shadow-lg)}
+    .bz-type-btn:hover,.bz-type-btn.active{border-color:rgba(17,165,81,.35);transform:translateY(-2px);background:linear-gradient(180deg,rgba(17,165,81,.10),rgba(255,255,255,.02))}
+    .bz-type-btn i{width:42px;height:42px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:var(--green-soft);color:var(--green)}
+    .bz-type-btn strong{display:block;font-size:1rem;margin-bottom:4px}
+    .bz-type-btn span{display:block;font-size:.9rem;color:var(--text-secondary);line-height:1.5}
+    .bz-type-arrow{color:var(--text-muted);font-size:1rem}
+    .bz-type-panel{position:sticky;top:24px;background:linear-gradient(180deg,rgba(17,165,81,.10),rgba(255,255,255,.02));border:1px solid rgba(17,165,81,.2);border-radius:28px;padding:26px;box-shadow:var(--shadow-lg);min-height:480px}
+    .bz-type-kicker{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--green-soft);color:var(--green);font-size:.82rem;font-weight:700;margin-bottom:16px}
+    .bz-type-panel h3{font-size:2rem;line-height:1.02;letter-spacing:-.03em;margin:0 0 10px}
+    .bz-type-panel p{color:var(--text-secondary);margin:0 0 16px}
+    .bz-type-meta{display:grid;gap:12px;margin-top:18px}
+    .bz-type-meta div{padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid var(--border-subtle)}
+    .bz-type-meta strong{display:block;font-size:.88rem;margin-bottom:4px}
+    .bz-type-proof{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+    .bz-type-proof span{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid var(--border-primary);font-size:.82rem;color:var(--text-secondary)}
+    .bz-metric-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .bz-metric-card{padding:22px;border-radius:22px;background:var(--bg-card);border:1px solid var(--border-primary);box-shadow:var(--shadow-lg)}
+    .bz-metric-card h3{margin:0 0 8px;font-size:1.05rem}
+    .bz-metric-card p{margin:0;color:var(--text-secondary);font-size:.92rem}
+    @media (max-width:1024px){.bz-type-grid,.bz-metric-strip{grid-template-columns:1fr}.bz-type-panel{position:relative;top:auto;min-height:auto}}
+</style>
 </head>
 <body>
   <section class="bz-hero-section">
@@ -181,19 +204,31 @@
   <section class="bz-section" id="types">
     <div class="container">
       <div class="bz-section-header">
-        <h2 class="bz-section-title">Survey types we build</h2>
-        <p class="bz-section-lead">Different questions answer different business problems. We help you choose the right format, timing and channel for each use case [web:114][web:116][web:119].</p>
+        <h2 class="bz-section-title">Survey types that sell outcomes</h2>
+        <p class="bz-section-lead">Click through the survey types below. Each one solves a different business problem, and the right choice makes the page feel expert instead of generic.</p>
       </div>
-      <div class="bz-features-grid">
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-face-smile"></i></div><h3>CSAT surveys</h3><p>Customer Satisfaction surveys are best used after a specific touchpoint such as a purchase, booking, delivery, appointment or support case, when you want clear feedback on that single interaction [web:114][web:118][web:126].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-star-half-stroke"></i></div><h3>NPS surveys</h3><p>Net Promoter Score surveys are more useful for measuring overall loyalty and brand sentiment across a wider customer base, usually on a periodic basis rather than after every transaction [web:114][web:118][web:124].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-person-arrow-up-from-line"></i></div><h3>CES surveys</h3><p>Customer Effort Score surveys work well after service or support processes where the real question is how easy or difficult it was for the customer to get something done [web:116][web:118][web:123].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-cart-shopping"></i></div><h3>Post-purchase feedback</h3><p>These surveys help you identify fulfilment, handover, packaging, product-fit or first-use issues soon after a purchase, before they become complaints or lost repeat revenue [web:117][web:69].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-door-open"></i></div><h3>Onboarding surveys</h3><p>Useful in the first days or weeks of a relationship, onboarding surveys show whether new customers understand what to do next, where they are getting stuck and what support they still need [web:115][web:119].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-person-walking-arrow-right"></i></div><h3>Churn and cancellation surveys</h3><p>Triggered when customers leave or go quiet, these surveys surface the real reasons behind churn and can help shape retention and win-back actions [web:122].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-display"></i></div><h3>Website feedback surveys</h3><p>Website widgets and intercept surveys help you understand whether visitors found what they needed, why they did not convert and where the journey is creating doubt or friction [web:117][web:119].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-user-group"></i></div><h3>In-location QR surveys</h3><p>Ideal for stores, clinics, venues, restaurants and service points, QR surveys make it easy to collect feedback at the moment the experience is still fresh [web:115][web:117].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-clipboard-question"></i></div><h3>Bespoke survey programmes</h3><p>For more complex journeys, we can create custom survey flows around complaints, recurring service reviews, account management, product feedback and wider customer-experience tracking [web:115][web:119].</p></div>
+      <div class="bz-type-grid">
+        <div class="bz-type-list">
+          <button class="bz-type-btn active" type="button" data-type="csat"><i class="fa-solid fa-face-smile"></i><div><strong>CSAT surveys</strong><span>For specific touchpoints like bookings, deliveries, appointments and support cases.</span></div><span class="bz-type-arrow"><i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="bz-type-btn" type="button" data-type="nps"><i class="fa-solid fa-star-half-stroke"></i><div><strong>NPS surveys</strong><span>For measuring overall loyalty, advocacy and brand sentiment over time.</span></div><span class="bz-type-arrow"><i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="bz-type-btn" type="button" data-type="ces"><i class="fa-solid fa-person-arrow-up-from-line"></i><div><strong>CES surveys</strong><span>For understanding how easy or painful a process felt for the customer.</span></div><span class="bz-type-arrow"><i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="bz-type-btn" type="button" data-type="postpurchase"><i class="fa-solid fa-cart-shopping"></i><div><strong>Post-purchase surveys</strong><span>For spotting fulfilment, handover and first-use issues before they become churn.</span></div><span class="bz-type-arrow"><i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="bz-type-btn" type="button" data-type="website"><i class="fa-solid fa-display"></i><div><strong>Website feedback surveys</strong><span>For finding out why visitors hesitate, bounce or fail to convert.</span></div><span class="bz-type-arrow"><i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="bz-type-btn" type="button" data-type="churn"><i class="fa-solid fa-person-walking-arrow-right"></i><div><strong>Churn & cancellation surveys</strong><span>For exposing the real reasons customers leave or stop engaging.</span></div><span class="bz-type-arrow"><i class="fa-solid fa-arrow-right"></i></span></button>
+          <button class="bz-type-btn" type="button" data-type="qr"><i class="fa-solid fa-qrcode"></i><div><strong>In-location QR surveys</strong><span>For stores, clinics, restaurants, venues and service environments.</span></div><span class="bz-type-arrow"><i class="fa-solid fa-arrow-right"></i></span></button>
+        </div>
+        <div class="bz-type-panel" id="type-panel">
+          <div class="bz-type-kicker"><i class="fa-solid fa-bolt"></i><span>Survey strategist view</span></div>
+          <h3 id="type-title">CSAT surveys</h3>
+          <p id="type-desc">Short, sharp and high-signal. CSAT works best when you need a clear read on one specific moment in the customer journey.</p>
+          <div class="bz-type-meta">
+            <div><strong>Best used when</strong><span id="type-when">You want feedback straight after a delivery, support case, booking, appointment or transaction.</span></div>
+            <div><strong>What it tells you</strong><span id="type-tells">Whether that touchpoint met expectations, and which moments are quietly damaging trust or repeat business.</span></div>
+            <div><strong>Strong channels</strong><span id="type-channels">Email-ready links, SMS-ready links, website thank-you pages, confirmation flows and QR follow-up points.</span></div>
+            <div><strong>Commercial value</strong><span id="type-value">It helps you improve individual customer interactions fast, which makes it one of the easiest survey types to turn into visible operational wins.</span></div>
+          </div>
+          <div class="bz-type-proof" id="type-proof"><span>Delivery feedback</span><span>Support resolution</span><span>Appointment follow-up</span><span>Transaction quality</span></div>
+        </div>
       </div>
     </div>
   </section>
@@ -201,13 +236,13 @@
   <section class="bz-section">
     <div class="container">
       <div class="bz-section-header">
-        <h2 class="bz-section-title">Choosing the right metric</h2>
-        <p class="bz-section-lead">We help clients choose the right survey type for the business question they actually need answered, whether that is loyalty, satisfaction or effort [web:114][web:116][web:125].</p>
+        <h2 class="bz-section-title">Choose the metric that matches the question</h2>
+        <p class="bz-section-lead">The fastest way to waste survey budget is to ask the wrong question. This section makes the difference obvious in seconds.</p>
       </div>
-      <div class="bz-features-grid">
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-heart"></i></div><h3>Use NPS when</h3><p>You want a broader read on customer loyalty, future advocacy and overall brand sentiment, typically across a wider audience at planned intervals [web:114][web:124][web:126].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-face-laugh-beam"></i></div><h3>Use CSAT when</h3><p>You need a clear score on a specific touchpoint such as a call, delivery, appointment, support case or completed transaction [web:114][web:118][web:126].</p></div>
-        <div class="bz-feat-card"><div class="bz-feat-icon"><i class="fa-solid fa-route"></i></div><h3>Use CES when</h3><p>You want to understand how easy or difficult customers found a process, especially in support, issue resolution, onboarding or account tasks [web:116][web:118][web:123].</p></div>
+      <div class="bz-metric-strip">
+        <div class="bz-metric-card"><h3>NPS = loyalty</h3><p>Use NPS when leadership wants a wider read on advocacy, retention direction and overall brand strength.</p></div>
+        <div class="bz-metric-card"><h3>CSAT = touchpoint quality</h3><p>Use CSAT when you need a score on a specific interaction and want immediate operational insight.</p></div>
+        <div class="bz-metric-card"><h3>CES = friction</h3><p>Use CES when the real issue is effort, complexity, confusion or process pain rather than general satisfaction.</p></div>
       </div>
     </div>
   </section>
@@ -306,5 +341,91 @@
       <p class="footer-note">GoNoGo Survey Services helps UK businesses run customer feedback programmes across CSAT, NPS, CES, onboarding, website feedback, churn and in-location QR surveys with branded setup, distribution assets, dashboard access and managed reporting. Use of the service is subject to the <a href="https://www.gonogo.co.uk/terms-subscription" target="_blank" rel="noopener noreferrer">GoNoGo Surveys Subscription Terms</a>.</p>
     </div>
   </footer>
-</body>
+<script>
+  const surveyTypeData = {
+    csat: {
+      title: 'CSAT surveys',
+      desc: 'Short, sharp and high-signal. CSAT works best when you need a clear read on one specific moment in the customer journey.',
+      when: 'You want feedback straight after a delivery, support case, booking, appointment or transaction.',
+      tells: 'Whether that touchpoint met expectations, and which moments are quietly damaging trust or repeat business.',
+      channels: 'Email-ready links, SMS-ready links, website thank-you pages, confirmation flows and QR follow-up points.',
+      value: 'It helps you improve individual customer interactions fast, which makes it one of the easiest survey types to turn into visible operational wins.',
+      proof: ['Delivery feedback','Support resolution','Appointment follow-up','Transaction quality']
+    },
+    nps: {
+      title: 'NPS surveys',
+      desc: 'This is the boardroom metric. NPS is less about one event and more about how strongly customers back the brand overall.',
+      when: 'You want a wider pulse on loyalty, advocacy and long-term sentiment across a customer base.',
+      tells: 'Whether customers would recommend you, how promoter strength is moving and where detractor sentiment is building.',
+      channels: 'Email campaigns, account review journeys, periodic customer check-ins and dashboard-led reporting cycles.',
+      value: 'It gives leadership a benchmarkable loyalty signal and a strong headline metric for wider CX programmes.',
+      proof: ['Quarterly pulse','Relationship tracking','Leadership reporting','Advocacy signal']
+    },
+    ces: {
+      title: 'CES surveys',
+      desc: 'CES gets to the friction. It is ideal when the business problem is not satisfaction alone, but how hard customers had to work.',
+      when: 'You need to measure the effort involved in getting support, solving an issue, changing details or completing a task.',
+      tells: 'Where your processes feel slow, confusing or unnecessarily painful, even if overall satisfaction still looks decent.',
+      channels: 'Support follow-ups, help centre journeys, complaint handling flows and post-resolution links.',
+      value: 'It is especially useful for operational teams because it highlights process friction that can often be fixed faster than brand sentiment.',
+      proof: ['Support effort','Complaint handling','Onboarding friction','Task completion']
+    },
+    postpurchase: {
+      title: 'Post-purchase surveys',
+      desc: 'These surveys catch issues while they are still fresh. They are ideal for protecting repeat purchase and reducing silent dissatisfaction.',
+      when: 'You want to know what happened after checkout, fulfilment, delivery, installation or first product use.',
+      tells: 'Where expectations break down after the sale, from packaging and handover to product fit and early experience.',
+      channels: 'Order confirmation flows, follow-up links, post-delivery email and QR cards inside packaging.',
+      value: 'They help businesses fix fulfilment and experience problems before they become refunds, poor reviews or churn.',
+      proof: ['After delivery','After installation','First-use feedback','Fulfilment quality']
+    },
+    website: {
+      title: 'Website feedback surveys',
+      desc: 'Website surveys reveal hesitation in real time. They help you understand why visitors did not convert, enquire or complete a journey.',
+      when: 'You need insight into abandoned journeys, pricing hesitation, content gaps or poor conversion paths.',
+      tells: 'What visitors were looking for, what made them doubt, and where the user journey is leaking intent.',
+      channels: 'Embeds, side tabs, exit-intent prompts, on-page widgets and thank-you page follow-ups.',
+      value: 'This is one of the fastest ways to turn feedback into measurable commercial changes on your website.',
+      proof: ['Drop-off reasons','Pricing hesitation','Form friction','Content gaps']
+    },
+    churn: {
+      title: 'Churn & cancellation surveys',
+      desc: 'These surveys go after the truth. Used well, they expose the reasons customers leave instead of leaving teams to guess.',
+      when: 'A customer cancels, goes inactive, downgrades or reaches a key renewal point.',
+      tells: 'Whether churn is driven by price, value perception, service quality, missing features, timing or internal customer issues.',
+      channels: 'Cancellation flows, exit links, offboarding screens and account closure journeys.',
+      value: 'Strong churn insight can shape retention work, sales messaging, onboarding changes and win-back strategy.',
+      proof: ['Cancellation insight','Downgrade reasons','Win-back input','Retention strategy']
+    },
+    qr: {
+      title: 'In-location QR surveys',
+      desc: 'Perfect for physical environments where timing matters. QR surveys make it easy to collect feedback while the experience is still fresh.',
+      when: 'You want immediate feedback from people in a venue, store, clinic, restaurant, branch or service point.',
+      tells: 'How the live experience felt on the ground, from service quality and wait times to environment and staff interaction.',
+      channels: 'Counter cards, table talkers, posters, packaging, receipts and branch signage.',
+      value: 'They are practical, easy to deploy and highly effective for location-by-location service insight.',
+      proof: ['Stores','Clinics','Restaurants','Branches']
+    }
+  };
+  const buttons = document.querySelectorAll('.bz-type-btn');
+  const title = document.getElementById('type-title');
+  const desc = document.getElementById('type-desc');
+  const whenEl = document.getElementById('type-when');
+  const tells = document.getElementById('type-tells');
+  const channels = document.getElementById('type-channels');
+  const value = document.getElementById('type-value');
+  const proof = document.getElementById('type-proof');
+  buttons.forEach(btn => btn.addEventListener('click', () => {
+    buttons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const d = surveyTypeData[btn.dataset.type];
+    title.textContent = d.title;
+    desc.textContent = d.desc;
+    whenEl.textContent = d.when;
+    tells.textContent = d.tells;
+    channels.textContent = d.channels;
+    value.textContent = d.value;
+    proof.innerHTML = d.proof.map(item => `<span>${item}</span>`).join('');
+  }));
+</script></body>
 </html>
