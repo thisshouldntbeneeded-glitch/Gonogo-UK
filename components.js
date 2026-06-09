@@ -384,6 +384,7 @@ const Components = {
               <a href="faq.html">FAQ</a>
               <a href="privacy.html">Privacy Policy</a>
               <a href="cookies.html">Cookie Policy</a>
+              <a href="survey-services.html">Survey Services</a>
               <a href="terms.html">Terms & Conditions</a>
               <a href="https://www.gonogo.co.uk" target="_blank" rel="noopener noreferrer">GoNoGo UK</a>
             </div>
