@@ -9,7 +9,10 @@
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_GB" />
   <meta name="theme-color" content="#0b0f14" />
-  <title>GoNoGo Survey Services | UK Customer Feedback Surveys</title>
+  <link rel="canonical" href="https://www.gonogo.co.uk/survey-services.html" />
+  <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large" />
+  <meta name="keywords" content="managed customer survey service, done-for-you surveys UK, survey setup service, NPS survey consultant, CSAT survey consultant, customer feedback consultant, survey design service, QR code survey rollout, website feedback survey setup" />
+  <title>Managed Customer Survey Service UK | GoNoGo Survey Services</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -135,8 +138,6 @@ a{text-decoration:none;color:inherit}.container{width:min(var(--max),calc(100% -
         </div>
       </div>
     </div>
-  </section>
-
   </section>
 
   <section class="bz-section" id="types">
@@ -280,93 +281,7 @@ a{text-decoration:none;color:inherit}.container{width:min(var(--max),calc(100% -
     </div>
   </section>
   <div id="footer"></div>
-<script>
-  const surveyTypeData = {
-    csat: {
-      title: 'CSAT surveys',
-      desc: 'Short, sharp and high-signal. CSAT works best when you need a clear read on one specific moment in the customer journey.',
-      when: 'You want feedback straight after a delivery, support case, booking, appointment or transaction.',
-      tells: 'Whether that touchpoint met expectations, and which moments are quietly damaging trust or repeat business.',
-      channels: 'Email-ready links, SMS-ready links, website thank-you pages, confirmation flows and QR follow-up points.',
-      value: 'It helps you improve individual customer interactions fast, which makes it one of the easiest survey types to turn into visible operational wins.',
-      proof: ['Delivery feedback','Support resolution','Appointment follow-up','Transaction quality']
-    },
-    nps: {
-      title: 'NPS surveys',
-      desc: 'This is the boardroom metric. NPS is less about one event and more about how strongly customers back the brand overall.',
-      when: 'You want a wider pulse on loyalty, advocacy and long-term sentiment across a customer base.',
-      tells: 'Whether customers would recommend you, how promoter strength is moving and where detractor sentiment is building.',
-      channels: 'Email campaigns, account review journeys, periodic customer check-ins and dashboard-led reporting cycles.',
-      value: 'It gives leadership a benchmarkable loyalty signal and a strong headline metric for wider CX programmes.',
-      proof: ['Quarterly pulse','Relationship tracking','Leadership reporting','Advocacy signal']
-    },
-    ces: {
-      title: 'CES surveys',
-      desc: 'CES gets to the friction. It is ideal when the business problem is not satisfaction alone, but how hard customers had to work.',
-      when: 'You need to measure the effort involved in getting support, solving an issue, changing details or completing a task.',
-      tells: 'Where your processes feel slow, confusing or unnecessarily painful, even if overall satisfaction still looks decent.',
-      channels: 'Support follow-ups, help centre journeys, complaint handling flows and post-resolution links.',
-      value: 'It is especially useful for operational teams because it highlights process friction that can often be fixed faster than brand sentiment.',
-      proof: ['Support effort','Complaint handling','Onboarding friction','Task completion']
-    },
-    postpurchase: {
-      title: 'Post-purchase surveys',
-      desc: 'These surveys catch issues while they are still fresh. They are ideal for protecting repeat purchase and reducing silent dissatisfaction.',
-      when: 'You want to know what happened after checkout, fulfilment, delivery, installation or first product use.',
-      tells: 'Where expectations break down after the sale, from packaging and handover to product fit and early experience.',
-      channels: 'Order confirmation flows, follow-up links, post-delivery email and QR cards inside packaging.',
-      value: 'They help businesses fix fulfilment and experience problems before they become refunds, poor reviews or churn.',
-      proof: ['After delivery','After installation','First-use feedback','Fulfilment quality']
-    },
-    website: {
-      title: 'Website feedback surveys',
-      desc: 'Website surveys reveal hesitation in real time. They help you understand why visitors did not convert, enquire or complete a journey.',
-      when: 'You need insight into abandoned journeys, pricing hesitation, content gaps or poor conversion paths.',
-      tells: 'What visitors were looking for, what made them doubt, and where the user journey is leaking intent.',
-      channels: 'Embeds, side tabs, exit-intent prompts, on-page widgets and thank-you page follow-ups.',
-      value: 'This is one of the fastest ways to turn feedback into measurable commercial changes on your website.',
-      proof: ['Drop-off reasons','Pricing hesitation','Form friction','Content gaps']
-    },
-    churn: {
-      title: 'Churn & cancellation surveys',
-      desc: 'These surveys go after the truth. Used well, they expose the reasons customers leave instead of leaving teams to guess.',
-      when: 'A customer cancels, goes inactive, downgrades or reaches a key renewal point.',
-      tells: 'Whether churn is driven by price, value perception, service quality, missing features, timing or internal customer issues.',
-      channels: 'Cancellation flows, exit links, offboarding screens and account closure journeys.',
-      value: 'Strong churn insight can shape retention work, sales messaging, onboarding changes and win-back strategy.',
-      proof: ['Cancellation insight','Downgrade reasons','Win-back input','Retention strategy']
-    },
-    qr: {
-      title: 'In-location QR surveys',
-      desc: 'Perfect for physical environments where timing matters. QR surveys make it easy to collect feedback while the experience is still fresh.',
-      when: 'You want immediate feedback from people in a venue, store, clinic, restaurant, branch or service point.',
-      tells: 'How the live experience felt on the ground, from service quality and wait times to environment and staff interaction.',
-      channels: 'Counter cards, table talkers, posters, packaging, receipts and branch signage.',
-      value: 'They are practical, easy to deploy and highly effective for location-by-location service insight.',
-      proof: ['Stores','Clinics','Restaurants','Branches']
-    }
-  };
-  const buttons = document.querySelectorAll('.bz-type-btn');
-  const title = document.getElementById('type-title');
-  const desc = document.getElementById('type-desc');
-  const whenEl = document.getElementById('type-when');
-  const tells = document.getElementById('type-tells');
-  const channels = document.getElementById('type-channels');
-  const value = document.getElementById('type-value');
-  const proof = document.getElementById('type-proof');
-  buttons.forEach(btn => btn.addEventListener('click', () => {
-    buttons.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const d = surveyTypeData[btn.dataset.type];
-    title.textContent = d.title;
-    desc.textContent = d.desc;
-    whenEl.textContent = d.when;
-    tells.textContent = d.tells;
-    channels.textContent = d.channels;
-    value.textContent = d.value;
-    proof.innerHTML = d.proof.map(item => `<span>${item}</span>`).join('');
-  }));
-</script><script src="components.js"></script>
+<script src="components.js"></script>
 <script>
   if (window.Components && document.getElementById('nav')) {
     document.getElementById('nav').innerHTML = Components.renderPublicNav('surveys');
