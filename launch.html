@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Launch a survey in 60 seconds | GoNoGo</title>
+<meta name="description" content="Brand it, pick a template, share. Get your first GoNoGo survey live in under a minute — free, no card required.">
+<link rel="canonical" href="https://www.gonogo.co.uk/launch.html" />
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<meta name="keywords" content="free survey tool UK, launch a survey, NPS survey, CSAT survey, customer feedback, quick survey builder, QR code survey">
+<meta property="og:title" content="Launch a survey in 60 seconds — GoNoGo">
+<meta property="og:description" content="Free to launch. No card required. Brand it, pick a template, share.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://www.gonogo.co.uk/launch.html">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="design-system.css?v=20260601">
+<style>
+  body{background:var(--bg-0,#0D0D0D);color:var(--text-primary,#F0F0F0);font-family:var(--font-body,system-ui,sans-serif);margin:0;min-height:100dvh;display:flex;flex-direction:column}
+  .lw-shell{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 16px}
+  .lw-card{width:100%;max-width:560px;background:var(--surface-1,#1A1A1A);border:1px solid var(--border-primary,rgba(255,255,255,.08));border-radius:16px;padding:40px 32px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+  .lw-dots{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+  .lw-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .2s ease}
+  .lw-dot.active{background:var(--accent,#0066FF)}
+  .lw-dot.done{background:rgba(255,255,255,.6)}
+  .lw-step-label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#555;margin-bottom:8px;text-align:center}
+  .lw-h{font-size:28px;font-weight:700;margin:0 0 8px;text-align:center;line-height:1.2}
+  .lw-sub{font-size:15px;color:#888;text-align:center;max-width:42ch;margin:0 auto 32px;line-height:1.5}
+  .lw-field{margin-bottom:20px}
+  .lw-label{display:block;font-size:13px;font-weight:600;color:#ccc;margin-bottom:8px}
+  .lw-input{width:100%;height:52px;background:#242424;border:1px solid rgba(255,255,255,.08);border-radius:8px;color:#F0F0F0;padding:0 16px;font-size:15px;font-family:inherit;box-sizing:border-box;transition:border-color .15s}
+  .lw-input:focus{outline:none;border-color:var(--accent,#0066FF)}
+  .lw-helper{font-size:12px;color:#555;margin-top:6px}
+  .lw-logo-drop{border:1.5px dashed rgba(255,255,255,.15);border-radius:8px;height:80px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;font-size:14px;transition:border-color .15s,background .15s;position:relative;overflow:hidden}
+  .lw-logo-drop:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.02)}
+  .lw-logo-drop input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .lw-logo-preview{display:flex;align-items:center;gap:12px;color:#ccc}
+  .lw-logo-preview img{max-height:48px;max-width:120px;border-radius:6px;background:#fff;padding:4px}
+  .lw-color-row{display:flex;align-items:center;gap:12px}
+  .lw-color-swatch{width:52px;height:52px;border:1px solid rgba(255,255,255,.08);border-radius:8px;cursor:pointer;padding:0;background:transparent}
+  .lw-btn{width:100%;height:52px;background:var(--accent,#0066FF);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;transition:filter .15s, opacity .15s;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+  .lw-btn:hover:not(:disabled){filter:brightness(1.08)}
+  .lw-btn:active{filter:brightness(.95)}
+  .lw-btn:disabled{opacity:.4;cursor:not-allowed}
+  .lw-btn-big{height:56px;font-size:16px}
+  .lw-tpl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .lw-tpl{background:#242424;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;cursor:pointer;text-align:left;transition:border-color .15s,background .15s,transform .15s;font-family:inherit;color:#F0F0F0}
+  .lw-tpl:hover{border-color:rgba(255,255,255,.25);background:#2A2A2A;transform:translateY(-2px)}
+  .lw-tpl.selected{border:2px solid var(--accent,#0066FF);padding:17px}
+  .lw-tpl i{font-size:18px;color:#888;margin-bottom:10px;display:block}
+  .lw-tpl-name{font-size:15px;font-weight:600;color:#F0F0F0;margin-bottom:4px}
+  .lw-tpl-desc{font-size:12px;color:#888;line-height:1.4;margin-bottom:10px}
+  .lw-tpl-foot{font-size:11px;color:#555}
+  .lw-err{background:rgba(220,53,69,.1);border:1px solid rgba(220,53,69,.3);color:#ff6b7a;font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:16px;display:none}
+  .lw-err.show{display:block}
+  .lw-fine{font-size:11px;color:#555;text-align:center;margin-top:16px;line-height:1.5}
+  .lw-fine a{color:#888;text-decoration:underline}
+  /* Success */
+  .lw-success-tick{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;color:#22c55e;font-size:28px}
+  .lw-share-card{background:#242424;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:18px;margin-bottom:12px}
+  .lw-share-h{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#888;margin-bottom:10px;font-weight:600}
+  .lw-share-row{display:flex;gap:10px;align-items:center}
+  .lw-share-url{flex:1;background:#1A1A1A;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:10px 12px;font-size:13px;color:#ccc;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .lw-share-btn{height:38px;padding:0 14px;background:transparent;border:1px solid var(--accent,#0066FF);color:var(--accent,#0066FF);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .15s}
+  .lw-share-btn:hover{background:rgba(0,102,255,.1)}
+  .lw-qr-img{display:block;margin:8px auto 12px;background:#fff;padding:8px;border-radius:8px;width:200px;height:200px}
+  .lw-share-code{background:#1A1A1A;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:10px 12px;font-size:12px;color:#ccc;font-family:monospace;overflow-x:auto;margin-bottom:10px;word-break:break-all}
+  .lw-secondary-link{display:block;text-align:center;margin-top:16px;color:#888;font-size:13px;text-decoration:underline;background:none;border:none;cursor:pointer;font-family:inherit;width:100%}
+  @media(max-width:480px){
+    .lw-shell{padding:0}
+    .lw-card{border-radius:0;padding:32px 20px;min-height:100dvh;box-shadow:none}
+    .lw-tpl-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<div id="footer-container"></div>
+
+<div class="lw-shell">
+  <div class="lw-card" id="wizard">
+    <div class="lw-dots">
+      <div class="lw-dot active" data-dot="1"></div>
+      <div class="lw-dot" data-dot="2"></div>
+      <div class="lw-dot" data-dot="3"></div>
+    </div>
+    <div id="step-area"></div>
+  </div>
+</div>
+
+<script src="api.js?v=20260601n"></script>
+<script src="components.js?v=20260601"></script>
+<script>
+(function(){
+  'use strict';
+
+  // ── Hard-coded templates (qtypes match cx-survey.html engine) ──
+  var TEMPLATES = [
+    {
+      slug:'nps', name:'NPS', icon:'fa-solid fa-thumbs-up',
+      description:'Measure how likely customers are to recommend you.',
+      intro_title:'We value your feedback',
+      intro_text:'A quick check-in — your answers help us improve.',
+      questions:[
+        {qtype:'nps_0_10', prompt:'How likely are you to recommend us to a friend or colleague?', help_text:'0 means not at all likely, 10 means extremely likely.', required:true, options:[], logic:[]},
+        {qtype:'rating_1_5', prompt:'How would you rate your overall experience with us?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+        {qtype:'single_select', prompt:'What influenced your score the most?', help_text:'Pick the biggest factor.', required:false, options:['Product quality','Customer service','Value for money','Ease of use','Delivery / speed'], logic:[]},
+        {qtype:'long_text', prompt:'Is there anything we could do to improve?', help_text:'Optional', required:false, options:['Tell us more...'], logic:[]}
+      ]
+    },
+    {
+      slug:'csat', name:'CSAT', icon:'fa-solid fa-face-smile',
+      description:'Capture satisfaction after a purchase or interaction.',
+      intro_title:'How did we do?',
+      intro_text:'A fast check-in on your recent experience.',
+      questions:[
+        {qtype:'csat_smiley', prompt:'How satisfied were you with your experience today?', help_text:'Choose the face that best fits.', required:true, options:[], logic:[]},
+        {qtype:'rating_1_5', prompt:'How would you rate the quality of service you received?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+        {qtype:'single_select', prompt:'Did we meet your expectations today?', help_text:'Pick one.', required:true, options:['Yes, exceeded them','Yes, met them','No, fell short'], logic:[]},
+        {qtype:'long_text', prompt:'Tell us what we could have done better.', help_text:'Optional', required:false, options:['Your thoughts...'], logic:[]}
+      ]
+    },
+    {
+      slug:'ces', name:'CES', icon:'fa-solid fa-gauge',
+      description:'Find out how easy you were to deal with.',
+      intro_title:'How easy was it?',
+      intro_text:'A quick rating of how smooth your experience felt.',
+      questions:[
+        {qtype:'rating_1_5', prompt:'How easy was it to handle your request today?', help_text:'1 is very difficult, 5 is very easy.', required:true, options:[], logic:[]},
+        {qtype:'single_select', prompt:'What were you trying to do today?', help_text:'Pick one.', required:true, options:['Make a purchase','Get support','Find information','Return or exchange','Something else'], logic:[]},
+        {qtype:'yes_no', prompt:'Were you able to complete it without friction?', help_text:'', required:true, options:[], logic:[]},
+        {qtype:'long_text', prompt:'What would have made this easier?', help_text:'Optional', required:false, options:['Tell us more...'], logic:[]}
+      ]
+    },
+    {
+      slug:'post-purchase', name:'Post-purchase', icon:'fa-solid fa-box',
+      description:'Feedback shortly after an order arrives.',
+      intro_title:'How was your purchase?',
+      intro_text:'We are checking in after your recent order.',
+      questions:[
+        {qtype:'csat_smiley', prompt:'How satisfied are you with your recent purchase?', help_text:'', required:true, options:[], logic:[]},
+        {qtype:'rating_1_5', prompt:'How would you rate the quality of what you received?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+        {qtype:'single_select', prompt:'Did your order arrive on time?', help_text:'', required:true, options:['Yes, on time','A little late','Significantly late','Not yet arrived'], logic:[]},
+        {qtype:'nps_0_10', prompt:'How likely are you to shop with us again?', help_text:'0 means not at all, 10 means extremely.', required:true, options:[], logic:[]}
+      ]
+    },
+    {
+      slug:'event', name:'Event feedback', icon:'fa-solid fa-calendar-check',
+      description:'Capture attendee reactions while it is fresh.',
+      intro_title:'Tell us about the event',
+      intro_text:'A few quick questions about your experience today.',
+      questions:[
+        {qtype:'csat_smiley', prompt:'Overall, how satisfied were you with the event?', help_text:'', required:true, options:[], logic:[]},
+        {qtype:'rating_1_5', prompt:'How would you rate the content or speakers?', help_text:'1 is poor, 5 is excellent.', required:true, options:[], logic:[]},
+        {qtype:'single_select', prompt:'What did you enjoy most?', help_text:'Pick the highlight.', required:false, options:['Content / speakers','Networking','Organisation','Venue or platform','Value for time'], logic:[]},
+        {qtype:'single_select', prompt:'Would you attend a future event by us?', help_text:'', required:true, options:['Definitely yes','Probably yes','Not sure','Probably not','Definitely not'], logic:[]}
+      ]
+    },
+    {
+      slug:'staff-pulse', name:'Staff pulse', icon:'fa-solid fa-heart-pulse',
+      description:'Anonymous check on team morale and engagement.',
+      intro_title:'Quick team pulse',
+      intro_text:'Anonymous — your honest answers help us improve how we work.',
+      questions:[
+        {qtype:'rating_1_5', prompt:'How would you rate your overall wellbeing at work this week?', help_text:'1 is poor, 5 is great.', required:true, options:[], logic:[]},
+        {qtype:'nps_0_10', prompt:'How likely are you to recommend this organisation as a great place to work?', help_text:'', required:true, options:[], logic:[]},
+        {qtype:'single_select', prompt:'What has had the biggest positive impact this week?', help_text:'Pick one.', required:false, options:['Clear goals and direction','Supportive team','Interesting work','Flexible working','Recognition from leadership'], logic:[]},
+        {qtype:'long_text', prompt:'Is there anything you would like leadership to know?', help_text:'Optional', required:false, options:['Your thoughts...'], logic:[]}
+      ]
+    }
+  ];
+
+  // ── State ──
+  var state = {
+    step: 1,
+    brand_name: '',
+    logo_data_url: '',
+    color: '#0066FF',
+    template: null,
+    email: '',
+    password: ''
+  };
+
+  var $area = document.getElementById('step-area');
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+
+  function setDots(activeStep, doneSteps){
+    [1,2,3].forEach(function(n){
+      var el = document.querySelector('.lw-dot[data-dot="'+n+'"]');
+      if (!el) return;
+      el.classList.remove('active','done');
+      if (doneSteps && doneSteps.indexOf(n) !== -1) el.classList.add('done');
+      else if (n === activeStep) el.classList.add('active');
+    });
+    document.documentElement.style.setProperty('--accent', state.color || '#0066FF');
+  }
+
+  function showStep1(){
+    state.step = 1;
+    setDots(1, []);
+    $area.innerHTML = ''
+      + '<div class="lw-step-label">Step 1 of 3</div>'
+      + '<h1 class="lw-h">Make it yours.</h1>'
+      + '<p class="lw-sub">Your brand gives the survey context. Logo and colour are optional.</p>'
+      + '<div class="lw-err" id="err1"></div>'
+      + '<div class="lw-field">'
+      +   '<label class="lw-label" for="f-brand">Brand name</label>'
+      +   '<input class="lw-input" id="f-brand" type="text" placeholder="Your brand or team name" value="'+esc(state.brand_name)+'" autocomplete="organization" maxlength="60">'
+      + '</div>'
+      + '<div class="lw-field">'
+      +   '<label class="lw-label">Logo <span style="color:#555;font-weight:400">(optional)</span></label>'
+      +   '<div class="lw-logo-drop" id="f-logo-drop">'
+      +     (state.logo_data_url
+        ? '<div class="lw-logo-preview"><img src="'+esc(state.logo_data_url)+'" alt="Logo preview"><span>Click to replace</span></div>'
+        : '<span><i class="fa-solid fa-upload" style="margin-right:8px"></i>Upload PNG or SVG</span>')
+      +     '<input type="file" id="f-logo" accept="image/png,image/jpeg,image/svg+xml">'
+      +   '</div>'
+      +   '<div class="lw-helper">We will use a text wordmark if you skip this.</div>'
+      + '</div>'
+      + '<div class="lw-field">'
+      +   '<label class="lw-label" for="f-color-text">Brand colour</label>'
+      +   '<div class="lw-color-row">'
+      +     '<input type="color" class="lw-color-swatch" id="f-color" value="'+esc(state.color)+'">'
+      +     '<input class="lw-input" id="f-color-text" type="text" value="'+esc(state.color)+'" maxlength="7" style="flex:1">'
+      +   '</div>'
+      + '</div>'
+      + '<button class="lw-btn" id="f-next">Next: Pick a template <i class="fa-solid fa-arrow-right"></i></button>';
+
+    var $brand = document.getElementById('f-brand');
+    var $logo  = document.getElementById('f-logo');
+    var $color = document.getElementById('f-color');
+    var $colorTxt = document.getElementById('f-color-text');
+    var $next  = document.getElementById('f-next');
+
+    function syncNext(){ $next.disabled = $brand.value.trim().length < 2; }
+    syncNext();
+    $brand.addEventListener('input', syncNext);
+
+    $logo.addEventListener('change', function(){
+      var f = $logo.files && $logo.files[0]; if (!f) return;
+      if (f.size > 300 * 1024) {
+        var err = document.getElementById('err1');
+        err.textContent = 'Logo must be under 300 KB.'; err.classList.add('show'); return;
+      }
+      var r = new FileReader();
+      r.onload = function(){
+        state.logo_data_url = r.result;
+        showStep1(); // re-render to show preview
+      };
+      r.readAsDataURL(f);
+    });
+
+    $color.addEventListener('input', function(){ state.color = $color.value; $colorTxt.value = $color.value; document.documentElement.style.setProperty('--accent', $color.value); });
+    $colorTxt.addEventListener('input', function(){
+      var v = $colorTxt.value.trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(v)) { state.color = v; $color.value = v; document.documentElement.style.setProperty('--accent', v); }
+    });
+
+    $next.addEventListener('click', function(){
+      var name = $brand.value.trim();
+      if (name.length < 2) {
+        var err = document.getElementById('err1');
+        err.textContent = 'Please enter a name so respondents know who is asking.';
+        err.classList.add('show'); return;
+      }
+      state.brand_name = name;
+      showStep2();
+    });
+  }
+
+  function showStep2(){
+    state.step = 2;
+    setDots(2, [1]);
+    var cards = TEMPLATES.map(function(t){
+      var sel = (state.template && state.template.slug === t.slug) ? ' selected' : '';
+      return ''
+        + '<button class="lw-tpl'+sel+'" data-slug="'+esc(t.slug)+'" type="button">'
+        +   '<i class="'+esc(t.icon)+'"></i>'
+        +   '<div class="lw-tpl-name">'+esc(t.name)+'</div>'
+        +   '<div class="lw-tpl-desc">'+esc(t.description)+'</div>'
+        +   '<div class="lw-tpl-foot">'+t.questions.length+' questions · ~30 sec</div>'
+        + '</button>';
+    }).join('');
+
+    $area.innerHTML = ''
+      + '<div class="lw-step-label">Step 2 of 3</div>'
+      + '<h1 class="lw-h">What do you want to learn?</h1>'
+      + '<p class="lw-sub">Pick one. Five questions, under 30 seconds for respondents.</p>'
+      + '<div class="lw-tpl-grid">' + cards + '</div>'
+      + '<button class="lw-secondary-link" id="f-back">← Back</button>';
+
+    document.getElementById('f-back').addEventListener('click', showStep1);
+    document.querySelectorAll('.lw-tpl').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var slug = btn.getAttribute('data-slug');
+        state.template = TEMPLATES.filter(function(t){return t.slug===slug;})[0];
+        document.querySelectorAll('.lw-tpl').forEach(function(b){b.classList.remove('selected');});
+        btn.classList.add('selected');
+        setTimeout(showStep3, 220);
+      });
+    });
+  }
+
+  function showStep3(){
+    state.step = 3;
+    setDots(3, [1,2]);
+    $area.innerHTML = ''
+      + '<div class="lw-step-label">Step 3 of 3</div>'
+      + '<h1 class="lw-h">Almost there.</h1>'
+      + '<p class="lw-sub">Create your free account to save and share your survey.</p>'
+      + '<div class="lw-err" id="err3"></div>'
+      + '<div class="lw-field">'
+      +   '<label class="lw-label" for="f-email">Email address</label>'
+      +   '<input class="lw-input" id="f-email" type="email" placeholder="you@company.com" value="'+esc(state.email)+'" autocomplete="email" required>'
+      + '</div>'
+      + '<div class="lw-field">'
+      +   '<label class="lw-label" for="f-pw">Password <span style="color:#555;font-weight:400">(min 8 characters)</span></label>'
+      +   '<input class="lw-input" id="f-pw" type="password" placeholder="••••••••" autocomplete="new-password" minlength="8" required>'
+      + '</div>'
+      + '<button class="lw-btn lw-btn-big" id="f-launch"><i class="fa-solid fa-rocket"></i> Create account & go live</button>'
+      + '<div class="lw-fine">By continuing, you agree to GoNoGo\'s <a href="terms.html">Terms</a> and <a href="privacy-policy.html">Privacy Policy</a>.</div>'
+      + '<button class="lw-secondary-link" id="f-back">← Back</button>';
+
+    document.getElementById('f-back').addEventListener('click', showStep2);
+
+    var $launch = document.getElementById('f-launch');
+    $launch.addEventListener('click', launch);
+  }
+
+  function showError(msg){
+    var err = document.getElementById('err3');
+    if (err) { err.textContent = msg; err.classList.add('show'); }
+  }
+
+  async function launch(){
+    var $launch = document.getElementById('f-launch');
+    var email = document.getElementById('f-email').value.trim().toLowerCase();
+    var pw    = document.getElementById('f-pw').value;
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Please enter a valid email.'); return; }
+    if (pw.length < 8) { showError('Password must be at least 8 characters.'); return; }
+
+    $launch.disabled = true;
+    $launch.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Launching your survey…';
+
+    try {
+      // 1. Hash password using existing GoNoGo helper (same algorithm as brand portal)
+      var hash = await GoNoGoAPI._hashPassword(pw);
+
+      // 2. Sign up — creates brand_users + brand_memberships rows
+      var signupRes = await GoNoGoAPI.supabaseRequest('rpc/brand_signup', {
+        method: 'POST',
+        body: {
+          p_email: email,
+          p_hash: hash,
+          p_display_name: state.brand_name,
+          p_brand_name: state.brand_name,
+          p_region: 'uk'
+        }
+      });
+      var user = Array.isArray(signupRes) ? signupRes[0] : signupRes;
+      if (!user || !user.id) throw new Error('Signup did not return a user');
+      user._ah = hash;
+
+      // 3. Persist as logged-in brand user so cx.* RPCs work
+      GoNoGoStorage.set('brandUser', user);
+      GoNoGoStorage.set('brandLoginTime', Date.now());
+
+      // 4. Build survey payload from chosen template
+      var t = state.template;
+      var payload = {
+        id: null,
+        name: state.brand_name + ' — ' + t.name,
+        slug: null,
+        intro_title: t.intro_title,
+        intro_text: t.intro_text,
+        thank_you_title: 'Thank you',
+        thank_you_text: 'Your feedback has been received.',
+        is_anonymous: true,
+        allow_contact_capture: false,
+        status: 'active',
+        template_key: t.slug,
+        brand_logo_url: state.logo_data_url || null,
+        brand_primary_color: state.color || '#0066FF',
+        brand_accent_color: state.color || '#0066FF',
+        language: 'en',
+        theme_variant: 'classic',
+        progress_style: 'bar',
+        show_progress_bar: true,
+        party_mode_default: false,
+        questions: t.questions
+      };
+
+      var surveyId = await GoNoGoAPI.cx.upsertSurvey(payload);
+      if (!surveyId) throw new Error('Survey creation failed');
+
+      // 5. Generate a public share link
+      var linkRes = await GoNoGoAPI.cx.createLink(surveyId, 'Launch');
+      var token = linkRes && (linkRes.token || (linkRes[0] && linkRes[0].token));
+      if (!token) throw new Error('Share link creation failed');
+
+      showSuccess(token);
+    } catch (e) {
+      console.error('launch error', e);
+      var msg = (e && e.message) || 'Something went wrong. Please try again.';
+      if (/already registered/i.test(msg)) {
+        showError('That email is already registered. Sign in from the business portal to launch another survey.');
+      } else {
+        showError(msg);
+      }
+      $launch.disabled = false;
+      $launch.innerHTML = '<i class="fa-solid fa-rocket"></i> Create account & go live';
+    }
+  }
+
+  function showSuccess(token){
+    var origin = window.location.origin || 'https://www.gonogo.co.uk';
+    var url = origin + '/cx-survey.html?t=' + encodeURIComponent(token);
+    var qrLarge = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=' + encodeURIComponent(url);
+    var qrDl    = 'https://api.qrserver.com/v1/create-qr-code/?size=800x800&margin=20&format=png&data=' + encodeURIComponent(url);
+    var emailSnip = '<a href="'+url+'">Take our quick survey →</a>';
+    var iframeSnip = '<iframe src="'+url+'" width="100%" height="520" frameborder="0" style="border:none;border-radius:8px"></iframe>';
+
+    setDots(3, [1,2,3]);
+    document.querySelector('.lw-dot[data-dot="3"]').classList.add('done');
+
+    $area.innerHTML = ''
+      + '<div class="lw-success-tick"><i class="fa-solid fa-check"></i></div>'
+      + '<h1 class="lw-h">Your survey is live.</h1>'
+      + '<p class="lw-sub">Share it anywhere — every response lands in your GoNoGo dashboard.</p>'
+
+      + '<div class="lw-share-card">'
+      +   '<div class="lw-share-h">Survey link</div>'
+      +   '<div class="lw-share-row">'
+      +     '<div class="lw-share-url" id="s-url">'+esc(url)+'</div>'
+      +     '<button class="lw-share-btn" data-copy="url">Copy</button>'
+      +   '</div>'
+      + '</div>'
+
+      + '<div class="lw-share-card">'
+      +   '<div class="lw-share-h">QR code</div>'
+      +   '<img class="lw-qr-img" src="'+esc(qrLarge)+'" alt="QR code for your survey">'
+      +   '<a class="lw-share-btn" style="display:block;text-align:center;text-decoration:none;line-height:38px" href="'+esc(qrDl)+'" download="gonogo-survey-qr.png">Download PNG</a>'
+      + '</div>'
+
+      + '<div class="lw-share-card">'
+      +   '<div class="lw-share-h">Email link (paste into any email)</div>'
+      +   '<div class="lw-share-code" id="s-email">'+esc(emailSnip)+'</div>'
+      +   '<button class="lw-share-btn" data-copy="email">Copy snippet</button>'
+      + '</div>'
+
+      + '<div class="lw-share-card">'
+      +   '<div class="lw-share-h">Embed on your website</div>'
+      +   '<div class="lw-share-code" id="s-iframe">'+esc(iframeSnip)+'</div>'
+      +   '<button class="lw-share-btn" data-copy="iframe">Copy snippet</button>'
+      + '</div>'
+
+      + '<button class="lw-btn" style="margin-top:24px" onclick="window.location.href=\'brand-cx-dashboards.html\'"><i class="fa-solid fa-chart-line"></i> Open dashboard</button>'
+      + '<button class="lw-secondary-link" onclick="window.location.reload()">Launch another survey</button>';
+
+    var clip = {
+      url: url,
+      email: emailSnip,
+      iframe: iframeSnip
+    };
+    document.querySelectorAll('[data-copy]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var k = btn.getAttribute('data-copy');
+        navigator.clipboard.writeText(clip[k]).then(function(){
+          var orig = btn.textContent;
+          btn.textContent = 'Copied ✓';
+          setTimeout(function(){ btn.textContent = orig; }, 1800);
+        }).catch(function(){ btn.textContent = 'Copy failed'; });
+      });
+    });
+  }
+
+  // ── Init ──
+  document.addEventListener('DOMContentLoaded', function(){
+    try {
+      if (window.Components && Components.renderFooter) {
+        document.getElementById('footer-container').innerHTML = Components.renderFooter();
+      }
+    } catch(e){}
+    showStep1();
+  });
+
+})();
+</script>
+
+<!-- JSON-LD: free product offering -->
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"SoftwareApplication",
+  "name":"GoNoGo 3-Click Launch",
+  "applicationCategory":"BusinessApplication",
+  "operatingSystem":"Web",
+  "description":"Launch a branded customer survey in under 60 seconds. Free, no card required.",
+  "url":"https://www.gonogo.co.uk/launch.html",
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"GBP"}
+}
+</script>
+
+</body>
+</html>
